@@ -1,0 +1,16 @@
+export const ROUTES = {
+  HOME: "/",
+  LOGIN: "/auth/login",
+  REGISTER: "/auth/register",
+  COURSES: "/courses",
+  COURSE_DETAIL: "/courses/:id",
+  LESSONS: "/lessons/:courseId",
+  LESSON_DETAIL: "/lessons/:lessonId",
+  QUIZ: "/quiz/:id",
+  ASSIGNMENTS: "/assignments/:courseId",
+  ASSIGNMENT_DETAIL: "/assignments/:id",
+  DASHBOARD: "/dashboard",
+  PROFILE: "/profile",
+  SETTINGS: "/settings",
+  CERTIFICATES: "/certificates",
+};

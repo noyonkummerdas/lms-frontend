@@ -1,5 +1,4 @@
 import { registerRootComponent } from "expo";
-import React from "react";
 import { ExpoRoot } from "expo-router";
 import { Provider } from "react-redux";
 import { store } from "./store/store";
@@ -8,12 +7,10 @@ import { store } from "./store/store";
 const ctx = require.context("./app");
 
 function App() {
-  return React.createElement(
-    Provider,
-    {
-      store,
-      children: React.createElement(ExpoRoot, { context: ctx }),
-    }
+  return (
+    <Provider store={store}>
+      <ExpoRoot context={ctx} />
+    </Provider>
   );
 }
 
