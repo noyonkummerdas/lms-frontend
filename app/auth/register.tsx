@@ -130,8 +130,8 @@ export default function RegisterScreen() {
           label={isLoading ? "Creating account..." : "Create Account"}
           onPress={handleRegister}
           disabled={isLoading}
-          variant="secondary"
-          size="lg"
+          variant="primary"
+          size="md"
           style={styles.btn}
         />
 
@@ -139,7 +139,7 @@ export default function RegisterScreen() {
           label="Already have an account? Login"
           onPress={() => router.push("/auth/login")}
           variant="primary"
-          size="lg"
+          size="md"
         />
       </ScrollView>
     </View>
