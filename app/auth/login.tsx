@@ -49,7 +49,7 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
-      <Navbar title="Login" showBack={true} onBackPress={() => router.back()} />
+      <Navbar title="LMS" showBack={true} onBackPress={() => router.back()} />
 
       <ScrollView
         style={styles.scroll}
@@ -96,16 +96,16 @@ export default function LoginScreen() {
           label={isLoading ? "Logging in..." : "Login"}
           onPress={handleLogin}
           disabled={isLoading}
-          variant="secondary"
+          variant="primary"
           size="lg"
           style={styles.btn}
         />
 
-        <Button
+        <Button 
+        style={{ backgroundColor: COLORS.secondary, fontWeight: "600", textAlign: "center", paddingHorizontal: 16, paddingVertical: 12, borderRadius: 8}}
           label="Create Account"
           onPress={() => router.push("/auth/register")}
-          variant="primary"
-          size="lg"
+          size="md"
         />
       </ScrollView>
     </SafeAreaView>
