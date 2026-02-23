@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert, ActivityIndicator, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,12 +17,26 @@ export default function CheckoutScreen() {
     const router = useRouter();
     const { id, title, price } = useLocalSearchParams<{ id: string; title: string; price: string }>();
     const [selectedMethod, setSelectedMethod] = useState("bkash");
+    const [coupon, setCoupon] = useState("");
+    const [isApplied, setIsApplied] = useState(false);
+    const [plan, setPlan] = useState("onetime"); // 'onetime' or 'subscription'
     const [isProcessing, setIsProcessing] = useState(false);
 
     const numericPrice = parseFloat((price || "$49.99").replace("$", ""));
+    const discount = isApplied ? numericPrice * 0.2 : 0;
     const selectedPayment = PAYMENT_METHODS.find(m => m.id === selectedMethod);
     const fee = parseFloat(selectedPayment?.fee || "0");
-    const total = numericPrice + fee;
+    const subtotal = plan === "onetime" ? numericPrice : 15.99; // Mock monthly price
+    const total = subtotal - discount + fee;
+
+    const applyCoupon = () => {
+        if (coupon.toUpperCase() === "SAVE20") {
+            setIsApplied(true);
+            Alert.alert("Success", "Coupon applied! You got 20% off.");
+        } else {
+            Alert.alert("Error", "Invalid coupon code.");
+        }
+    };
 
     const handlePayment = () => {
         setIsProcessing(true);
@@ -51,6 +65,44 @@ export default function CheckoutScreen() {
             <Navbar title="Secure Checkout" showBack={true} onBackPress={() => router.back()} />
 
             <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+                {/* Subscription Model */}
+                <Text style={styles.sectionTitle}>Select Purchase Type</Text>
+                <View style={styles.planContainer}>
+                    <TouchableOpacity
+                        style={[styles.planCard, plan === "onetime" && styles.planActive]}
+                        onPress={() => setPlan("onetime")}
+                    >
+                        <Ionicons name="cart" size={20} color={plan === "onetime" ? COLORS.secondary : COLORS.gray[400]} />
+                        <Text style={[styles.planLabel, plan === "onetime" && styles.planLabelActive]}>One-time Buy</Text>
+                        <Text style={styles.planPrice}>{price || "$49.99"}</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        style={[styles.planCard, plan === "subscription" && styles.planActive]}
+                        onPress={() => setPlan("subscription")}
+                    >
+                        <Ionicons name="calendar" size={20} color={plan === "subscription" ? COLORS.secondary : COLORS.gray[400]} />
+                        <Text style={[styles.planLabel, plan === "subscription" && styles.planLabelActive]}>LMS Monthly</Text>
+                        <Text style={styles.planPrice}>$15.99/mo</Text>
+                    </TouchableOpacity>
+                </View>
+
+                {/* Coupon System */}
+                <View style={styles.couponSection}>
+                    <Text style={styles.sectionTitle}>Have a Coupon?</Text>
+                    <View style={styles.couponInputRow}>
+                        <TextInput
+                            placeholder="Enter code (e.g. SAVE20)"
+                            style={styles.couponInput}
+                            value={coupon}
+                            onChangeText={setCoupon}
+                            autoCapitalize="characters"
+                        />
+                        <TouchableOpacity style={styles.applyBtn} onPress={applyCoupon}>
+                            <Text style={styles.applyBtnText}>Apply</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
                 {/* Order Summary */}
                 <Text style={styles.sectionTitle}>Order Summary</Text>
                 <Card style={styles.orderCard}>
@@ -60,15 +112,21 @@ export default function CheckoutScreen() {
                         </View>
                         <View style={styles.courseDetails}>
                             <Text style={styles.courseTitle} numberOfLines={1}>{title || "Premium Course"}</Text>
-                            <Text style={styles.courseSub}>Lifetime Access • Certificate Included</Text>
+                            <Text style={styles.courseSub}>{plan === "onetime" ? "Lifetime Access" : "Full Access Subscription"}</Text>
                         </View>
-                        <Text style={styles.itemPrice}>{price || "$49.99"}</Text>
+                        <Text style={styles.itemPrice}>${subtotal.toFixed(2)}</Text>
                     </View>
                     <View style={styles.divider} />
                     <View style={styles.billRow}>
                         <Text style={styles.billLabel}>Subtotal</Text>
-                        <Text style={styles.billValue}>${numericPrice.toFixed(2)}</Text>
+                        <Text style={styles.billValue}>${subtotal.toFixed(2)}</Text>
                     </View>
+                    {isApplied && (
+                        <View style={styles.billRow}>
+                            <Text style={[styles.billLabel, { color: COLORS.success }]}>Discount (SAVE20)</Text>
+                            <Text style={[styles.billValue, { color: COLORS.success }]}>-${discount.toFixed(2)}</Text>
+                        </View>
+                    )}
                     <View style={styles.billRow}>
                         <Text style={styles.billLabel}>Platform Fee</Text>
                         <Text style={styles.billValue}>${fee.toFixed(2)}</Text>
@@ -140,6 +198,17 @@ const styles = StyleSheet.create({
     billValue: { fontSize: 14, color: COLORS.primary, fontWeight: "700" },
     totalLabel: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
     totalValue: { fontSize: 18, fontWeight: "900", color: COLORS.secondary },
+    planContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 24, marginHorizontal: -4 },
+    planCard: { flex: 1, marginHorizontal: 4, backgroundColor: COLORS.white, borderRadius: 16, padding: 16, alignItems: "center", borderWidth: 2, borderColor: "transparent" },
+    planActive: { borderColor: COLORS.secondary, backgroundColor: COLORS.secondary + "05" },
+    planLabel: { fontSize: 13, fontWeight: "700", color: COLORS.gray[500], marginTop: 8 },
+    planLabelActive: { color: COLORS.secondary },
+    planPrice: { fontSize: 14, fontWeight: "800", color: COLORS.primary, marginTop: 4 },
+    couponSection: { marginBottom: 24 },
+    couponInputRow: { flexDirection: "row", alignItems: "center" },
+    couponInput: { flex: 1, backgroundColor: COLORS.white, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, borderWidth: 1, borderColor: COLORS.gray[200], fontSize: 14, color: COLORS.primary, fontWeight: "600" },
+    applyBtn: { backgroundColor: COLORS.primary, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, marginLeft: 10 },
+    applyBtnText: { color: COLORS.white, fontWeight: "700", fontSize: 14 },
 
     methodsGrid: { flexDirection: "row", flexWrap: "wrap", marginHorizontal: -8, marginBottom: 24 },
     methodCard: { width: "46%", margin: "2%", backgroundColor: COLORS.white, borderRadius: 20, padding: 16, alignItems: "center", borderWidth: 2, borderColor: "transparent", shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 2 },

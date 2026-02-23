@@ -67,6 +67,44 @@ export default function CoursePlayerScreen() {
     const [quizScore, setQuizScore] = useState<number | null>(null);
     const [isAssignmentSubmitted, setIsAssignmentSubmitted] = useState(false);
 
+    // Feature Logic States
+    const [noteText, setNoteText] = useState("");
+    const [pastNotes, setPastNotes] = useState<{ id: string, lesson: string, text: string, time: string }[]>([]);
+    const [discussionText, setDiscussionText] = useState("");
+    const [discussions, setDiscussions] = useState(MOCK_QA);
+    const [isDownloading, setIsDownloading] = useState(false);
+    const [isDownloaded, setIsDownloaded] = useState(false);
+
+    const handleSaveNote = () => {
+        if (!noteText.trim()) return;
+        const newNote = {
+            id: Date.now().toString(),
+            lesson: activeLesson.title,
+            text: noteText,
+            time: "2:45" // Mock timestamp
+        };
+        setPastNotes([newNote, ...pastNotes]);
+        setNoteText("");
+        Alert.alert("Success", "Note saved to this lesson.");
+    };
+
+    const handleDownload = () => {
+        setIsDownloading(true);
+        setTimeout(() => {
+            setIsDownloading(false);
+            setIsDownloaded(true);
+            Alert.alert("Complete", "This course is now available offline.");
+        }, 2000);
+    };
+
+    const handlePostDiscussion = () => {
+        if (!discussionText.trim()) return;
+        const newPost = { user: "Me", question: discussionText, reply: null as any };
+        const updated = { ...discussions, [activeLesson.id]: [newPost, ...(discussions[activeLesson.id as keyof typeof discussions] || [])] };
+        setDiscussions(updated as any);
+        setDiscussionText("");
+    };
+
     const isAllLessonsCompleted = useMemo(() => allLessons.every(l => l.completed), [allLessons]);
     const isQuizPassed = useMemo(() => quizScore !== null && (quizScore / 3) * 100 >= 70, [quizScore]);
 
@@ -189,32 +227,49 @@ export default function CoursePlayerScreen() {
                     </View>
 
                     <View style={styles.tabBar}>
-                        {["Lessons", "Overview", "Q&A", "Assessments"].map(tab => (
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll}>
+                            {["Lessons", "Overview", "Q&A", "Notes", "Assessments"].map(tab => (
+                                <TouchableOpacity
+                                    key={tab}
+                                    style={[styles.tab, activeTab === tab && styles.activeTab]}
+                                    onPress={() => setActiveTab(tab)}
+                                >
+                                    <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+                                </TouchableOpacity>
+                            ))}
                             <TouchableOpacity
-                                key={tab}
-                                style={[styles.tab, activeTab === tab && styles.activeTab]}
-                                onPress={() => setActiveTab(tab)}
+                                style={[styles.tab, styles.liveTab]}
+                                onPress={() => Alert.alert("Join Live Class", "The Zoom session will start at 8:00 PM. Link: zoom.us/j/12345678")}
                             >
-                                <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+                                <View style={styles.liveIndicator} />
+                                <Text style={[styles.tabText, { color: COLORS.danger }]}>Live</Text>
                             </TouchableOpacity>
-                        ))}
-                        <TouchableOpacity
-                            style={[styles.tab, styles.liveTab]}
-                            onPress={() => Alert.alert("Join Live Class", "The Zoom session will start at 8:00 PM. Link: zoom.us/j/12345678")}
-                        >
-                            <View style={styles.liveIndicator} />
-                            <Text style={[styles.tabText, { color: COLORS.danger }]}>Live</Text>
-                        </TouchableOpacity>
 
-                        {isAllCompleted && (
                             <TouchableOpacity
-                                style={[styles.tab, { backgroundColor: COLORS.success + "15" }]}
-                                onPress={() => setShowCompletion(true)}
+                                style={[styles.tab, { backgroundColor: isDownloaded ? COLORS.success + "10" : COLORS.primary + "10" }]}
+                                onPress={handleDownload}
+                                disabled={isDownloading || isDownloaded}
                             >
-                                <Ionicons name="ribbon" size={16} color={COLORS.success} />
-                                <Text style={[styles.tabText, { color: COLORS.success, marginLeft: 4 }]}>Certificate</Text>
+                                <Ionicons
+                                    name={isDownloaded ? "cloud-done" : isDownloading ? "sync" : "cloud-download-outline"}
+                                    size={16}
+                                    color={isDownloaded ? COLORS.success : COLORS.primary}
+                                />
+                                <Text style={[styles.tabText, { color: isDownloaded ? COLORS.success : COLORS.primary, marginLeft: 4 }]}>
+                                    {isDownloaded ? "Saved" : isDownloading ? "Download..." : "Download"}
+                                </Text>
                             </TouchableOpacity>
-                        )}
+
+                            {isAllCompleted && (
+                                <TouchableOpacity
+                                    style={[styles.tab, { backgroundColor: COLORS.success + "15" }]}
+                                    onPress={() => setShowCompletion(true)}
+                                >
+                                    <Ionicons name="ribbon" size={16} color={COLORS.success} />
+                                    <Text style={[styles.tabText, { color: COLORS.success, marginLeft: 4 }]}>Certificate</Text>
+                                </TouchableOpacity>
+                            )}
+                        </ScrollView>
                     </View>
 
                     {activeTab === "Lessons" && (
@@ -261,29 +316,87 @@ export default function CoursePlayerScreen() {
 
                     {activeTab === "Q&A" && (
                         <View style={styles.qaContainer}>
-                            <Text style={styles.qaTitle}>Questions for this Lesson</Text>
+                            <View style={styles.discussionHeader}>
+                                <Text style={styles.qaTitle}>Discussion Forum</Text>
+                                <TouchableOpacity style={styles.filterBtn}>
+                                    <Text style={styles.filterText}>Popular</Text>
+                                    <Ionicons name="chevron-down" size={14} color={COLORS.gray[500]} />
+                                </TouchableOpacity>
+                            </View>
                             <View style={styles.qaInputRow}>
-                                <TextInput placeholder="Ask a question..." style={styles.qaInput} />
-                                <TouchableOpacity style={styles.qaSend}>
+                                <TextInput
+                                    placeholder="Ask a question or start a discussion..."
+                                    style={styles.qaInput}
+                                    value={discussionText}
+                                    onChangeText={setDiscussionText}
+                                />
+                                <TouchableOpacity style={styles.qaSend} onPress={handlePostDiscussion}>
                                     <Ionicons name="send" size={20} color={COLORS.white} />
                                 </TouchableOpacity>
                             </View>
 
-                            {(MOCK_QA[activeLesson.id as keyof typeof MOCK_QA] || []).map((q, i) => (
+                            {(discussions[activeLesson.id as keyof typeof discussions] || []).map((q: any, i: number) => (
                                 <Card key={i} style={styles.qaCard}>
                                     <View style={styles.qaHeader}>
                                         <View style={styles.qaAvatar}><Text style={styles.qaAvatarText}>{q.user[0]}</Text></View>
-                                        <Text style={styles.qaUser}>{q.user}</Text>
+                                        <View style={{ flex: 1, marginLeft: 8 }}>
+                                            <Text style={styles.qaUser}>{q.user}</Text>
+                                            <Text style={styles.qaTime}>Just now</Text>
+                                        </View>
+                                        <TouchableOpacity style={styles.likeBtn}>
+                                            <Ionicons name="heart-outline" size={16} color={COLORS.gray[400]} />
+                                            <Text style={styles.likeText}>0</Text>
+                                        </TouchableOpacity>
                                     </View>
                                     <Text style={styles.qaQuestion}>{q.question}</Text>
                                     {q.reply && (
                                         <View style={styles.qaReply}>
                                             <Ionicons name="return-down-forward" size={16} color={COLORS.secondary} />
-                                            <Text style={styles.qaReplyText}>{q.reply}</Text>
+                                            <View style={styles.replyContent}>
+                                                <Text style={styles.qaReplyText}>{q.reply}</Text>
+                                            </View>
                                         </View>
                                     )}
                                 </Card>
                             ))}
+                        </View>
+                    )}
+
+                    {activeTab === "Notes" && (
+                        <View style={styles.notesContainer}>
+                            <View style={styles.notesHeader}>
+                                <Text style={styles.notesTitle}>My Private Notes</Text>
+                                <Text style={styles.notesSubtitle}>Taking notes for: {activeLesson.title}</Text>
+                            </View>
+                            <Card style={styles.notesCard}>
+                                <TextInput
+                                    multiline
+                                    placeholder="Take a note for this lesson..."
+                                    style={styles.notesInput}
+                                    placeholderTextColor={COLORS.gray[400]}
+                                    value={noteText}
+                                    onChangeText={setNoteText}
+                                />
+                                <View style={styles.notesFooter}>
+                                    <Text style={styles.timestampText}>Auto-timestamp: 02:45</Text>
+                                    <TouchableOpacity style={styles.saveNoteBtn} onPress={handleSaveNote}>
+                                        <Text style={styles.saveNoteText}>Save Note</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </Card>
+                            <View style={styles.pastNotes}>
+                                <Text style={styles.pastNotesTitle}>Recent Notes</Text>
+                                {pastNotes.length === 0 ? (
+                                    <Text style={{ color: COLORS.gray[400], fontStyle: 'italic', marginTop: 10 }}>No notes saved for this course yet.</Text>
+                                ) : (
+                                    pastNotes.map((note) => (
+                                        <Card key={note.id} style={styles.pastNoteItem}>
+                                            <Text style={styles.pastNoteTag}>{note.lesson} • {note.time}</Text>
+                                            <Text style={styles.pastNoteText}>{note.text}</Text>
+                                        </Card>
+                                    ))
+                                )}
+                            </View>
                         </View>
                     )}
 
@@ -439,7 +552,8 @@ const styles = StyleSheet.create({
     completeBtnText: { color: COLORS.white, fontSize: 12, fontWeight: "700", marginLeft: 4 },
     alreadyCompletedBadge: { flexDirection: "row", alignItems: "center", backgroundColor: COLORS.success + "10", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
     alreadyCompletedText: { fontSize: 13, fontWeight: "800", color: COLORS.success, marginLeft: 6 },
-    tabBar: { flexDirection: "row", paddingHorizontal: 16, paddingVertical: 12, backgroundColor: COLORS.gray[50] },
+    tabBar: { backgroundColor: COLORS.gray[50], paddingVertical: 12 },
+    tabScroll: { paddingHorizontal: 16 },
     tab: { paddingHorizontal: 16, paddingVertical: 8, marginRight: 8, borderRadius: 20, flexDirection: "row", alignItems: "center" },
     activeTab: { backgroundColor: COLORS.white, elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
     tabText: { fontSize: 13, fontWeight: "600", color: COLORS.gray[500] },
@@ -461,7 +575,10 @@ const styles = StyleSheet.create({
     activeLessonTitle: { color: COLORS.secondary },
     lessonDuration: { fontSize: 12, color: COLORS.gray[400], marginTop: 4, fontWeight: "500" },
     qaContainer: { padding: 20 },
-    qaTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary, marginBottom: 16 },
+    discussionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
+    qaTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
+    filterBtn: { flexDirection: "row", alignItems: "center", backgroundColor: COLORS.white, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: COLORS.gray[100] },
+    filterText: { fontSize: 12, color: COLORS.gray[600], fontWeight: "600", marginRight: 4 },
     qaInputRow: { flexDirection: "row", marginBottom: 24 },
     qaInput: { flex: 1, backgroundColor: COLORS.gray[50], padding: 12, borderRadius: 12, borderWidth: 1, borderColor: COLORS.gray[100] },
     qaSend: { backgroundColor: COLORS.secondary, padding: 12, borderRadius: 12, marginLeft: 8, justifyContent: "center" },
@@ -469,10 +586,29 @@ const styles = StyleSheet.create({
     qaHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
     qaAvatar: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.secondary + "20", alignItems: "center", justifyContent: "center" },
     qaAvatarText: { fontSize: 10, fontWeight: "800", color: COLORS.secondary },
-    qaUser: { fontSize: 13, fontWeight: "700", color: COLORS.primary, marginLeft: 8 },
+    qaUser: { fontSize: 13, fontWeight: "700", color: COLORS.primary },
+    qaTime: { fontSize: 11, color: COLORS.gray[400], marginTop: 1 },
+    likeBtn: { flexDirection: "row", alignItems: "center", backgroundColor: COLORS.gray[50], paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
+    likeText: { fontSize: 11, fontWeight: "700", color: COLORS.gray[500], marginLeft: 4 },
     qaQuestion: { fontSize: 14, color: COLORS.gray[700], lineHeight: 20 },
-    qaReply: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.gray[50], paddingTop: 10, flexDirection: "row", alignItems: "center" },
-    qaReplyText: { fontSize: 13, color: COLORS.secondary, marginLeft: 8, fontWeight: "500" },
+    qaReply: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.gray[50], paddingTop: 10, flexDirection: "row" },
+    replyContent: { flex: 1, marginLeft: 8 },
+    qaReplyText: { fontSize: 13, color: COLORS.secondary, fontWeight: "500" },
+    notesContainer: { padding: 20 },
+    notesHeader: { marginBottom: 16 },
+    notesTitle: { fontSize: 18, fontWeight: "800", color: COLORS.primary },
+    notesSubtitle: { fontSize: 12, color: COLORS.gray[400], marginTop: 2 },
+    notesCard: { padding: 16, marginBottom: 24 },
+    notesInput: { fontSize: 14, color: COLORS.primary, lineHeight: 22, minHeight: 120, textAlignVertical: "top" },
+    notesFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: COLORS.gray[50] },
+    timestampText: { fontSize: 11, color: COLORS.gray[400], fontWeight: "600" },
+    saveNoteBtn: { backgroundColor: COLORS.secondary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 },
+    saveNoteText: { color: COLORS.white, fontWeight: "700", fontSize: 13 },
+    pastNotes: { marginTop: 8 },
+    pastNotesTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary, marginBottom: 12 },
+    pastNoteItem: { padding: 16, marginBottom: 12 },
+    pastNoteTag: { fontSize: 11, fontWeight: "700", color: COLORS.secondary, marginBottom: 8, textTransform: "uppercase" },
+    pastNoteText: { fontSize: 13, color: COLORS.gray[600], lineHeight: 18 },
     overviewContainer: { padding: 20 },
     overviewTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary, marginBottom: 12 },
     overviewText: { fontSize: 14, color: COLORS.gray[600], lineHeight: 22 },
