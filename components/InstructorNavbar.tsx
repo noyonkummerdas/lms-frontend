@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../constants/colors";
 import { useSidebar } from "../contexts/SidebarContext";
 
@@ -11,8 +12,12 @@ export default function InstructorNavbar({ title }: InstructorNavbarProps) {
 
   return (
     <View style={styles.navbar}>
-      <TouchableOpacity onPress={() => sidebar?.toggle?.()} style={styles.iconBtn}>
-        <Text style={styles.icon}>☰</Text>
+      <TouchableOpacity
+        onPress={() => sidebar?.toggle?.()}
+        style={styles.iconBtn}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="menu" size={24} color={COLORS.white} />
       </TouchableOpacity>
       <Text style={styles.title}>{title}</Text>
       <View style={styles.placeholder} />
@@ -27,9 +32,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
+    height: 60,
   },
-  iconBtn: { paddingVertical: 4, paddingHorizontal: 4 },
-  icon: { color: COLORS.white, fontSize: 20 },
-  title: { color: COLORS.white, fontSize: 18, fontWeight: "700", flex: 1, textAlign: "center" },
-  placeholder: { width: 24 },
+  iconBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  title: {
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: "800",
+    flex: 1,
+    textAlign: "center"
+  },
+  placeholder: { width: 40 },
 });

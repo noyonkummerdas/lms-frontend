@@ -1,23 +1,24 @@
 import { useState } from "react";
 import { Stack, useRouter } from "expo-router";
 import { useDispatch } from "react-redux";
+import { Ionicons } from "@expo/vector-icons";
 import { Sidebar } from "../../../components";
 import { SidebarProvider } from "../../../contexts/SidebarContext";
 import { logout } from "../../../store/slices/authSlice";
 import { COLORS } from "../../../constants/colors";
 
 const ADMIN_MENU = [
-  { label: "Admin Dashboard", href: "/admin" },
-  { label: "User Management", href: "/admin/users" },
-  { label: "Role Management", href: "/admin/roles" },
-  { label: "Course Management", href: "/admin/courses" },
-  { label: "Course Approval", href: "/admin/approval" },
-  { label: "Category Management", href: "/admin/categories" },
-  { label: "Payments & Revenue", href: "/admin/payments" },
-  { label: "Reports & Analytics", href: "/admin/reports" },
-  { label: "Platform Settings", href: "/admin/settings" },
-  { label: "Profile", href: "/admin/profile" },
-  { label: "Logout", href: "__logout__" },
+  { label: "Admin Dashboard", href: "/admin", icon: "grid-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "User Management", href: "/admin/users", icon: "people-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "Role Management", href: "/admin/roles", icon: "shield-checkmark-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "Course Management", href: "/admin/courses", icon: "book-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "Course Approval", href: "/admin/approval", icon: "checkmark-circle-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "Category Management", href: "/admin/categories", icon: "list-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "Payments & Revenue", href: "/admin/payments", icon: "cash-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "Reports & Analytics", href: "/admin/reports", icon: "bar-chart-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "Platform Settings", href: "/admin/settings", icon: "settings-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "Profile", href: "/admin/profile", icon: "person-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "Logout", href: "__logout__", icon: "log-out-outline" as keyof typeof Ionicons.glyphMap },
 ];
 
 export default function AdminLayout() {
@@ -37,6 +38,7 @@ export default function AdminLayout() {
 
   const menuItems = ADMIN_MENU.map((m) => ({
     label: m.label,
+    icon: m.icon,
     onPress: () => handleMenuPress(m.href),
   }));
 

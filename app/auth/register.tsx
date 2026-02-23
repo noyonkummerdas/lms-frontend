@@ -1,6 +1,8 @@
-import { View, Text, ScrollView, Alert, StyleSheet, TouchableOpacity } from "react-native";
-import { useState } from "react";
+import { View, Text, ScrollView, Alert, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Platform } from "react-native";
+import { useState, useRef, useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
 import { Button, Input, Card, Navbar } from "../../components";
 import { useRegisterMutation } from "../../store/api/authApi";
 import { setUser, setToken } from "../../store/slices/authSlice";
@@ -22,6 +24,16 @@ export default function RegisterScreen() {
   const [role, setRole] = useState<RegisterRole>("student");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
+
   const handleRegister = async () => {
     if (!name.trim()) {
       setErrors((e) => ({ ...e, name: "Name is required" }));
@@ -42,10 +54,11 @@ export default function RegisterScreen() {
       const result = await register({ name: name.trim(), email, password, role }).unwrap();
       dispatch(setUser(result.user));
       dispatch(setToken(result.token));
-      // Redirect directly by role (avoids race with Redux update)
+
       if (result.user.role === "admin") router.replace("/admin" as any);
       else if (result.user.role === "instructor") router.replace("/instructor" as any);
       else router.replace("/student" as any);
+
       Alert.alert("Success", `Welcome, ${result.user.name}!`);
     } catch (error: any) {
       Alert.alert("Registration Failed", error?.data?.message || error?.message || "Could not create account");
@@ -53,133 +66,250 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={styles.screen}>
-      <Navbar title="LMS - Create Account" showMenu={false} />
-
-      <ScrollView style={styles.scroll}>
-        <Card style={styles.card}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Sign up as Teacher or Student</Text>
-        </Card>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>I want to join as</Text>
-          <View style={styles.roleRow}>
-            <TouchableOpacity
-              style={[styles.roleBtn, role === "instructor" && styles.roleBtnActive]}
-              onPress={() => setRole("instructor")}
-            >
-              <Text style={[styles.roleIcon, role === "instructor" && styles.roleTextActive]}>👨‍🏫</Text>
-              <Text style={[styles.roleText, role === "instructor" && styles.roleTextActive]}>Teacher</Text>
-              <Text style={[styles.roleHint, role === "instructor" && styles.roleTextActive]}>Create & teach courses</Text>
+    <SafeAreaView style={styles.screen} edges={["top"]}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          style={styles.scroll}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
+              <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
             </TouchableOpacity>
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>Join our learning community today</Text>
+          </Animated.View>
+
+          <View style={styles.roleContainer}>
+            <Text style={styles.sectionLabel}>I want to join as a:</Text>
+            <View style={styles.roleRow}>
+              <TouchableOpacity
+                style={[styles.roleCard, role === "student" && styles.roleCardActive]}
+                onPress={() => setRole("student")}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.roleIconBox, role === "student" && styles.roleIconBoxActive]}>
+                  <Ionicons name="school" size={28} color={role === "student" ? COLORS.white : COLORS.gray[400]} />
+                </View>
+                <Text style={[styles.roleName, role === "student" && styles.roleNameActive]}>Student</Text>
+                {role === "student" && <Ionicons name="checkmark-circle" size={20} color={COLORS.secondary} style={styles.checkIcon} />}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.roleCard, role === "instructor" && styles.roleCardActive]}
+                onPress={() => setRole("instructor")}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.roleIconBox, role === "instructor" && styles.roleIconBoxActive]}>
+                  <Ionicons name="briefcase" size={28} color={role === "instructor" ? COLORS.white : COLORS.gray[400]} />
+                </View>
+                <Text style={[styles.roleName, role === "instructor" && styles.roleNameActive]}>Instructor</Text>
+                {role === "instructor" && <Ionicons name="checkmark-circle" size={20} color={COLORS.secondary} style={styles.checkIcon} />}
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={styles.form}>
+            <View style={styles.field}>
+              <Text style={styles.label}>Full Name</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="person-outline" size={20} color={COLORS.gray[400]} style={styles.inputIcon} />
+                <Input
+                  placeholder="John Doe"
+                  value={name}
+                  onChangeText={(text) => {
+                    setName(text);
+                    setErrors((e) => ({ ...e, name: "" }));
+                  }}
+                  style={styles.input}
+                />
+              </View>
+              {errors.name && <Text style={styles.error}>{errors.name}</Text>}
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Email Address</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="mail-outline" size={20} color={COLORS.gray[400]} style={styles.inputIcon} />
+                <Input
+                  placeholder="john@example.com"
+                  value={email}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    setErrors((e) => ({ ...e, email: "" }));
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  style={styles.input}
+                />
+              </View>
+              {errors.email && <Text style={styles.error}>{errors.email}</Text>}
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Password</Text>
+              <View style={styles.inputWrapper}>
+                <Ionicons name="lock-closed-outline" size={20} color={COLORS.gray[400]} style={styles.inputIcon} />
+                <Input
+                  placeholder="Create a password"
+                  value={password}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    setErrors((e) => ({ ...e, password: "" }));
+                  }}
+                  secureTextEntry
+                  style={styles.input}
+                />
+              </View>
+              <Text style={styles.fieldHint}>Must be at least 6 characters</Text>
+              {errors.password && <Text style={styles.error}>{errors.password}</Text>}
+            </View>
+
+            <Button
+              label={isLoading ? "Creating Account..." : "Create Account"}
+              onPress={handleRegister}
+              disabled={isLoading}
+              variant="primary"
+              size="lg"
+              style={styles.registerBtn}
+            />
+
             <TouchableOpacity
-              style={[styles.roleBtn, role === "student" && styles.roleBtnActive]}
-              onPress={() => setRole("student")}
+              style={styles.loginLink}
+              onPress={() => router.push("/auth/login")}
+              activeOpacity={0.7}
             >
-              <Text style={[styles.roleIcon, role === "student" && styles.roleTextActive]}>📚</Text>
-              <Text style={[styles.roleText, role === "student" && styles.roleTextActive]}>Student</Text>
-              <Text style={[styles.roleHint, role === "student" && styles.roleTextActive]}>Learn & earn certificates</Text>
+              <Text style={styles.loginText}>
+                Already have an account? <Text style={styles.loginLinkBold}>Sign In</Text>
+              </Text>
             </TouchableOpacity>
           </View>
-        </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>Name</Text>
-          <Input
-            placeholder="Your name"
-            value={name}
-            onChangeText={(text) => {
-              setName(text);
-              setErrors((e) => ({ ...e, name: "" }));
-            }}
-          />
-          {errors.name && <Text style={styles.error}>{errors.name}</Text>}
-        </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>Email</Text>
-          <Input
-            placeholder="email@example.com"
-            value={email}
-            onChangeText={(text) => {
-              setEmail(text);
-              setErrors((e) => ({ ...e, email: "" }));
-            }}
-            keyboardType="email-address"
-          />
-          {errors.email && <Text style={styles.error}>{errors.email}</Text>}
-        </View>
-
-        <View style={styles.fieldLast}>
-          <Text style={styles.label}>Password</Text>
-          <Text style={styles.hint}>At least 6 characters (numbers or text)</Text>
-          <Input
-            placeholder="••••••••"
-            value={password}
-            onChangeText={(text) => {
-              setPassword(text);
-              setErrors((e) => ({ ...e, password: "" }));
-            }}
-            secureTextEntry
-          />
-          {errors.password && <Text style={styles.error}>{errors.password}</Text>}
-        </View>
-
-        <Button
-          label={isLoading ? "Creating account..." : "Create Account"}
-          onPress={handleRegister}
-          disabled={isLoading}
-          variant="primary"
-          size="md"
-          style={styles.btn}
-        />
-
-        <Button
-          label="Already have an account? Login"
-          onPress={() => router.push("/auth/login")}
-          variant="primary"
-          size="md"
-        />
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.white },
-  scroll: { flex: 1, padding: 16 },
-  card: { marginTop: 32, marginBottom: 24 },
+  screen: { flex: 1, backgroundColor: COLORS.light },
+  scroll: { flex: 1 },
+  scrollContent: { padding: 24, paddingBottom: 40 },
+  header: { marginBottom: 32 },
+  backBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: COLORS.white,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
+    fontSize: 28,
+    fontWeight: "800",
     color: COLORS.primary,
-    textAlign: "center",
     marginBottom: 8,
   },
-  subtitle: { textAlign: "center", color: COLORS.gray[600] },
-  field: { marginBottom: 16 },
-  fieldLast: { marginBottom: 24 },
-  label: { fontSize: 14, fontWeight: "600", color: COLORS.primary, marginBottom: 8 },
-  hint: { fontSize: 12, color: COLORS.gray[500], marginBottom: 8 },
-  error: { color: COLORS.danger, fontSize: 12, marginTop: 4 },
-  btn: { marginBottom: 16 },
-  roleRow: { flexDirection: "row" },
-  roleBtn: {
-    flex: 1,
-    marginHorizontal: 4,
+  subtitle: {
+    fontSize: 16,
+    color: COLORS.gray[500],
+  },
+  roleContainer: { marginBottom: 32 },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: COLORS.primary,
+    marginBottom: 16,
+    marginLeft: 4,
+  },
+  roleRow: { flexDirection: "row", justifyContent: "space-between" },
+  roleCard: {
+    flex: 0.48,
+    backgroundColor: COLORS.white,
+    borderRadius: 16,
     padding: 16,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: COLORS.border,
     alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    shadowColor: COLORS.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
   },
-  roleBtnActive: {
+  roleCardActive: {
     borderColor: COLORS.secondary,
-    backgroundColor: "rgba(99, 102, 241, 0.1)",
+    backgroundColor: COLORS.white,
   },
-  roleIcon: { fontSize: 32, marginBottom: 8, color: COLORS.gray[500] },
-  roleText: { fontSize: 16, fontWeight: "600", color: COLORS.primary },
-  roleHint: { fontSize: 12, color: COLORS.gray[500], marginTop: 4 },
-  roleTextActive: { color: COLORS.secondary },
+  roleIconBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: COLORS.gray[100],
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+  roleIconBoxActive: {
+    backgroundColor: COLORS.secondary,
+  },
+  roleName: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.gray[500],
+  },
+  roleNameActive: {
+    color: COLORS.secondary,
+  },
+  checkIcon: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+  },
+  form: { width: "100%" },
+  field: { marginBottom: 20 },
+  label: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: COLORS.primary,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingHorizontal: 12,
+  },
+  inputIcon: { marginRight: 10 },
+  input: { flex: 1, height: 50, borderWidth: 0, paddingLeft: 0 },
+  fieldHint: { fontSize: 12, color: COLORS.gray[500], marginTop: 6, marginLeft: 4 },
+  error: { color: COLORS.danger, fontSize: 12, marginTop: 4, marginLeft: 12 },
+  registerBtn: {
+    borderRadius: 12,
+    height: 56,
+    justifyContent: "center",
+    backgroundColor: COLORS.secondary,
+    marginTop: 10,
+    shadowColor: COLORS.secondary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  loginLink: { alignItems: "center", marginTop: 24 },
+  loginText: { color: COLORS.gray[600], fontSize: 15 },
+  loginLinkBold: { color: COLORS.secondary, fontWeight: "700" },
 });

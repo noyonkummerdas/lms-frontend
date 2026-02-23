@@ -25,17 +25,22 @@ export default function Dropdown({
 
   return (
     <>
-      <TouchableOpacity style={[styles.trigger, style]}>
+      <TouchableOpacity style={[styles.trigger, style]} activeOpacity={0.7} onPress={() => { }}>
         <Text style={styles.triggerText}>{selectedLabel}</Text>
       </TouchableOpacity>
 
       <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
-        <View style={styles.modalOverlay}>
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={onClose}
+        >
           <View style={styles.modalContent}>
             {options.map((option) => (
               <TouchableOpacity
                 key={option.value}
                 style={styles.option}
+                activeOpacity={0.7}
                 onPress={() => {
                   onSelect(option.value);
                   onClose?.();
@@ -52,7 +57,7 @@ export default function Dropdown({
               </TouchableOpacity>
             ))}
           </View>
-        </View>
+        </TouchableOpacity>
       </Modal>
     </>
   );
