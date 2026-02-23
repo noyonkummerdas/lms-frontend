@@ -44,7 +44,16 @@ export default function CoursePlayerScreen() {
         }
     };
 
-    const isAllCompleted = useMemo(() => lessons.every(l => l.completed), [lessons]);
+    // New Completion Flow States
+    const [quizScore, setQuizScore] = useState<number | null>(null);
+    const [isAssignmentSubmitted, setIsAssignmentSubmitted] = useState(false);
+
+    const isAllLessonsCompleted = useMemo(() => lessons.every(l => l.completed), [lessons]);
+    const isQuizPassed = useMemo(() => quizScore !== null && (quizScore / 3) * 100 >= 70, [quizScore]);
+
+    const isAllCompleted = useMemo(() =>
+        isAllLessonsCompleted && isQuizPassed && isAssignmentSubmitted,
+        [isAllLessonsCompleted, isQuizPassed, isAssignmentSubmitted]);
 
     // Simulate video progress when playing
     useEffect(() => {
@@ -117,8 +126,9 @@ export default function CoursePlayerScreen() {
                     <View style={styles.progressTrack}>
                         <View style={[styles.progressFill, { width: `${videoProgress}%` }]} />
                     </View>
+
                     <Text style={[styles.timeText, isFullscreen && { fontSize: 14 }]}>
-                        {videoProgress === 100 ? activeLesson.duration : "04:12"} / {activeLesson.duration}
+                        {videoProgress === 100 ? activeLesson.duration : `${Math.floor((videoProgress / 100) * parseInt(activeLesson.duration.split(':')[0]))}:${(Math.floor((videoProgress / 100) * 60)).toString().padStart(2, '0')}`} / {activeLesson.duration}
                     </Text>
 
                     <TouchableOpacity style={[styles.controlBtn, { marginLeft: 12 }]} onPress={toggleFullscreen}>
@@ -135,17 +145,22 @@ export default function CoursePlayerScreen() {
                                 <Text style={styles.activeTitle}>{activeLesson.title}</Text>
                                 <Text style={styles.courseName}>{title || "Full Course Curriculum"}</Text>
                             </View>
-                            {!activeLesson.completed && (
+                            {!activeLesson.completed ? (
                                 <TouchableOpacity
                                     style={[
                                         styles.completeBtn,
-                                        { backgroundColor: videoProgress < 65 ? 'black' : videoProgress < 100 ? 'tomato' : '#007AFF' }
+                                        { backgroundColor: videoProgress < 65 ? 'black' : videoProgress < 100 ? 'tomato' : COLORS.secondary }
                                     ]}
                                     onPress={handleCompleteLesson}
                                 >
                                     <Ionicons name="checkmark-circle" size={20} color={COLORS.white} />
-                                    <Text style={styles.completeBtnText}>Complete</Text>
+                                    <Text style={styles.completeBtnText}>Complete Lesson</Text>
                                 </TouchableOpacity>
+                            ) : (
+                                <View style={styles.alreadyCompletedBadge}>
+                                    <Ionicons name="checkmark-done-circle" size={24} color={COLORS.success} />
+                                    <Text style={styles.alreadyCompletedText}>Finished</Text>
+                                </View>
                             )}
                         </View>
                     </View>
@@ -243,27 +258,63 @@ export default function CoursePlayerScreen() {
 
                     {activeTab === "Assessments" && (
                         <View style={styles.assessmentList}>
-                            <TouchableOpacity style={styles.assessmentCard} onPress={() => router.push(`/courses/${id}/quiz`)}>
-                                <View style={[styles.assessmentIcon, { backgroundColor: COLORS.secondary + "15" }]}>
-                                    <Ionicons name="help-circle" size={24} color={COLORS.secondary} />
+                            <TouchableOpacity
+                                style={[styles.assessmentCard, isQuizPassed && styles.assessmentCardDone]}
+                                onPress={() => {
+                                    if (!isAllLessonsCompleted) {
+                                        Alert.alert("Locked", "Finish all video lessons first!");
+                                        return;
+                                    }
+                                    // Simulate finishing quiz with 3/3
+                                    setQuizScore(3);
+                                    Alert.alert("Quiz Passed", "Score: 3/3 (100%)");
+                                }}
+                            >
+                                <View style={[styles.assessmentIcon, { backgroundColor: isQuizPassed ? COLORS.success + "15" : COLORS.secondary + "15" }]}>
+                                    <Ionicons name={isQuizPassed ? "checkmark-circle" : "help-circle"} size={24} color={isQuizPassed ? COLORS.success : COLORS.secondary} />
                                 </View>
                                 <View style={styles.assessmentInfo}>
                                     <Text style={styles.assessmentName}>Module Quiz</Text>
-                                    <Text style={styles.assessmentMeta}>3 Questions • 5 Minutes</Text>
+                                    <Text style={styles.assessmentMeta}>{isQuizPassed ? "Result: Passed" : "3 Questions • 5 Minutes"}</Text>
                                 </View>
                                 <Ionicons name="chevron-forward" size={20} color={COLORS.gray[300]} />
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.assessmentCard} onPress={() => router.push(`/courses/${id}/assignment`)}>
-                                <View style={[styles.assessmentIcon, { backgroundColor: COLORS.warning + "15" }]}>
-                                    <Ionicons name="document-text" size={24} color={COLORS.warning} />
+                            <TouchableOpacity
+                                style={[styles.assessmentCard, isAssignmentSubmitted && styles.assessmentCardDone]}
+                                onPress={() => {
+                                    if (!isQuizPassed) {
+                                        Alert.alert("Locked", "Pass the Module Quiz first!");
+                                        return;
+                                    }
+                                    setIsAssignmentSubmitted(true);
+                                    Alert.alert("Success", "Assignment submitted successfully!");
+                                }}
+                            >
+                                <View style={[styles.assessmentIcon, { backgroundColor: isAssignmentSubmitted ? COLORS.success + "15" : COLORS.warning + "15" }]}>
+                                    <Ionicons name={isAssignmentSubmitted ? "checkmark-circle" : "document-text"} size={24} color={isAssignmentSubmitted ? COLORS.success : COLORS.warning} />
                                 </View>
                                 <View style={styles.assessmentInfo}>
                                     <Text style={styles.assessmentName}>Assignment Submission</Text>
-                                    <Text style={styles.assessmentMeta}>Practical Task • Due Oct 30</Text>
+                                    <Text style={styles.assessmentMeta}>{isAssignmentSubmitted ? "Status: Submitted" : "Practical Task • Due Oct 30"}</Text>
                                 </View>
                                 <Ionicons name="chevron-forward" size={20} color={COLORS.gray[300]} />
                             </TouchableOpacity>
+
+                            {/* Score Summary Box */}
+                            {(isQuizPassed || isAssignmentSubmitted) && (
+                                <View style={styles.scoreSummaryBox}>
+                                    <Text style={styles.scoreSummaryTitle}>Final Score Board</Text>
+                                    <View style={styles.scoreRow}>
+                                        <Text style={styles.scoreLabel}>Quiz Performance:</Text>
+                                        <Text style={styles.scoreValueText}>{isQuizPassed ? "100%" : "---"}</Text>
+                                    </View>
+                                    <View style={styles.scoreRow}>
+                                        <Text style={styles.scoreLabel}>Assignment Status:</Text>
+                                        <Text style={styles.scoreValueText}>{isAssignmentSubmitted ? "Submitted" : "Pending"}</Text>
+                                    </View>
+                                </View>
+                            )}
                         </View>
                     )}
 
@@ -355,6 +406,8 @@ const styles = StyleSheet.create({
     completeBtn: { flexDirection: "row", alignItems: "center", backgroundColor: COLORS.secondary, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
     disabledBtn: { backgroundColor: COLORS.gray[300], opacity: 0.6 },
     completeBtnText: { color: COLORS.white, fontSize: 12, fontWeight: "700", marginLeft: 4 },
+    alreadyCompletedBadge: { flexDirection: "row", alignItems: "center", backgroundColor: COLORS.success + "10", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
+    alreadyCompletedText: { fontSize: 13, fontWeight: "800", color: COLORS.success, marginLeft: 6 },
     tabBar: { flexDirection: "row", paddingHorizontal: 16, paddingVertical: 12, backgroundColor: COLORS.gray[50] },
     tab: { paddingHorizontal: 16, paddingVertical: 8, marginRight: 8, borderRadius: 20, flexDirection: "row", alignItems: "center" },
     activeTab: { backgroundColor: COLORS.white, elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
@@ -399,6 +452,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: COLORS.gray[100]
     },
+    assessmentCardDone: { borderColor: COLORS.success, backgroundColor: COLORS.success + "05" },
     assessmentIcon: {
         width: 48,
         height: 48,
@@ -410,6 +464,11 @@ const styles = StyleSheet.create({
     assessmentInfo: { flex: 1 },
     assessmentName: { fontSize: 15, fontWeight: "700", color: COLORS.primary },
     assessmentMeta: { fontSize: 12, color: COLORS.gray[500], marginTop: 4 },
+    scoreSummaryBox: { marginTop: 24, padding: 20, backgroundColor: COLORS.gray[50], borderRadius: 20, borderWidth: 1, borderColor: COLORS.gray[100] },
+    scoreSummaryTitle: { fontSize: 16, fontWeight: "900", color: COLORS.primary, marginBottom: 16 },
+    scoreRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
+    scoreLabel: { fontSize: 14, color: COLORS.gray[500], fontWeight: "600" },
+    scoreValueText: { fontSize: 14, color: COLORS.primary, fontWeight: "800" },
     modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center", padding: 20 },
     modalCard: { width: "100%", alignItems: "center", padding: 32 },
     successIconBox: { width: 80, height: 80, backgroundColor: COLORS.warning + "15", borderRadius: 40, alignItems: "center", justifyContent: "center", marginBottom: 20 },
