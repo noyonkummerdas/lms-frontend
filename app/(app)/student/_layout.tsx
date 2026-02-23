@@ -10,6 +10,7 @@ import { COLORS } from "../../../constants/colors";
 
 const SIDEBAR_MENU = [
   { label: "Dashboard", href: "/student", icon: "grid-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "My Wishlist", href: "/student/wishlist", icon: "heart-outline" as keyof typeof Ionicons.glyphMap },
   { label: "My Certificates", href: "/student/certificates", icon: "ribbon-outline" as keyof typeof Ionicons.glyphMap },
   { label: "Edit Profile", href: "/student/edit-profile", icon: "person-outline" as keyof typeof Ionicons.glyphMap },
   { label: "Platform Settings", href: "settings", icon: "settings-outline" as keyof typeof Ionicons.glyphMap },
@@ -119,6 +120,12 @@ export default function StudentLayout() {
         />
         <Tabs.Screen
           name="certificates"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="wishlist"
           options={{
             href: null,
           }}
