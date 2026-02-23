@@ -48,7 +48,7 @@ export default function CoursePlayerScreen() {
 
     // Simulate video progress when playing
     useEffect(() => {
-        let interval: NodeJS.Timeout;
+        let interval: any;
         if (isPlaying && videoProgress < 100) {
             interval = setInterval(() => {
                 setVideoProgress(prev => Math.min(prev + 5, 100));
@@ -151,7 +151,7 @@ export default function CoursePlayerScreen() {
                     </View>
 
                     <View style={styles.tabBar}>
-                        {["Lessons", "Overview", "Q&A"].map(tab => (
+                        {["Lessons", "Overview", "Q&A", "Assessments"].map(tab => (
                             <TouchableOpacity
                                 key={tab}
                                 style={[styles.tab, activeTab === tab && styles.activeTab]}
@@ -167,6 +167,16 @@ export default function CoursePlayerScreen() {
                             <View style={styles.liveIndicator} />
                             <Text style={[styles.tabText, { color: COLORS.danger }]}>Live</Text>
                         </TouchableOpacity>
+
+                        {isAllCompleted && (
+                            <TouchableOpacity
+                                style={[styles.tab, { backgroundColor: COLORS.success + "15" }]}
+                                onPress={() => setShowCompletion(true)}
+                            >
+                                <Ionicons name="ribbon" size={16} color={COLORS.success} />
+                                <Text style={[styles.tabText, { color: COLORS.success, marginLeft: 4 }]}>Certificate</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
 
                     {activeTab === "Lessons" && (
@@ -231,6 +241,32 @@ export default function CoursePlayerScreen() {
                         </View>
                     )}
 
+                    {activeTab === "Assessments" && (
+                        <View style={styles.assessmentList}>
+                            <TouchableOpacity style={styles.assessmentCard} onPress={() => router.push(`/courses/${id}/quiz`)}>
+                                <View style={[styles.assessmentIcon, { backgroundColor: COLORS.secondary + "15" }]}>
+                                    <Ionicons name="help-circle" size={24} color={COLORS.secondary} />
+                                </View>
+                                <View style={styles.assessmentInfo}>
+                                    <Text style={styles.assessmentName}>Module Quiz</Text>
+                                    <Text style={styles.assessmentMeta}>3 Questions • 5 Minutes</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color={COLORS.gray[300]} />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={styles.assessmentCard} onPress={() => router.push(`/courses/${id}/assignment`)}>
+                                <View style={[styles.assessmentIcon, { backgroundColor: COLORS.warning + "15" }]}>
+                                    <Ionicons name="document-text" size={24} color={COLORS.warning} />
+                                </View>
+                                <View style={styles.assessmentInfo}>
+                                    <Text style={styles.assessmentName}>Assignment Submission</Text>
+                                    <Text style={styles.assessmentMeta}>Practical Task • Due Oct 30</Text>
+                                </View>
+                                <Ionicons name="chevron-forward" size={20} color={COLORS.gray[300]} />
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
                     {activeTab === "Overview" && (
                         <View style={styles.overviewContainer}>
                             <Text style={styles.overviewTitle}>About this lesson</Text>
@@ -245,23 +281,39 @@ export default function CoursePlayerScreen() {
                 </ScrollView>
             )}
 
-            <Modal visible={showCompletion} transparent animationType="fade">
+            <Modal visible={showCompletion} transparent animationType="slide">
                 <View style={styles.modalOverlay}>
                     <Card style={styles.modalCard}>
                         <View style={styles.successIconBox}>
-                            <Ionicons name="trophy" size={60} color={COLORS.warning} />
+                            <Ionicons name="ribbon" size={60} color={COLORS.success} />
                         </View>
-                        <Text style={styles.modalTitle}>Congratulations!</Text>
-                        <Text style={styles.modalSub}>You have successfully completed</Text>
+                        <Text style={styles.modalTitle}>Course Completed!</Text>
+                        <Text style={styles.modalSub}>You have successfully mastered</Text>
                         <Text style={styles.modalCourseName}>{title || "the course"}</Text>
+
+                        {/* Styled Certificate Preview */}
+                        <View style={styles.certPreviewBox}>
+                            <View style={styles.certBorder}>
+                                <Ionicons name="medal" size={40} color={COLORS.warning} />
+                                <Text style={styles.certVerifyName}>CERTIFICATE OF COMPLETION</Text>
+                                <View style={styles.certDivider} />
+                                <Text style={styles.certUserName}>John Doe</Text>
+                                <Text style={styles.certCourseTitle}>{title || "Full Stack Web Development"}</Text>
+                                <View style={styles.certFooter}>
+                                    <Text style={styles.certId}>ID: TECH-LMS-2024-X12</Text>
+                                    <Text style={styles.certDate}>Oct 23, 2024</Text>
+                                </View>
+                            </View>
+                        </View>
+
                         <Button
                             label="Download Certificate"
-                            onPress={() => Alert.alert("Download", "Your certificate is being prepared...")}
+                            onPress={() => Alert.alert("Download", "Your high-resolution PDF certificate is being prepared...")}
                             variant="primary"
                             style={styles.modalBtn}
                         />
                         <TouchableOpacity style={styles.closeModal} onPress={() => setShowCompletion(false)}>
-                            <Text style={styles.closeModalText}>Back to Learning</Text>
+                            <Text style={styles.closeModalText}>Maybe Later</Text>
                         </TouchableOpacity>
                     </Card>
                 </View>
@@ -336,12 +388,58 @@ const styles = StyleSheet.create({
     overviewContainer: { padding: 20 },
     overviewTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary, marginBottom: 12 },
     overviewText: { fontSize: 14, color: COLORS.gray[600], lineHeight: 22 },
+    assessmentList: { padding: 16 },
+    assessmentCard: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: COLORS.white,
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 12,
+        borderWidth: 1,
+        borderColor: COLORS.gray[100]
+    },
+    assessmentIcon: {
+        width: 48,
+        height: 48,
+        borderRadius: 12,
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 16
+    },
+    assessmentInfo: { flex: 1 },
+    assessmentName: { fontSize: 15, fontWeight: "700", color: COLORS.primary },
+    assessmentMeta: { fontSize: 12, color: COLORS.gray[500], marginTop: 4 },
     modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center", padding: 20 },
     modalCard: { width: "100%", alignItems: "center", padding: 32 },
     successIconBox: { width: 80, height: 80, backgroundColor: COLORS.warning + "15", borderRadius: 40, alignItems: "center", justifyContent: "center", marginBottom: 20 },
     modalTitle: { fontSize: 22, fontWeight: "900", color: COLORS.primary, marginBottom: 8 },
     modalSub: { fontSize: 14, color: COLORS.gray[500], marginBottom: 4 },
-    modalCourseName: { fontSize: 16, fontWeight: "700", color: COLORS.secondary, marginBottom: 24, textAlign: "center" },
+    modalCourseName: { fontSize: 16, fontWeight: "700", color: COLORS.secondary, marginBottom: 20, textAlign: "center" },
+    certPreviewBox: {
+        width: "100%",
+        padding: 12,
+        backgroundColor: "#FDFCF0",
+        borderRadius: 12,
+        marginBottom: 24,
+        borderWidth: 1,
+        borderColor: "#EEE8AA",
+    },
+    certBorder: {
+        padding: 16,
+        borderWidth: 2,
+        borderColor: COLORS.warning,
+        borderStyle: "dashed",
+        alignItems: "center",
+        borderRadius: 8,
+    },
+    certVerifyName: { fontSize: 10, fontWeight: "800", color: COLORS.gray[400], marginVertical: 8, letterSpacing: 1 },
+    certDivider: { width: 40, height: 1.5, backgroundColor: COLORS.warning, marginVertical: 8 },
+    certUserName: { fontSize: 18, fontWeight: "900", color: COLORS.primary, marginBottom: 4 },
+    certCourseTitle: { fontSize: 12, color: COLORS.gray[500], fontStyle: "italic", marginBottom: 12 },
+    certFooter: { flexDirection: "row", justifyContent: "space-between", width: "100%", marginTop: 8 },
+    certId: { fontSize: 8, color: COLORS.gray[400], fontWeight: "700" },
+    certDate: { fontSize: 8, color: COLORS.gray[400], fontWeight: "700" },
     modalBtn: { width: "100%", height: 52, borderRadius: 14 },
     closeModal: { marginTop: 20 },
     closeModalText: { fontSize: 13, fontWeight: "700", color: COLORS.gray[400] }
