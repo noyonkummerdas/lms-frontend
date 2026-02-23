@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -10,12 +10,12 @@ import { COLORS } from "../../../constants/colors";
 const CATEGORIES = ["All", "Development", "Design", "Business", "Marketing", "Music"];
 
 const INITIAL_COURSES = [
-  { id: 1, title: "React Native Basics", instructor: "John Doe", icon: "logo-react", color: "#61DAFB", price: "$49.99", rating: 4.8, category: "Development" },
-  { id: 2, title: "Advanced TypeScript", instructor: "Jane Smith", icon: "code-slash", color: "#3178C6", price: "$59.99", rating: 4.9, category: "Development" },
-  { id: 3, title: "Mobile App Design", instructor: "Mike Johnson", icon: "color-palette", color: "#FF6B6B", price: "$39.99", rating: 4.7, category: "Design" },
-  { id: 4, title: "Fullstack Web Dev", instructor: "Sarah Wilson", icon: "server", color: "#4CAF50", price: "$79.99", rating: 4.6, category: "Development" },
-  { id: 5, title: "Business Strategy", instructor: "Alex Brown", icon: "business", color: "#FF9800", price: "$69.99", rating: 4.5, category: "Business" },
-  { id: 6, title: "Digital Marketing", instructor: "Emily Davis", icon: "megaphone", color: "#E91E63", price: "$44.99", rating: 4.4, category: "Marketing" },
+  { id: 1, title: "React Native Basics", instructor: "John Doe", image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&q=80", color: "#61DAFB", price: "$49.99", rating: 4.8, category: "Development" },
+  { id: 2, title: "Advanced TypeScript", instructor: "Jane Smith", image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=800&q=80", color: "#3178C6", price: "$59.99", rating: 4.9, category: "Development" },
+  { id: 3, title: "Mobile App Design", instructor: "Mike Johnson", image: "https://images.unsplash.com/photo-1586717791821-3f44a563dc4c?w=800&q=80", color: "#FF6B6B", price: "$39.99", rating: 4.7, category: "Design" },
+  { id: 4, title: "Fullstack Web Dev", instructor: "Sarah Wilson", image: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=800&q=80", color: "#4CAF50", price: "$79.99", rating: 4.6, category: "Development" },
+  { id: 5, title: "Business Strategy", instructor: "Alex Brown", image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80", color: "#FF9800", price: "$69.99", rating: 4.5, category: "Business" },
+  { id: 6, title: "Digital Marketing", instructor: "Emily Davis", image: "https://images.unsplash.com/photo-1432888622747-4eb9a8f2c20a?w=800&q=80", color: "#E91E63", price: "$44.99", rating: 4.4, category: "Marketing" },
 ];
 
 export default function ExploreScreen() {
@@ -121,7 +121,7 @@ export default function ExploreScreen() {
                   price: c.price,
                   instructor: c.instructor,
                   title: c.title,
-                  icon: c.icon,
+                  image: c.image,
                   color: c.color
                 }
               } as any)}
@@ -129,7 +129,7 @@ export default function ExploreScreen() {
             >
               <Card style={styles.card}>
                 <View style={[styles.iconBox, { backgroundColor: c.color + "15" }]}>
-                  <Ionicons name={c.icon as any} size={32} color={c.color} />
+                  <Image source={{ uri: c.image }} style={styles.courseImageThumbnail} />
                 </View>
                 <View style={styles.info}>
                   <Text style={styles.courseTitle} numberOfLines={1}>{c.title}</Text>
@@ -178,7 +178,8 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: "900", color: COLORS.primary },
   viewAll: { fontSize: 14, fontWeight: "700", color: COLORS.secondary },
   card: { marginHorizontal: 16, marginBottom: 16, flexDirection: "row", alignItems: "center", padding: 14, borderRadius: 20 },
-  iconBox: { width: 68, height: 68, borderRadius: 18, alignItems: "center", justifyContent: "center", marginRight: 14 },
+  iconBox: { width: 78, height: 78, borderRadius: 18, backgroundColor: COLORS.gray[100], overflow: "hidden", marginRight: 14 },
+  courseImageThumbnail: { width: "100%", height: "100%", resizeMode: "cover" },
   info: { flex: 1 },
   courseTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
   instructor: { fontSize: 13, color: COLORS.gray[400], marginTop: 2, fontWeight: "600" },

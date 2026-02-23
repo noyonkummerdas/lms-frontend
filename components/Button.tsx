@@ -1,4 +1,4 @@
-import { Text, Pressable, ViewStyle, StyleSheet } from "react-native";
+import { Text, Pressable, ViewStyle, StyleSheet, ActivityIndicator, View } from "react-native";
 import { COLORS } from "../constants/colors";
 
 interface ButtonProps {
@@ -7,7 +7,9 @@ interface ButtonProps {
   variant?: "primary" | "secondary" | "danger" | "success";
   size?: "sm" | "md" | "lg";
   disabled?: boolean;
+  loading?: boolean;
   style?: ViewStyle;
+  children?: React.ReactNode;
 }
 
 export default function Button({
@@ -16,7 +18,9 @@ export default function Button({
   variant = "primary",
   size = "md",
   disabled = false,
+  loading = false,
   style,
+  children,
 }: ButtonProps) {
   const variantBg = {
     primary: COLORS.secondary,
@@ -37,13 +41,19 @@ export default function Button({
         styles.base,
         { backgroundColor: variantBg[variant] },
         sizeStyles[size],
-        disabled && styles.disabled,
+        (disabled || loading) && styles.disabled,
         style,
       ]}
-      disabled={disabled}
+      disabled={disabled || loading}
       onPress={onPress}
     >
-      <Text style={styles.label}>{label}</Text>
+      {loading ? (
+        <ActivityIndicator color={COLORS.white} />
+      ) : children ? (
+        children
+      ) : (
+        <Text style={styles.label}>{label}</Text>
+      )}
     </Pressable>
   );
 }

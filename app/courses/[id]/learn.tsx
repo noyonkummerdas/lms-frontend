@@ -7,14 +7,32 @@ import { Navbar, Card, Button } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 import * as ScreenOrientation from 'expo-screen-orientation';
 
-const INITIAL_LESSONS = [
-    { id: "1", title: "Introduction to the Course", duration: "05:20", completed: true },
-    { id: "2", title: "Setting up Environment", duration: "12:45", completed: true },
-    { id: "3", title: "Project Structure Explained", duration: "08:15", completed: false },
-    { id: "4", title: "Understanding Components", duration: "15:30", completed: false },
-    { id: "5", title: "State & Props Deep Dive", duration: "22:10", completed: false },
-    { id: "6", title: "Styling with Layouts", duration: "18:00", completed: false },
-    { id: "7", title: "Final Project Overview", duration: "10:00", completed: false },
+const INITIAL_MODULES = [
+    {
+        id: "m1",
+        title: "Module 1: Getting Started",
+        lessons: [
+            { id: "1", title: "Introduction to the Course", duration: "05:20", completed: true },
+            { id: "2", title: "Setting up Environment", duration: "12:45", completed: true },
+        ]
+    },
+    {
+        id: "m2",
+        title: "Module 2: Core Concepts",
+        lessons: [
+            { id: "3", title: "Project Structure Explained", duration: "08:15", completed: false },
+            { id: "4", title: "Understanding Components", duration: "15:30", completed: false },
+            { id: "5", title: "State & Props Deep Dive", duration: "22:10", completed: false },
+        ]
+    },
+    {
+        id: "m3",
+        title: "Module 3: Advanced Topics",
+        lessons: [
+            { id: "6", title: "Styling with Layouts", duration: "18:00", completed: false },
+            { id: "7", title: "Final Project Overview", duration: "10:00", completed: false },
+        ]
+    }
 ];
 
 const MOCK_QA = {
@@ -26,8 +44,9 @@ const MOCK_QA = {
 export default function CoursePlayerScreen() {
     const router = useRouter();
     const { id, title } = useLocalSearchParams<{ id: string; title: string }>();
-    const [lessons, setLessons] = useState(INITIAL_LESSONS);
-    const [activeLesson, setActiveLesson] = useState(lessons[2]);
+    const [modules, setModules] = useState(INITIAL_MODULES);
+    const allLessons = useMemo(() => modules.flatMap(m => m.lessons), [modules]);
+    const [activeLesson, setActiveLesson] = useState(allLessons[2]);
     const [showCompletion, setShowCompletion] = useState(false);
     const [activeTab, setActiveTab] = useState("Lessons");
     const [videoProgress, setVideoProgress] = useState(45);
@@ -48,7 +67,7 @@ export default function CoursePlayerScreen() {
     const [quizScore, setQuizScore] = useState<number | null>(null);
     const [isAssignmentSubmitted, setIsAssignmentSubmitted] = useState(false);
 
-    const isAllLessonsCompleted = useMemo(() => lessons.every(l => l.completed), [lessons]);
+    const isAllLessonsCompleted = useMemo(() => allLessons.every(l => l.completed), [allLessons]);
     const isQuizPassed = useMemo(() => quizScore !== null && (quizScore / 3) * 100 >= 70, [quizScore]);
 
     const isAllCompleted = useMemo(() =>
@@ -66,7 +85,7 @@ export default function CoursePlayerScreen() {
         return () => clearInterval(interval);
     }, [isPlaying, videoProgress]);
 
-    const handleLessonPress = (lesson: typeof lessons[0]) => {
+    const handleLessonPress = (lesson: typeof allLessons[0]) => {
         setActiveLesson(lesson);
         // Reset progress for new lesson unless it's already completed
         setVideoProgress(lesson.completed ? 100 : 0);
@@ -79,17 +98,21 @@ export default function CoursePlayerScreen() {
             return;
         }
 
-        const updatedLessons = lessons.map(l =>
-            l.id === activeLesson.id ? { ...l, completed: true } : l
-        );
-        setLessons(updatedLessons);
+        const updatedModules = modules.map(m => ({
+            ...m,
+            lessons: m.lessons.map(l =>
+                l.id === activeLesson.id ? { ...l, completed: true } : l
+            )
+        }));
+        setModules(updatedModules);
 
-        if (updatedLessons.every(l => l.completed)) {
+        const updatedAllLessons = updatedModules.flatMap(m => m.lessons);
+        if (updatedAllLessons.every(l => l.completed)) {
             setShowCompletion(true);
         } else {
-            const currentIndex = lessons.findIndex(l => l.id === activeLesson.id);
-            if (currentIndex < lessons.length - 1) {
-                const nextLesson = lessons[currentIndex + 1];
+            const currentIndex = allLessons.findIndex(l => l.id === activeLesson.id);
+            if (currentIndex < allLessons.length - 1) {
+                const nextLesson = allLessons[currentIndex + 1];
                 setActiveLesson(nextLesson);
                 setVideoProgress(nextLesson.completed ? 100 : 0);
             }
@@ -196,34 +219,42 @@ export default function CoursePlayerScreen() {
 
                     {activeTab === "Lessons" && (
                         <View style={styles.lessonList}>
-                            {lessons.map((lesson) => (
-                                <TouchableOpacity
-                                    key={lesson.id}
-                                    style={[
-                                        styles.lessonItem,
-                                        activeLesson.id === lesson.id && styles.activeLessonItem
-                                    ]}
-                                    onPress={() => handleLessonPress(lesson)}
-                                >
-                                    <View style={[styles.lessonStatus, lesson.completed && styles.statusCompleted]}>
-                                        {lesson.completed ? (
-                                            <Ionicons name="checkmark" size={14} color={COLORS.white} />
-                                        ) : (
-                                            <Text style={styles.lessonNumber}>{lesson.id}</Text>
-                                        )}
+                            {modules.map((module) => (
+                                <View key={module.id} style={styles.moduleContainer}>
+                                    <View style={styles.moduleHeader}>
+                                        <Text style={styles.moduleTitle}>{module.title}</Text>
+                                        <Text style={styles.moduleMeta}>{module.lessons.length} Lessons</Text>
                                     </View>
-                                    <View style={styles.lessonInfo}>
-                                        <Text style={[
-                                            styles.lessonTitle,
-                                            activeLesson.id === lesson.id && styles.activeLessonTitle
-                                        ]}>
-                                            {lesson.title}
-                                        </Text>
-                                        <Text style={styles.lessonDuration}>
-                                            <Ionicons name="time-outline" size={12} color={COLORS.gray[400]} /> {lesson.duration}
-                                        </Text>
-                                    </View>
-                                </TouchableOpacity>
+                                    {module.lessons.map((lesson) => (
+                                        <TouchableOpacity
+                                            key={lesson.id}
+                                            style={[
+                                                styles.lessonItem,
+                                                activeLesson.id === lesson.id && styles.activeLessonItem
+                                            ]}
+                                            onPress={() => handleLessonPress(lesson)}
+                                        >
+                                            <View style={[styles.lessonStatus, lesson.completed && styles.statusCompleted]}>
+                                                {lesson.completed ? (
+                                                    <Ionicons name="checkmark" size={14} color={COLORS.white} />
+                                                ) : (
+                                                    <Text style={styles.lessonNumber}>{lesson.id}</Text>
+                                                )}
+                                            </View>
+                                            <View style={styles.lessonInfo}>
+                                                <Text style={[
+                                                    styles.lessonTitle,
+                                                    activeLesson.id === lesson.id && styles.activeLessonTitle
+                                                ]}>
+                                                    {lesson.title}
+                                                </Text>
+                                                <Text style={styles.lessonDuration}>
+                                                    <Ionicons name="time-outline" size={12} color={COLORS.gray[400]} /> {lesson.duration}
+                                                </Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
                             ))}
                         </View>
                     )}
@@ -416,6 +447,10 @@ const styles = StyleSheet.create({
     liveTab: { backgroundColor: COLORS.danger + "10" },
     liveIndicator: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.danger, marginRight: 6 },
     lessonList: { padding: 16 },
+    moduleContainer: { marginBottom: 24 },
+    moduleHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12, paddingHorizontal: 4 },
+    moduleTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
+    moduleMeta: { fontSize: 12, fontWeight: "600", color: COLORS.gray[400] },
     lessonItem: { flexDirection: "row", alignItems: "center", padding: 16, borderRadius: 16, marginBottom: 12, backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.gray[100] },
     activeLessonItem: { borderColor: COLORS.secondary, backgroundColor: COLORS.secondary + "05" },
     lessonStatus: { width: 28, height: 28, borderRadius: 14, backgroundColor: COLORS.gray[100], alignItems: "center", justifyContent: "center", marginRight: 16 },

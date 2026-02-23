@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { useState, useMemo, useCallback } from "react";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,6 +18,12 @@ const INITIAL_COURSES = [
 export default function MyCoursesScreen() {
   const router = useRouter();
   const sidebar = useSidebar();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => setRefreshing(false), 2000);
+  }, []);
   const [activeFilter, setActiveFilter] = useState("All");
 
   const filteredCourses = useMemo(() => {
@@ -70,6 +76,9 @@ export default function MyCoursesScreen() {
         style={styles.scroll}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.secondary]} tintColor={COLORS.secondary} />
+        }
       >
         {filteredCourses.length === 0 ? (
           <View style={styles.emptyState}>

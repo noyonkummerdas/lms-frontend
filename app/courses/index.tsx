@@ -1,4 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl } from "react-native";
+import { useState, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Navbar, Card, ProgressBar } from "../../components";
@@ -6,6 +7,15 @@ import { COLORS } from "../../constants/colors";
 
 export default function CoursesScreen() {
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    // Simulate data fetching
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   const courses = [
     { id: 1, title: "React Native Basics", instructor: "John Doe", rating: 4.8, students: 1254, progress: 65, thumbnail: "📚" },
@@ -17,7 +27,12 @@ export default function CoursesScreen() {
     <SafeAreaView style={styles.screen}>
       <Navbar title="Courses" showBack={true} onBackPress={() => router.back()} />
 
-      <ScrollView style={styles.scroll}>
+      <ScrollView
+        style={styles.scroll}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.secondary]} tintColor={COLORS.secondary} />
+        }
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Available Courses</Text>
           <Text style={styles.subtitle}>{courses.length} courses available</Text>

@@ -178,6 +178,24 @@ export default function RegisterScreen() {
               style={styles.registerBtn}
             />
 
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>OR</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            <View style={styles.socialContainer}>
+              <TouchableOpacity style={[styles.socialBtn, { borderColor: '#DB4437' }]} activeOpacity={0.8}>
+                <Ionicons name="logo-google" size={24} color="#DB4437" />
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.socialBtn, { borderColor: '#4267B2' }]} activeOpacity={0.8}>
+                <Ionicons name="logo-facebook" size={24} color="#4267B2" />
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.socialBtn, { borderColor: '#000000' }]} activeOpacity={0.8}>
+                <Ionicons name="logo-apple" size={24} color="#000000" />
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity
               style={styles.loginLink}
               onPress={() => router.push("/auth/login")}
@@ -312,4 +330,32 @@ const styles = StyleSheet.create({
   loginLink: { alignItems: "center", marginTop: 24 },
   loginText: { color: COLORS.gray[600], fontSize: 15 },
   loginLinkBold: { color: COLORS.secondary, fontWeight: "700" },
+  divider: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 30
+  },
+  dividerLine: { flex: 1, height: 1, backgroundColor: COLORS.border },
+  dividerText: { marginHorizontal: 16, color: COLORS.gray[400], fontWeight: "600" },
+  socialContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginBottom: 20,
+    marginTop: 10
+  },
+  socialBtn: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 12,
+    backgroundColor: COLORS.white,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
+  },
 });
