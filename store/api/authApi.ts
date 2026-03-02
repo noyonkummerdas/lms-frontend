@@ -22,23 +22,34 @@ export const authApi = createApi({
     login: builder.mutation<{ token: string; user: User }, { email: string; password: string }>({
       queryFn: async (credentials) => {
         await new Promise((r) => setTimeout(r, 400));
-        const emailLower = credentials.email.toLowerCase();
-        const role =
-          emailLower === "admin@test.com" || emailLower === "admin"
-            ? ("admin" as const)
-            : emailLower === "teacher@test.com" || emailLower === "teacher"
-              ? ("instructor" as const)
-              : ("student" as const);
 
-        let name = credentials.email.split("@")[0];
-        // Capitalize for better UX
+        const emailRaw = credentials.email || "";
+        const emailLower = emailRaw.toLowerCase().trim();
+        let role: User["role"] = "student";
+
+        // EXPLICIT DEMO LOGIC
+        if (emailLower.includes("admin")) {
+          role = "admin";
+        } else if (
+          emailLower.includes("teacher") ||
+          emailLower.includes("instructor")
+        ) {
+          role = "instructor";
+        } else {
+          role = "student";
+        }
+
+        console.log(`[AuthApi] Email: "${emailLower}" -> Assigned Role: "${role}"`);
+
+        let name = emailLower.split("@")[0];
         name = name.charAt(0).toUpperCase() + name.slice(1);
 
         const user = createMockUser({
-          email: credentials.email.includes("@") ? credentials.email : `${credentials.email}@test.com`,
+          email: emailLower.includes("@") ? emailLower : `${emailLower}@test.com`,
           name,
           role,
         });
+
         return {
           data: { token: `mock-token-${Date.now()}`, user },
         };

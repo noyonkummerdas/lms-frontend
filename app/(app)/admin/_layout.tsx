@@ -6,6 +6,7 @@ import { Sidebar } from "../../../components";
 import { SidebarProvider } from "../../../contexts/SidebarContext";
 import { logout } from "../../../store/slices/authSlice";
 import { useAuth } from "../../../hooks";
+import { authApi } from "../../../store/api/authApi";
 import { COLORS } from "../../../constants/colors";
 
 const ADMIN_MENU = [
@@ -36,6 +37,7 @@ export default function AdminLayout() {
   const handleMenuPress = (href: string) => {
     setSidebarOpen(false);
     if (href === "__logout__") {
+      dispatch(authApi.util.resetApiState());
       dispatch(logout());
       router.replace("/auth/login");
       return;

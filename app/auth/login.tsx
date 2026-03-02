@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Input } from "../../components";
-import { useLoginMutation } from "../../store/api/authApi";
+import { useLoginMutation, authApi } from "../../store/api/authApi";
 import { setUser, setToken } from "../../store/slices/authSlice";
 import { validateForm } from "../../utils/validateForm";
 import { AppDispatch } from "../../store/store";
@@ -43,14 +43,25 @@ export default function LoginScreen() {
 
     try {
       const result = await login({ email, password }).unwrap();
+
+      console.log(`[LOGIN_DEBUG] Role assigned: ${result.user.role}`);
+
+      // Clear any old data
+      dispatch(authApi.util.resetApiState());
+
       dispatch(setUser(result.user));
       dispatch(setToken(result.token));
 
-      if (result.user.role === "admin") router.replace("/admin" as any);
-      else if (result.user.role === "instructor") router.replace("/instructor" as any);
-      else router.replace("/student" as any);
+      // DIRECT REDIRECTION based on role to avoid any middleman routing issues
+      if (result.user.role === "admin") {
+        router.replace("/admin" as any);
+      } else if (result.user.role === "instructor") {
+        router.replace("/instructor" as any);
+      } else {
+        router.replace("/student" as any);
+      }
 
-      Alert.alert("Success", `Welcome back, ${result.user.name}! (Logged in as ${result.user.role})`);
+      Alert.alert("Success", `Welcome, ${result.user.name}!`);
     } catch (error: any) {
       const message = error?.data?.message || error?.message || "Invalid credentials";
       Alert.alert("Login Failed", message);
@@ -160,11 +171,16 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          <View className="flex-row items-center justify-center mt-10 bg-slate-100 p-3 rounded-lg">
-            <Ionicons name="information-circle-outline" size={16} color="#64748b" />
-            <Text className="text-[12px] text-slate-600 ml-1.5 italic">
-              Demo: admin@test.com / any password
-            </Text>
+          <View className="mt-10 bg-slate-100 p-4 rounded-2xl border border-slate-200">
+            <View className="flex-row items-center mb-2">
+              <Ionicons name="information-circle" size={18} color="#6366f1" />
+              <Text className="text-[14px] font-bold text-primary ml-2">Demo Credentials</Text>
+            </View>
+            <View className="space-y-1">
+              <Text className="text-[12px] text-slate-600">• Admin: <Text className="font-bold text-secondary">admin</Text>@test.com</Text>
+              <Text className="text-[12px] text-slate-600">• Teacher: <Text className="font-bold text-secondary">teacher</Text>@test.com</Text>
+              <Text className="text-[12px] text-slate-600">• Student: any other email</Text>
+            </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
