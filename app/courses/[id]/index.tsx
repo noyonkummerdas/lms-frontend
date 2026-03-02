@@ -1,8 +1,7 @@
-import { View, Text, ScrollView, StyleSheet, Alert, Image } from "react-native";
+import { View, Text, ScrollView, Alert, Image, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Navbar, Card, Button } from "../../../components";
-import { COLORS } from "../../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 
 export default function CourseDetailScreen() {
@@ -52,121 +51,83 @@ export default function CourseDetailScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.screen} edges={["top"]}>
+        <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
             <Navbar title={currentTitle} showBack={true} onBackPress={() => router.back()} />
 
-            <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-                <Card style={styles.heroCard}>
-                    <View style={[styles.iconBox, { backgroundColor: (params.color || COLORS.secondary) + "15" }]}>
+            <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+                <Card className="mb-6 items-center p-6 mt-4">
+                    <View
+                        className="w-[120px] h-[120px] rounded-[24px] overflow-hidden mb-4 items-center justify-center"
+                        style={{ backgroundColor: (params.color || "#6366f1") + "15" }}
+                    >
                         {params.image ? (
-                            <Image source={{ uri: params.image }} style={styles.heroImage} />
+                            <Image source={{ uri: params.image }} className="w-full h-full" resizeMode="cover" />
                         ) : (
-                            <Text style={styles.heroIcon}>📚</Text>
+                            <Text className="text-[40px]">📚</Text>
                         )}
                     </View>
-                    <Text style={styles.title}>{currentTitle}</Text>
-                    <Text style={styles.instructor}>by {params.instructor || "Expert Instructor"}</Text>
-                    <View style={styles.priceBadge}>
-                        <Text style={styles.priceText}>{currentPrice}</Text>
+                    <Text className="text-2xl font-extrabold text-primary text-center mb-2">{currentTitle}</Text>
+                    <Text className="text-[15px] text-slate-500 mb-4">by {params.instructor || "Expert Instructor"}</Text>
+                    <View className="bg-secondary px-4 py-2 rounded-xl">
+                        <Text className="text-white font-extrabold text-[18px]">{currentPrice}</Text>
                     </View>
                 </Card>
 
-                <Text style={styles.sectionTitle}>Course Overview</Text>
-                <Card style={styles.descCard}>
-                    <Text style={styles.description}>{mockDetails.description}</Text>
+                <Text className="text-[18px] font-extrabold text-primary mb-4">Course Overview</Text>
+                <Card className="mb-6 p-5">
+                    <Text className="text-[15px] text-slate-600 leading-6">{mockDetails.description}</Text>
                 </Card>
 
-                <View style={styles.statsRow}>
-                    <Card style={styles.statCard}>
-                        <Text style={styles.statValue}>{mockDetails.lessons}</Text>
-                        <Text style={styles.statLabel}>Lessons</Text>
+                <View className="flex-row mb-8">
+                    <Card className="flex-1 mx-2 items-center p-4">
+                        <Text className="text-[20px] font-extrabold text-primary">{mockDetails.lessons}</Text>
+                        <Text className="text-[13px] text-slate-400 mt-1 font-semibold">Lessons</Text>
                     </Card>
-                    <Card style={styles.statCard}>
-                        <Text style={styles.statValue}>{mockDetails.duration}</Text>
-                        <Text style={styles.statLabel}>Duration</Text>
+                    <Card className="flex-1 mx-2 items-center p-4">
+                        <Text className="text-[20px] font-extrabold text-primary">{mockDetails.duration}</Text>
+                        <Text className="text-[13px] text-slate-400 mt-1 font-semibold">Duration</Text>
                     </Card>
                 </View>
 
-                <View style={styles.subscriptionBox}>
-                    <Ionicons name="sparkles" size={20} color={COLORS.secondary} />
-                    <Text style={styles.subText}>Available with PRO Subscription</Text>
+                <View className="flex-row items-center bg-indigo-50/50 p-4 rounded-2xl mb-6 border border-indigo-100">
+                    <Ionicons name="sparkles" size={20} color="#6366f1" />
+                    <Text className="ml-2 color-secondary font-bold text-[14px]">Available with PRO Subscription</Text>
                 </View>
 
-                <Text style={styles.sectionTitle}>Reviews & Ratings</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.reviewScroll}>
+                <Text className="text-[18px] font-extrabold text-primary mb-4">Reviews & Ratings</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-8 ml-[-16px] pl-4">
                     {[1, 2, 3].map((r) => (
-                        <Card key={r} style={styles.reviewCard}>
-                            <View style={styles.reviewHeader}>
-                                <View style={styles.avatarPlaceholder} />
+                        <Card key={r} className="w-[280px] mr-4 p-4">
+                            <View className="flex-row items-center mb-3">
+                                <View className="w-10 h-10 rounded-full bg-slate-200 mr-3" />
                                 <View>
-                                    <Text style={styles.reviewerName}>User {r}</Text>
-                                    <View style={styles.starRow}>
-                                        {[1, 2, 3, 4, 5].map(s => <Ionicons key={s} name="star" size={12} color={COLORS.warning} />)}
+                                    <Text className="text-[14px] font-bold text-primary">User {r}</Text>
+                                    <View className="flex-row mt-0.5">
+                                        {[1, 2, 3, 4, 5].map(s => <Ionicons key={s} name="star" size={12} color="#f59e0b" />)}
                                     </View>
                                 </View>
                             </View>
-                            <Text style={styles.reviewText}>This course is amazing! The lessons are clear and easy to follow.</Text>
+                            <Text className="text-[13px] text-slate-600 leading-[18px]">This course is amazing! The lessons are clear and easy to follow.</Text>
                         </Card>
                     ))}
                 </ScrollView>
 
-                <View style={styles.actionRow}>
+                <View className="mb-3">
                     <Button
                         label={currentPrice === "FREE" || currentPrice === "$0.00" ? "Enroll for Free" : `Unlock Course - ${currentPrice}`}
                         onPress={handleEnroll}
                         variant="primary"
-                        style={styles.enrollBtn}
+                        className="h-14 rounded-2xl"
                     />
                 </View>
                 <Button
                     label="Browse Other Courses"
                     onPress={() => router.back()}
                     variant="secondary"
-                    style={styles.backBtn}
+                    className="h-14 rounded-2xl bg-white border border-border"
                 />
-                <View style={{ height: 40 }} />
+                <View className="h-10" />
             </ScrollView>
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    screen: { flex: 1, backgroundColor: COLORS.light },
-    scroll: { flex: 1, padding: 16 },
-    heroCard: { marginBottom: 24, alignItems: "center", padding: 24 },
-    iconBox: { width: 120, height: 120, borderRadius: 24, overflow: "hidden", marginBottom: 16 },
-    heroImage: { width: "100%", height: "100%", resizeMode: "cover" },
-    heroIcon: { fontSize: 40 },
-    title: { fontSize: 24, fontWeight: "800", color: COLORS.primary, textAlign: "center", marginBottom: 8 },
-    instructor: { fontSize: 15, color: COLORS.gray[500], marginBottom: 16 },
-    priceBadge: { backgroundColor: COLORS.secondary, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 },
-    priceText: { color: COLORS.white, fontWeight: "800", fontSize: 18 },
-    sectionTitle: { fontSize: 18, fontWeight: "800", color: COLORS.primary, marginBottom: 16 },
-    descCard: { marginBottom: 24, padding: 20 },
-    description: { fontSize: 15, color: COLORS.gray[600], lineHeight: 22 },
-    statsRow: { flexDirection: "row", marginBottom: 32 },
-    statCard: { flex: 1, marginHorizontal: 8, alignItems: "center", padding: 16 },
-    statValue: { fontSize: 20, fontWeight: "800", color: COLORS.primary },
-    statLabel: { fontSize: 13, color: COLORS.gray[400], marginTop: 4, fontWeight: "600" },
-    actionRow: { marginBottom: 12 },
-    enrollBtn: { height: 56, borderRadius: 16 },
-    backBtn: { height: 56, borderRadius: 16, backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.border },
-    subscriptionBox: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: COLORS.secondary + "10",
-        padding: 16,
-        borderRadius: 16,
-        marginBottom: 24,
-        borderWidth: 1,
-        borderColor: COLORS.secondary + "30"
-    },
-    subText: { marginLeft: 8, color: COLORS.secondary, fontWeight: "700", fontSize: 14 },
-    reviewScroll: { marginBottom: 32, marginHorizontal: -16, paddingLeft: 16 },
-    reviewCard: { width: 280, marginRight: 16, padding: 16 },
-    reviewHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-    avatarPlaceholder: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.gray[200], marginRight: 12 },
-    reviewerName: { fontSize: 14, fontWeight: "700", color: COLORS.primary },
-    starRow: { flexDirection: "row", marginTop: 2 },
-    reviewText: { fontSize: 13, color: COLORS.gray[600], lineHeight: 18 }
-});

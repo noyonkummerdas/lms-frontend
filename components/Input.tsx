@@ -1,5 +1,4 @@
-import { TextInput, View, StyleSheet, ViewStyle } from "react-native";
-import { COLORS } from "../constants/colors";
+import { TextInput, View, ViewStyle } from "react-native";
 
 interface InputProps {
   placeholder?: string;
@@ -11,6 +10,7 @@ interface InputProps {
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   autoCorrect?: boolean;
   style?: ViewStyle;
+  className?: string;
 }
 
 export default function Input({
@@ -23,9 +23,10 @@ export default function Input({
   autoCapitalize,
   autoCorrect,
   style,
+  className,
 }: InputProps) {
   return (
-    <View style={[styles.wrapper, style]}>
+    <View style={style} className={className}>
       <TextInput
         placeholder={placeholder}
         value={value}
@@ -35,23 +36,9 @@ export default function Input({
         editable={editable}
         autoCapitalize={autoCapitalize}
         autoCorrect={autoCorrect}
-        style={styles.input}
-        placeholderTextColor={COLORS.gray[400]}
+        placeholderTextColor="#94a3b8"
+        className="px-4 py-3 text-[16px] text-primary"
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 8,
-  },
-  input: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: COLORS.primary,
-  },
-});

@@ -1,11 +1,10 @@
 import { useState, useMemo } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, TextInput, Alert, Image } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Alert, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Navbar, Card } from "../../../components";
 import { useSidebar } from "../../../contexts/SidebarContext";
-import { COLORS } from "../../../constants/colors";
 
 const CATEGORIES = ["All", "Development", "Design", "Business", "Marketing", "Music"];
 
@@ -45,70 +44,70 @@ export default function ExploreScreen() {
   }, [activeCategory, searchQuery]);
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
       <Navbar title="Explore" showMenu={true} onMenuPress={sidebar?.toggle} />
 
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Ionicons name="search" size={20} color={COLORS.gray[400]} />
+      <View className="flex-row p-4 items-center">
+        <View className="flex-1 flex-row items-center bg-white h-[52px] rounded-2xl px-4 border border-slate-100 mr-3">
+          <Ionicons name="search" size={20} color="#94a3b8" />
           <TextInput
             placeholder="Search for courses..."
-            style={styles.searchInput}
-            placeholderTextColor={COLORS.gray[400]}
+            className="flex-1 ml-2.5 text-[15px] text-primary"
+            placeholderTextColor="#94a3b8"
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           {searchQuery !== "" && (
             <TouchableOpacity onPress={() => setSearchQuery("")}>
-              <Ionicons name="close-circle" size={18} color={COLORS.gray[300]} />
+              <Ionicons name="close-circle" size={18} color="#cbd5e1" />
             </TouchableOpacity>
           )}
         </View>
         <TouchableOpacity
-          style={styles.filterBtn}
+          className="w-[52px] h-[52px] bg-white rounded-2xl items-center justify-center border border-slate-100"
           activeOpacity={0.7}
           onPress={() => Alert.alert("Filter", "Filter options coming soon!")}
         >
-          <Ionicons name="options-outline" size={24} color={COLORS.secondary} />
+          <Ionicons name="options-outline" size={24} color="#6366f1" />
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categories}>
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-4 mb-6 flex-grow-0">
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
               key={cat}
-              style={[styles.categoryChip, activeCategory === cat && styles.categoryChipActive]}
+              className={`px-[22px] py-2.5 rounded-full mr-2.5 border border-slate-100 ${activeCategory === cat ? 'bg-secondary border-secondary' : 'bg-white'}`}
               activeOpacity={0.7}
               onPress={() => setActiveCategory(cat)}
             >
-              <Text style={[styles.categoryText, activeCategory === cat && styles.categoryTextActive]}>{cat}</Text>
+              <Text className={`text-[14px] font-bold ${activeCategory === cat ? 'text-white' : 'text-slate-500'}`}>{cat}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        <View style={styles.headerRow}>
-          <Text style={styles.sectionTitle}>
+        <View className="flex-row justify-between items-center mx-4 mb-5">
+          <Text className="text-[18px] font-black text-primary">
             {activeCategory === "All" ? "Recommended for you" : `${activeCategory} Courses`}
           </Text>
           <TouchableOpacity onPress={() => router.push("/student/wishlist")}>
-            <Text style={styles.viewAll}>My Wishlist</Text>
+            <Text className="text-[14px] font-bold text-secondary">My Wishlist</Text>
           </TouchableOpacity>
         </View>
 
         {filteredCourses.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Ionicons name="search-outline" size={64} color={COLORS.gray[200]} />
-            <Text style={styles.emptyTitle}>No Results Found</Text>
-            <Text style={styles.emptySub}>We couldn't find any courses matching your criteria.</Text>
+          <View className="flex-1 items-center justify-center mt-[60px] px-10">
+            <Ionicons name="search-outline" size={64} color="#e2e8f0" />
+            <Text className="text-[22px] font-black text-primary mt-5 text-center">No Results Found</Text>
+            <Text className="text-[14px] text-slate-400 text-center mt-2 leading-[22px]">We couldn't find any courses matching your criteria.</Text>
             <TouchableOpacity
-              style={styles.resetBtn}
+              className="mt-6 px-8 py-3.5 bg-primary rounded-2xl"
               onPress={() => {
                 setSearchQuery("");
                 setActiveCategory("All");
               }}
             >
-              <Text style={styles.resetBtnText}>Reset Filters</Text>
+              <Text className="text-white font-black">Reset Filters</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -127,70 +126,37 @@ export default function ExploreScreen() {
               } as any)}
               activeOpacity={0.8}
             >
-              <Card style={styles.card}>
-                <View style={[styles.iconBox, { backgroundColor: c.color + "15" }]}>
-                  <Image source={{ uri: c.image }} style={styles.courseImageThumbnail} />
+              <Card className="mx-4 mb-4 flex-row items-center p-3.5 rounded-[20px]">
+                <View className="w-[78px] h-[78px] rounded-[18px] bg-slate-100 overflow-hidden mr-3.5">
+                  <Image source={{ uri: c.image }} className="w-full h-full" resizeMode="cover" />
                 </View>
-                <View style={styles.info}>
-                  <Text style={styles.courseTitle} numberOfLines={1}>{c.title}</Text>
-                  <Text style={styles.instructor}>by {c.instructor}</Text>
-                  <View style={styles.metaRow}>
-                    <View style={styles.ratingInfo}>
-                      <Ionicons name="star" size={14} color={COLORS.warning} />
-                      <Text style={styles.ratingText}>{c.rating}</Text>
+                <View className="flex-1">
+                  <Text className="text-[16px] font-extrabold text-primary" numberOfLines={1}>{c.title}</Text>
+                  <Text className="text-[13px] text-slate-400 mt-0.5 font-semibold">by {c.instructor}</Text>
+                  <View className="flex-row justify-between items-center mt-2.5">
+                    <View className="flex-row items-center">
+                      <Ionicons name="star" size={14} color="#f59e0b" />
+                      <Text className="text-[13px] font-bold text-primary ml-1">{c.rating}</Text>
                     </View>
-                    <Text style={styles.price}>{c.price}</Text>
+                    <Text className="text-[16px] font-black text-secondary">{c.price}</Text>
                   </View>
                 </View>
                 <TouchableOpacity
-                  style={styles.wishBtn}
+                  className="p-2 ml-1"
                   onPress={() => toggleWishlist(c.id)}
                 >
                   <Ionicons
                     name={wishlist.includes(c.id) ? "heart" : "heart-outline"}
                     size={24}
-                    color={wishlist.includes(c.id) ? COLORS.danger : COLORS.gray[300]}
+                    color={wishlist.includes(c.id) ? "#ef4444" : "#cbd5e1"}
                   />
                 </TouchableOpacity>
               </Card>
             </TouchableOpacity>
           ))
         )}
-        <View style={{ height: 40 }} />
+        <View className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.light },
-  searchContainer: { flexDirection: "row", padding: 16, alignItems: "center" },
-  searchBar: { flex: 1, flexDirection: "row", alignItems: "center", backgroundColor: COLORS.white, height: 52, borderRadius: 16, paddingHorizontal: 16, borderWidth: 1, borderColor: COLORS.gray[100], marginRight: 12 },
-  searchInput: { flex: 1, marginLeft: 10, fontSize: 15, color: COLORS.primary },
-  filterBtn: { width: 52, height: 52, backgroundColor: COLORS.white, borderRadius: 16, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: COLORS.gray[100] },
-  scroll: { flex: 1 },
-  categories: { paddingLeft: 16, marginBottom: 24, flexGrow: 0 },
-  categoryChip: { paddingHorizontal: 22, paddingVertical: 10, backgroundColor: COLORS.white, borderRadius: 25, marginRight: 10, borderWidth: 1, borderColor: COLORS.gray[100] },
-  categoryChipActive: { backgroundColor: COLORS.secondary, borderColor: COLORS.secondary },
-  categoryText: { fontSize: 14, fontWeight: "700", color: COLORS.gray[500] },
-  categoryTextActive: { color: COLORS.white },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginHorizontal: 16, marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: "900", color: COLORS.primary },
-  viewAll: { fontSize: 14, fontWeight: "700", color: COLORS.secondary },
-  card: { marginHorizontal: 16, marginBottom: 16, flexDirection: "row", alignItems: "center", padding: 14, borderRadius: 20 },
-  iconBox: { width: 78, height: 78, borderRadius: 18, backgroundColor: COLORS.gray[100], overflow: "hidden", marginRight: 14 },
-  courseImageThumbnail: { width: "100%", height: "100%", resizeMode: "cover" },
-  info: { flex: 1 },
-  courseTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
-  instructor: { fontSize: 13, color: COLORS.gray[400], marginTop: 2, fontWeight: "600" },
-  metaRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10 },
-  ratingInfo: { flexDirection: "row", alignItems: "center" },
-  ratingText: { fontSize: 13, fontWeight: "700", color: COLORS.primary, marginLeft: 4 },
-  price: { fontSize: 16, fontWeight: "900", color: COLORS.secondary },
-  wishBtn: { padding: 8, marginLeft: 4 },
-  emptyState: { flex: 1, alignItems: "center", justifyContent: "center", marginTop: 60, paddingHorizontal: 40 },
-  emptyTitle: { fontSize: 22, fontWeight: "900", color: COLORS.primary, marginTop: 20 },
-  emptySub: { fontSize: 14, color: COLORS.gray[400], textAlign: "center", marginTop: 8, lineHeight: 22 },
-  resetBtn: { marginTop: 24, paddingHorizontal: 32, paddingVertical: 14, backgroundColor: COLORS.primary, borderRadius: 16 },
-  resetBtnText: { color: COLORS.white, fontWeight: "800" },
-});

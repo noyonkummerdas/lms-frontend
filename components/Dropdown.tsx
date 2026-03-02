@@ -1,5 +1,4 @@
-import { Modal, View, Text, TouchableOpacity, StyleSheet, ViewStyle } from "react-native";
-import { COLORS } from "../constants/colors";
+import { Modal, View, Text, TouchableOpacity, ViewStyle } from "react-native";
 
 interface DropdownProps {
   options: { label: string; value: string }[];
@@ -9,6 +8,7 @@ interface DropdownProps {
   visible?: boolean;
   onClose?: () => void;
   style?: ViewStyle;
+  className?: string;
 }
 
 export default function Dropdown({
@@ -19,27 +19,35 @@ export default function Dropdown({
   visible = false,
   onClose,
   style,
+  className,
 }: DropdownProps) {
   const selectedLabel =
     options.find((opt) => opt.value === value)?.label || placeholder;
 
   return (
     <>
-      <TouchableOpacity style={[styles.trigger, style]} activeOpacity={0.7} onPress={() => { }}>
-        <Text style={styles.triggerText}>{selectedLabel}</Text>
+      <TouchableOpacity
+        style={style}
+        className={`border border-slate-200 rounded-xl px-4 py-3 bg-white ${className}`}
+        activeOpacity={0.7}
+        onPress={() => { }}
+      >
+        <Text className="text-primary font-semibold">{selectedLabel}</Text>
       </TouchableOpacity>
 
-      <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
         <TouchableOpacity
-          style={styles.modalOverlay}
+          className="flex-1 bg-black/50 justify-end"
           activeOpacity={1}
           onPress={onClose}
         >
-          <View style={styles.modalContent}>
+          <View className="bg-white rounded-t-3xl p-5 pb-10">
+            <View className="w-12 h-1 bg-slate-200 rounded-full self-center mb-6" />
+            <Text className="text-[18px] font-black text-primary mb-4 ml-1">{placeholder}</Text>
             {options.map((option) => (
               <TouchableOpacity
                 key={option.value}
-                style={styles.option}
+                className="py-4 px-1 border-b border-slate-50 flex-row justify-between items-center"
                 activeOpacity={0.7}
                 onPress={() => {
                   onSelect(option.value);
@@ -47,13 +55,13 @@ export default function Dropdown({
                 }}
               >
                 <Text
-                  style={[
-                    styles.optionText,
-                    value === option.value && styles.optionTextSelected,
-                  ]}
+                  className={`text-[16px] ${value === option.value ? 'text-secondary font-bold' : 'text-primary'}`}
                 >
                   {option.label}
                 </Text>
+                {value === option.value && (
+                  <View className="w-2 h-2 rounded-full bg-secondary" />
+                )}
               </TouchableOpacity>
             ))}
           </View>
@@ -62,35 +70,3 @@ export default function Dropdown({
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  trigger: {
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: COLORS.white,
-  },
-  triggerText: { color: COLORS.primary },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-  },
-  modalContent: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: COLORS.white,
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    padding: 16,
-  },
-  option: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.light,
-  },
-  optionText: { fontSize: 16, color: COLORS.primary },
-  optionTextSelected: { color: COLORS.secondary, fontWeight: "700" },
-});

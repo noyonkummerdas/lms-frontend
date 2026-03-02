@@ -1,9 +1,8 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { InstructorNavbar, Card } from "../../../components";
-import { COLORS } from "../../../constants/colors";
 
 const COURSES = [
   { id: "1", title: "React Native Basics", status: "Published", students: 45, rating: 4.8, color: "#61DAFB" },
@@ -14,54 +13,57 @@ const COURSES = [
 export default function MyCoursesScreen() {
   const router = useRouter();
   return (
-    <SafeAreaView style={styles.screen} edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
       <InstructorNavbar title="My Courses" />
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.countText}>{COURSES.length} Courses Total</Text>
-          <TouchableOpacity style={styles.filterBtn} activeOpacity={0.7} onPress={() => { }}>
-            <Ionicons name="filter" size={20} color={COLORS.gray[500]} />
-            <Text style={styles.filterText}>Filter</Text>
+      <ScrollView className="flex-1 p-4" showsVerticalScrollIndicator={false}>
+        <View className="flex-row justify-between items-center mb-5">
+          <Text className="text-[14px] text-slate-500 font-bold">{COURSES.length} Courses Total</Text>
+          <TouchableOpacity className="flex-row items-center" activeOpacity={0.7} onPress={() => { }}>
+            <Ionicons name="filter" size={20} color="#64748b" />
+            <Text className="text-[14px] text-slate-500 ml-1 font-semibold">Filter</Text>
           </TouchableOpacity>
         </View>
 
         {COURSES.map((course) => (
-          <Card key={course.id} style={styles.courseCard}>
-            <View style={[styles.thumbnail, { backgroundColor: course.color + "20" }]}>
+          <Card key={course.id} className="flex-row p-3 mb-4 rounded-2xl">
+            <View
+              className="w-20 h-20 rounded-xl items-center justify-center mr-4"
+              style={{ backgroundColor: course.color + "20" }}
+            >
               <Ionicons name="play-circle" size={40} color={course.color} />
             </View>
-            <View style={styles.courseInfo}>
-              <View style={styles.titleRow}>
-                <Text style={styles.courseTitle}>{course.title}</Text>
-                <View style={[styles.statusBadge, { backgroundColor: course.status === "Published" ? COLORS.success + "15" : COLORS.warning + "15" }]}>
-                  <Text style={[styles.statusText, { color: course.status === "Published" ? COLORS.success : COLORS.warning }]}>{course.status}</Text>
+            <View className="flex-1">
+              <View className="flex-row justify-between items-start">
+                <Text className="text-[16px] font-bold text-primary flex-1 mr-2" numberOfLines={2}>{course.title}</Text>
+                <View className={`px-2 py-0.5 rounded-md ${course.status === "Published" ? 'bg-success/10' : 'bg-amber-500/10'}`}>
+                  <Text className={`text-[10px] font-black ${course.status === "Published" ? 'text-success' : 'text-amber-500'}`}>{course.status}</Text>
                 </View>
               </View>
 
-              <View style={styles.metaRow}>
-                <View style={styles.metaItem}>
-                  <Ionicons name="people-outline" size={14} color={COLORS.gray[500]} />
-                  <Text style={styles.metaText}>{course.students} Students</Text>
+              <View className="flex-row mt-2">
+                <View className="flex-row items-center mr-4">
+                  <Ionicons name="people-outline" size={14} color="#94a3b8" />
+                  <Text className="text-[12px] text-slate-500 ml-1 font-medium">{course.students} Students</Text>
                 </View>
                 {course.rating > 0 && (
-                  <View style={styles.metaItem}>
-                    <Ionicons name="star" size={14} color={COLORS.warning} />
-                    <Text style={styles.metaText}>{course.rating}</Text>
+                  <View className="flex-row items-center">
+                    <Ionicons name="star" size={14} color="#f59e0b" />
+                    <Text className="text-[12px] text-slate-600 ml-1 font-bold">{course.rating}</Text>
                   </View>
                 )}
               </View>
 
-              <View style={styles.actionRow}>
-                <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7} onPress={() => { }}>
-                  <Ionicons name="create-outline" size={18} color={COLORS.secondary} />
-                  <Text style={styles.actionBtnText}>Edit</Text>
+              <View className="flex-row mt-4 pt-3 border-t border-slate-50">
+                <TouchableOpacity className="flex-row items-center mr-5" activeOpacity={0.7} onPress={() => { }}>
+                  <Ionicons name="create-outline" size={18} color="#6366f1" />
+                  <Text className="text-[13px] font-bold text-secondary ml-1.5">Edit</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.actionBtn} activeOpacity={0.7} onPress={() => { }}>
-                  <Ionicons name="bar-chart-outline" size={18} color={COLORS.secondary} />
-                  <Text style={styles.actionBtnText}>Stats</Text>
+                <TouchableOpacity className="flex-row items-center mr-5" activeOpacity={0.7} onPress={() => { }}>
+                  <Ionicons name="bar-chart-outline" size={18} color="#6366f1" />
+                  <Text className="text-[13px] font-bold text-secondary ml-1.5">Stats</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.moreBtn} activeOpacity={0.7} onPress={() => { }}>
-                  <Ionicons name="ellipsis-horizontal" size={18} color={COLORS.gray[400]} />
+                <TouchableOpacity className="ml-auto p-1" activeOpacity={0.7} onPress={() => { }}>
+                  <Ionicons name="ellipsis-horizontal" size={18} color="#cbd5e1" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -69,70 +71,14 @@ export default function MyCoursesScreen() {
         ))}
 
         <TouchableOpacity
-          style={styles.createBtn}
+          className="flex-row bg-secondary p-4 rounded-2xl items-center justify-center mt-2.5 mb-10 shadow-lg shadow-indigo-500/30 elevation-5"
           activeOpacity={0.8}
           onPress={() => router.push("/instructor/create-course")}
         >
-          <Ionicons name="add" size={24} color={COLORS.white} />
-          <Text style={styles.createBtnText}>Create New Course</Text>
+          <Ionicons name="add" size={24} color="white" />
+          <Text className="text-white font-black text-[16px] ml-2">Create New Course</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.light },
-  scroll: { flex: 1, padding: 16 },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  countText: { fontSize: 14, color: COLORS.gray[500], fontWeight: "600" },
-  filterBtn: { flexDirection: "row", alignItems: "center" },
-  filterText: { fontSize: 14, color: COLORS.gray[500], marginLeft: 4, fontWeight: "500" },
-  courseCard: {
-    flexDirection: "row",
-    padding: 12,
-    marginBottom: 16,
-    borderRadius: 16,
-  },
-  thumbnail: {
-    width: 80,
-    height: 80,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 16,
-  },
-  courseInfo: { flex: 1 },
-  titleRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
-  courseTitle: { fontSize: 16, fontWeight: "700", color: COLORS.primary, flex: 1, marginRight: 8 },
-  statusBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
-  statusText: { fontSize: 10, fontWeight: "800" },
-  metaRow: { flexDirection: "row", marginTop: 8 },
-  metaItem: { flexDirection: "row", alignItems: "center", marginRight: 16 },
-  metaText: { fontSize: 12, color: COLORS.gray[500], marginLeft: 4 },
-  actionRow: { flexDirection: "row", marginTop: 16, borderTopWidth: 1, borderTopColor: COLORS.gray[100], paddingTop: 12 },
-  actionBtn: { flexDirection: "row", alignItems: "center", marginRight: 20 },
-  actionBtnText: { fontSize: 13, fontWeight: "600", color: COLORS.secondary, marginLeft: 6 },
-  moreBtn: { marginLeft: "auto", padding: 4 },
-  createBtn: {
-    flexDirection: "row",
-    backgroundColor: COLORS.secondary,
-    padding: 16,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 10,
-    marginBottom: 40,
-    shadowColor: COLORS.secondary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  createBtnText: { color: COLORS.white, fontWeight: "700", fontSize: 16, marginLeft: 8 },
-});

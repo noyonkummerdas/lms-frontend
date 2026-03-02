@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Stack, useRouter } from "expo-router";
+import { Redirect, Stack, useRouter } from "expo-router";
 import { useDispatch } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import { Sidebar } from "../../../components";
 import { SidebarProvider } from "../../../contexts/SidebarContext";
 import { logout } from "../../../store/slices/authSlice";
+import { useAuth } from "../../../hooks";
 import { COLORS } from "../../../constants/colors";
 
 const ADMIN_MENU = [
@@ -22,9 +23,15 @@ const ADMIN_MENU = [
 ];
 
 export default function AdminLayout() {
+  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
+
+  // Role Guard
+  if (user && user.role !== "admin") {
+    return <Redirect href={"/(app)" as any} />;
+  }
 
   const handleMenuPress = (href: string) => {
     setSidebarOpen(false);

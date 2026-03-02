@@ -1,56 +1,23 @@
-import { View, StyleSheet, ViewStyle } from "react-native";
-import { COLORS } from "../constants/colors";
+import { View, ViewStyle } from "react-native";
 
 interface VideoPlayerProps {
   title?: string;
   videoUrl?: string;
   style?: ViewStyle;
+  className?: string;
 }
 
-export default function VideoPlayer({ title, videoUrl, style }: VideoPlayerProps) {
+export default function VideoPlayer({ title, videoUrl, style, className }: VideoPlayerProps) {
   return (
-    <View style={[styles.wrapper, style]}>
-      <View style={styles.placeholder}>
-        <View style={styles.playBtn}>
-          <View style={styles.playIcon} />
+    <View style={style} className={`bg-black rounded-xl overflow-hidden ${className}`}>
+      <View className="w-full h-56 bg-slate-900 justify-center items-center">
+        <View className="bg-secondary rounded-full p-4">
+          <View
+            className="w-0 h-0 border-l-[20px] border-t-[12px] border-b-[12px] border-l-white border-t-transparent border-b-transparent ml-1"
+          />
         </View>
       </View>
-      {title && <View style={styles.titleBar} />}
+      {title && <View className="p-3 bg-slate-50" />}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: {
-    backgroundColor: COLORS.black,
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  placeholder: {
-    width: "100%",
-    height: 256,
-    backgroundColor: COLORS.gray[800],
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  playBtn: {
-    backgroundColor: COLORS.secondary,
-    borderRadius: 9999,
-    padding: 16,
-  },
-  playIcon: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 20,
-    borderTopWidth: 12,
-    borderBottomWidth: 12,
-    borderLeftColor: COLORS.white,
-    borderTopColor: "transparent",
-    borderBottomColor: "transparent",
-    marginLeft: 4,
-  },
-  titleBar: {
-    padding: 12,
-    backgroundColor: COLORS.light,
-  },
-});

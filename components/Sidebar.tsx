@@ -1,6 +1,5 @@
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../constants/colors";
 import { useAuth } from "../hooks";
 
 interface SidebarProps {
@@ -21,41 +20,41 @@ export default function Sidebar({
   return (
     <>
       <TouchableOpacity
-        style={styles.overlay}
+        className="absolute top-0 left-0 right-0 bottom-0 bg-black/60 z-40"
         onPress={onClose}
         activeOpacity={1}
       />
-      <View style={styles.sidebar}>
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.userProfile} activeOpacity={0.8}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{user?.name?.charAt(0) || "U"}</Text>
+      <View className="absolute left-0 top-0 bottom-0 w-[280px] bg-primary z-50 pt-10 shadow-2xl elevation-20">
+        <View className="flex-row items-center justify-between px-5 mb-6 mt-2.5">
+          <TouchableOpacity className="flex-row items-center flex-1" activeOpacity={0.8}>
+            <View className="w-12 h-12 rounded-full bg-secondary items-center justify-center border-2 border-white/20">
+              <Text className="text-white text-[20px] font-black">{user?.name?.charAt(0) || "U"}</Text>
             </View>
-            <View style={styles.userInfo}>
-              <Text style={styles.userName} numberOfLines={1}>{user?.name || "Global User"}</Text>
-              <Text style={styles.userRole}>{user?.role || "Student"}</Text>
+            <View className="ml-3 flex-1">
+              <Text className="text-white text-[16px] font-bold" numberOfLines={1}>{user?.name || "Global User"}</Text>
+              <Text className="text-slate-400 text-[12px] font-semibold uppercase tracking-widest mt-0.5">{user?.role || "Student"}</Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
-            <Ionicons name="close-circle" size={28} color={COLORS.gray[400]} />
+          <TouchableOpacity onPress={onClose} className="p-1" activeOpacity={0.7}>
+            <Ionicons name="close-circle" size={28} color="#94a3b8" />
           </TouchableOpacity>
         </View>
-        <ScrollView style={styles.menu} showsVerticalScrollIndicator={false}>
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {menuItems.map((item, index) => (
             <TouchableOpacity
               key={index}
-              style={styles.menuItem}
+              className="px-5 py-3.5 mx-3 my-0.5 rounded-xl border-l-4 border-transparent active:bg-white/5 active:border-secondary"
               activeOpacity={0.7}
               onPress={() => {
                 item.onPress();
                 onClose();
               }}
             >
-              <View style={styles.menuItemContent}>
+              <View className="flex-row items-center">
                 {item.icon && (
-                  <Ionicons name={item.icon} size={20} color={COLORS.gray[400]} style={styles.menuIcon} />
+                  <Ionicons name={item.icon} size={20} color="#94a3b8" className="mr-3" />
                 )}
-                <Text style={styles.menuText}>{item.label}</Text>
+                <Text className="text-slate-200 text-[15px] font-semibold">{item.label}</Text>
               </View>
             </TouchableOpacity>
           ))}
@@ -64,96 +63,3 @@ export default function Sidebar({
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    zIndex: 40,
-  },
-  sidebar: {
-    position: "absolute",
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 280,
-    backgroundColor: COLORS.primary,
-    zIndex: 50,
-    paddingTop: 40,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 2, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 20,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    marginBottom: 24,
-    marginTop: 10,
-  },
-  userProfile: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: COLORS.secondary,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 2,
-    borderColor: "rgba(255,255,255,0.2)",
-  },
-  avatarText: {
-    color: COLORS.white,
-    fontSize: 20,
-    fontWeight: "800",
-  },
-  userInfo: {
-    marginLeft: 12,
-    flex: 1,
-  },
-  userName: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  userRole: {
-    color: COLORS.gray[400],
-    fontSize: 12,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    marginTop: 2,
-    letterSpacing: 0.5,
-  },
-  closeBtn: { padding: 4 },
-  menu: { flex: 1 },
-  menuItem: {
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    marginHorizontal: 12,
-    marginVertical: 2,
-    borderRadius: 8,
-  },
-  menuItemContent: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  menuIcon: {
-    marginRight: 12,
-  },
-  menuText: {
-    color: COLORS.gray[200],
-    fontSize: 15,
-    fontWeight: "500"
-  },
-});

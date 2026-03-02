@@ -1,5 +1,10 @@
-import { Text, Pressable, ViewStyle, StyleSheet, ActivityIndicator, View } from "react-native";
-import { COLORS } from "../constants/colors";
+import { Text, Pressable, ViewStyle, ActivityIndicator } from "react-native";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface ButtonProps {
   label: string;
@@ -9,6 +14,7 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   style?: ViewStyle;
+  className?: string;
   children?: React.ReactNode;
 }
 
@@ -20,50 +26,42 @@ export default function Button({
   disabled = false,
   loading = false,
   style,
+  className,
   children,
 }: ButtonProps) {
-  const variantBg = {
-    primary: COLORS.secondary,
-    secondary: COLORS.gray[300],
-    danger: COLORS.danger,
-    success: COLORS.success,
+  const variantClasses = {
+    primary: "bg-secondary",
+    secondary: "bg-slate-200",
+    danger: "bg-danger",
+    success: "bg-success",
   };
 
-  const sizeStyles = {
-    sm: { paddingHorizontal: 12, paddingVertical: 8 },
-    md: { paddingHorizontal: 16, paddingVertical: 12 },
-    lg: { paddingHorizontal: 24, paddingVertical: 16 },
+  const sizeClasses = {
+    sm: "px-3 py-2",
+    md: "px-4 py-3",
+    lg: "px-6 py-4",
   };
 
   return (
     <Pressable
-      style={[
-        styles.base,
-        { backgroundColor: variantBg[variant] },
-        sizeStyles[size],
-        (disabled || loading) && styles.disabled,
-        style,
-      ]}
+      className={cn(
+        "rounded-lg justify-center items-center",
+        variantClasses[variant],
+        sizeClasses[size],
+        (disabled || loading) && "opacity-50",
+        className
+      )}
+      style={style}
       disabled={disabled || loading}
       onPress={onPress}
     >
       {loading ? (
-        <ActivityIndicator color={COLORS.white} />
+        <ActivityIndicator color="white" />
       ) : children ? (
         children
       ) : (
-        <Text style={styles.label}>{label}</Text>
+        <Text className="color-white font-semibold text-center">{label}</Text>
       )}
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  base: {
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  disabled: { opacity: 0.5 },
-  label: { color: COLORS.white, fontWeight: "600", textAlign: "center" },
-});

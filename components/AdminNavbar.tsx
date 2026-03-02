@@ -1,6 +1,5 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../constants/colors";
 import { useSidebar } from "../contexts/SidebarContext";
 
 interface AdminNavbarProps {
@@ -11,42 +10,16 @@ export default function AdminNavbar({ title }: AdminNavbarProps) {
   const sidebar = useSidebar();
 
   return (
-    <View style={styles.navbar}>
+    <View className="bg-primary px-4 flex-row items-center h-[60px]">
       <TouchableOpacity
         onPress={() => sidebar?.toggle?.()}
-        style={styles.iconBtn}
+        className="w-10 h-10 rounded-full items-center justify-center"
         activeOpacity={0.7}
       >
-        <Ionicons name="menu" size={24} color={COLORS.white} />
+        <Ionicons name="menu" size={24} color="white" />
       </TouchableOpacity>
-      <Text style={styles.title}>{title}</Text>
-      <View style={styles.placeholder} />
+      <Text className="text-white text-[18px] font-extrabold flex-1 text-center">{title}</Text>
+      <View className="w-10" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  navbar: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    height: 60,
-  },
-  iconBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center"
-  },
-  title: {
-    color: COLORS.white,
-    fontSize: 18,
-    fontWeight: "800",
-    flex: 1,
-    textAlign: "center"
-  },
-  placeholder: { width: 40 },
-});

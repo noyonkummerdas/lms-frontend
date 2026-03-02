@@ -1,9 +1,8 @@
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../hooks";
 import { Navbar, Card, Button } from "../components";
-import { COLORS } from "../constants/colors";
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -11,96 +10,72 @@ export default function ProfileScreen() {
 
   if (!isAuthenticated) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.centeredText}>Not logged in</Text>
+      <View className="flex-1 bg-white justify-center items-center">
+        <Text className="text-primary font-bold mb-4">Not logged in</Text>
         <Button label="Go to Login" onPress={() => router.push("/auth/login")} variant="secondary" />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView className="flex-1 bg-light">
       <Navbar title="Profile" />
 
-      <ScrollView style={styles.scroll}>
-        <Card style={styles.profileCard}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarEmoji}>👤</Text>
+      <ScrollView className="flex-1 p-4">
+        <Card className="mb-6 items-center">
+          <View className="w-20 h-20 bg-secondary rounded-full items-center justify-center mb-4">
+            <Text className="text-[36px]">👤</Text>
           </View>
-          <Text style={styles.name}>{user?.name}</Text>
-          <Text style={styles.email}>{user?.email}</Text>
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>{user?.role}</Text>
+          <Text className="text-2xl font-bold text-primary mb-1">{user?.name}</Text>
+          <Text className="text-slate-600 mb-2">{user?.email}</Text>
+          <View className="bg-success/20 px-3 py-1 rounded-full">
+            <Text className="text-success font-bold text-[12px] capitalize">{user?.role}</Text>
           </View>
         </Card>
 
-        <Text style={styles.sectionTitle}>Information</Text>
+        <Text className="text-lg font-bold text-primary mb-3">Information</Text>
 
-        <Card style={styles.infoCard}>
-          <Text style={styles.infoLabel}>User ID</Text>
-          <Text style={styles.infoValue}>{user?.id}</Text>
+        <Card className="mb-3">
+          <Text className="text-[12px] text-slate-500 mb-1">User ID</Text>
+          <Text className="text-primary font-bold">{user?.id}</Text>
         </Card>
 
-        <Card style={styles.infoCard}>
-          <Text style={styles.infoLabel}>Member Since</Text>
-          <Text style={styles.infoValue}>
+        <Card className="mb-3">
+          <Text className="text-[12px] text-slate-500 mb-1">Member Since</Text>
+          <Text className="text-primary font-bold">
             {new Date(user?.createdAt || "").toLocaleDateString()}
           </Text>
         </Card>
 
-        <Card style={[styles.infoCard, styles.lastCard]}>
-          <Text style={styles.infoLabel}>Last Updated</Text>
-          <Text style={styles.infoValue}>
+        <Card className="mb-6">
+          <Text className="text-[12px] text-slate-500 mb-1">Last Updated</Text>
+          <Text className="text-primary font-bold">
             {new Date(user?.updatedAt || "").toLocaleDateString()}
           </Text>
         </Card>
 
-        <Text style={styles.sectionTitle}>Statistics</Text>
+        <Text className="text-lg font-bold text-primary mb-3">Statistics</Text>
 
-        <View style={styles.statsRow}>
-          <Card style={styles.statCard}>
-            <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statLabel}>Enrolled Courses</Text>
+        <View className="flex-row mb-6 mx-[-4px]">
+          <Card className="flex-1 mx-1 p-3">
+            <Text className="text-[28px] text-center mb-2 text-primary font-black">12</Text>
+            <Text className="text-[10px] text-center text-slate-600">Enrolled Courses</Text>
           </Card>
-          <Card style={styles.statCard}>
-            <Text style={styles.statValue}>3</Text>
-            <Text style={styles.statLabel}>Certificates</Text>
+          <Card className="flex-1 mx-1 p-3">
+            <Text className="text-[28px] text-center mb-2 text-primary font-black">3</Text>
+            <Text className="text-[10px] text-center text-slate-600">Certificates</Text>
           </Card>
-          <Card style={styles.statCard}>
-            <Text style={styles.statValue}>65%</Text>
-            <Text style={styles.statLabel}>Avg Progress</Text>
+          <Card className="flex-1 mx-1 p-3">
+            <Text className="text-[28px] text-center mb-2 text-primary font-black">65%</Text>
+            <Text className="text-[10px] text-center text-slate-600">Avg Progress</Text>
           </Card>
         </View>
 
-        <Button label="Edit Profile" onPress={() => router.push("/settings")} variant="secondary" style={styles.actionBtn} />
-        <Button label="View Certificates" onPress={() => router.push("/certificates")} variant="primary" style={styles.actionBtn} />
-        <Button label="Account Settings" onPress={() => router.push("/settings")} variant="success" style={styles.actionBtnLast} />
+        <Button label="Edit Profile" onPress={() => router.push("/student/profile" as any)} variant="secondary" className="mb-3" />
+        <Button label="View Certificates" onPress={() => router.push("/student/certificates" as any)} variant="primary" className="mb-3" />
+        <Button label="Account Settings" onPress={() => router.push("/student/profile" as any)} variant="success" className="mb-6" />
+        <View className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.light },
-  scroll: { flex: 1, padding: 16 },
-  centered: { flex: 1, backgroundColor: COLORS.white, justifyContent: "center", alignItems: "center" },
-  centeredText: { color: COLORS.primary, fontWeight: "700", marginBottom: 16 },
-  profileCard: { marginBottom: 24, alignItems: "center" },
-  avatar: { width: 80, height: 80, backgroundColor: COLORS.secondary, borderRadius: 9999, alignItems: "center", justifyContent: "center", marginBottom: 16 },
-  avatarEmoji: { fontSize: 36 },
-  name: { fontSize: 24, fontWeight: "700", color: COLORS.primary, marginBottom: 4 },
-  email: { color: COLORS.gray[600], marginBottom: 8 },
-  badge: { backgroundColor: "rgba(16, 185, 129, 0.2)", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
-  badgeText: { color: COLORS.success, fontWeight: "600", fontSize: 12, textTransform: "capitalize" },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: COLORS.primary, marginBottom: 12 },
-  infoCard: { marginBottom: 12 },
-  lastCard: { marginBottom: 24 },
-  infoLabel: { fontSize: 12, color: COLORS.gray[500], marginBottom: 4 },
-  infoValue: { color: COLORS.primary, fontWeight: "600" },
-  statsRow: { flexDirection: "row", marginBottom: 24 },
-  statCard: { flex: 1, marginHorizontal: 4 },
-  statValue: { fontSize: 28, textAlign: "center", marginBottom: 8, color: COLORS.primary },
-  statLabel: { fontSize: 12, textAlign: "center", color: COLORS.gray[600] },
-  actionBtn: { marginBottom: 12 },
-  actionBtnLast: { marginBottom: 24 },
-});

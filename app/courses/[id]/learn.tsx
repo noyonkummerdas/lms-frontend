@@ -1,10 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Modal, Alert, TextInput } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal, Alert, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Navbar, Card, Button } from "../../../components";
-import { COLORS } from "../../../constants/colors";
 import * as ScreenOrientation from 'expo-screen-orientation';
 
 const INITIAL_MODULES = [
@@ -63,11 +62,9 @@ export default function CoursePlayerScreen() {
         }
     };
 
-    // New Completion Flow States
     const [quizScore, setQuizScore] = useState<number | null>(null);
     const [isAssignmentSubmitted, setIsAssignmentSubmitted] = useState(false);
 
-    // Feature Logic States
     const [noteText, setNoteText] = useState("");
     const [pastNotes, setPastNotes] = useState<{ id: string, lesson: string, text: string, time: string }[]>([]);
     const [discussionText, setDiscussionText] = useState("");
@@ -81,7 +78,7 @@ export default function CoursePlayerScreen() {
             id: Date.now().toString(),
             lesson: activeLesson.title,
             text: noteText,
-            time: "2:45" // Mock timestamp
+            time: "2:45"
         };
         setPastNotes([newNote, ...pastNotes]);
         setNoteText("");
@@ -112,7 +109,6 @@ export default function CoursePlayerScreen() {
         isAllLessonsCompleted && isQuizPassed && isAssignmentSubmitted,
         [isAllLessonsCompleted, isQuizPassed, isAssignmentSubmitted]);
 
-    // Simulate video progress when playing
     useEffect(() => {
         let interval: any;
         if (isPlaying && videoProgress < 100) {
@@ -125,7 +121,6 @@ export default function CoursePlayerScreen() {
 
     const handleLessonPress = (lesson: typeof allLessons[0]) => {
         setActiveLesson(lesson);
-        // Reset progress for new lesson unless it's already completed
         setVideoProgress(lesson.completed ? 100 : 0);
         setIsPlaying(false);
     };
@@ -158,153 +153,144 @@ export default function CoursePlayerScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.screen} edges={["top"]}>
+        <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
             <Navbar title={title || "Now Learning"} showBack={true} onBackPress={() => router.back()} />
 
-            <View style={[styles.videoContainer, isFullscreen && styles.fullscreenVideo]}>
-                <View style={styles.videoPlaceholder}>
+            <View className={`w-full aspect-video bg-primary ${isFullscreen ? 'absolute top-0 left-0 right-0 bottom-0 z-50 h-full' : ''}`}>
+                <View className="flex-1 items-center justify-center">
                     <Ionicons
                         name={isPlaying ? "pause-circle" : "play-circle"}
                         size={isFullscreen ? 120 : 80}
-                        color={COLORS.white}
+                        color="white"
                         onPress={() => setIsPlaying(!isPlaying)}
                     />
-                    <Text style={[styles.videoOverlayText, isFullscreen && { fontSize: 18 }]}>
+                    <Text className={`text-white mt-3 text-[13px] font-semibold opacity-80 ${isFullscreen ? 'text-[18px]' : ''}`}>
                         {videoProgress === 100 ? "✓ Lesson Finished" : isPlaying ? "Watching..." : "Tapped to Play"}
                     </Text>
                 </View>
 
                 {/* Video Watermark */}
-                <View style={[styles.watermarkContainer, isFullscreen && styles.fullscreenWatermark]}>
-                    <Text style={[styles.watermarkText, isFullscreen && { fontSize: 14 }]}>user_7829 • techsoul.lms</Text>
+                <View className={`absolute top-[15px] right-[15px] bg-white/10 p-1 rounded ${isFullscreen ? 'top-[30px] right-[40px] p-2' : ''}`}>
+                    <Text className={`text-white/30 text-[9px] font-bold ${isFullscreen ? 'text-[14px]' : ''}`}>user_7829 • techsoul.lms</Text>
                 </View>
 
-                <View style={[styles.controls, isFullscreen && styles.fullscreenControls]}>
-                    <TouchableOpacity style={styles.controlBtn} onPress={() => setIsPlaying(!isPlaying)}>
-                        <Ionicons name={isPlaying ? "pause" : "play"} size={isFullscreen ? 32 : 28} color={COLORS.white} />
+                <View className={`absolute bottom-0 left-0 right-0 h-[50px] bg-black/60 flex-row items-center px-4 ${isFullscreen ? 'h-20 px-10 pb-5' : ''}`}>
+                    <TouchableOpacity className="p-1" onPress={() => setIsPlaying(!isPlaying)}>
+                        <Ionicons name={isPlaying ? "pause" : "play"} size={isFullscreen ? 32 : 28} color="white" />
                     </TouchableOpacity>
 
-                    <View style={styles.progressTrack}>
-                        <View style={[styles.progressFill, { width: `${videoProgress}%` }]} />
+                    <View className="flex-1 h-1 bg-white/30 rounded-sm mx-3">
+                        <View className="h-full bg-secondary rounded-sm" style={{ width: `${videoProgress}%` }} />
                     </View>
 
-                    <Text style={[styles.timeText, isFullscreen && { fontSize: 14 }]}>
+                    <Text className={`text-white text-[10px] font-bold ${isFullscreen ? 'text-[14px]' : ''}`}>
                         {videoProgress === 100 ? activeLesson.duration : `${Math.floor((videoProgress / 100) * parseInt(activeLesson.duration.split(':')[0]))}:${(Math.floor((videoProgress / 100) * 60)).toString().padStart(2, '0')}`} / {activeLesson.duration}
                     </Text>
 
-                    <TouchableOpacity style={[styles.controlBtn, { marginLeft: 12 }]} onPress={toggleFullscreen}>
-                        <Ionicons name={isFullscreen ? "contract" : "expand"} size={isFullscreen ? 28 : 24} color={COLORS.white} />
+                    <TouchableOpacity className="p-1 ml-3" onPress={toggleFullscreen}>
+                        <Ionicons name={isFullscreen ? "contract" : "expand"} size={isFullscreen ? 28 : 24} color="white" />
                     </TouchableOpacity>
                 </View>
             </View>
 
             {!isFullscreen && (
-                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                    <View style={styles.infoSection}>
-                        <View style={styles.titleRow}>
-                            <View style={{ flex: 1 }}>
-                                <Text style={styles.activeTitle}>{activeLesson.title}</Text>
-                                <Text style={styles.courseName}>{title || "Full Course Curriculum"}</Text>
+                <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                    <View className="p-5 border-b border-slate-100">
+                        <View className="flex-row items-center justify-between">
+                            <View className="flex-1">
+                                <Text className="text-[18px] font-extrabold text-primary">{activeLesson.title}</Text>
+                                <Text className="text-[13px] text-secondary mt-1 font-bold">{title || "Full Course Curriculum"}</Text>
                             </View>
                             {!activeLesson.completed ? (
                                 <TouchableOpacity
-                                    style={[
-                                        styles.completeBtn,
-                                        { backgroundColor: videoProgress < 65 ? 'black' : videoProgress < 100 ? 'tomato' : COLORS.secondary }
-                                    ]}
+                                    className={`flex-row items-center px-3 py-2 rounded-xl ${videoProgress < 65 ? 'bg-black' : videoProgress < 100 ? 'bg-rose-500' : 'bg-secondary'}`}
                                     onPress={handleCompleteLesson}
                                 >
-                                    <Ionicons name="checkmark-circle" size={20} color={COLORS.white} />
-                                    <Text style={styles.completeBtnText}>Complete Lesson</Text>
+                                    <Ionicons name="checkmark-circle" size={20} color="white" />
+                                    <Text className="text-white text-[12px] font-bold ml-1">Complete Lesson</Text>
                                 </TouchableOpacity>
                             ) : (
-                                <View style={styles.alreadyCompletedBadge}>
-                                    <Ionicons name="checkmark-done-circle" size={24} color={COLORS.success} />
-                                    <Text style={styles.alreadyCompletedText}>Finished</Text>
+                                <View className="flex-row items-center bg-success/10 px-3 py-2 rounded-xl">
+                                    <Ionicons name="checkmark-done-circle" size={24} color="#10b981" />
+                                    <Text className="text-[13px] font-extrabold text-success ml-1.5">Finished</Text>
                                 </View>
                             )}
                         </View>
                     </View>
 
-                    <View style={styles.tabBar}>
-                        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabScroll}>
+                    <View className="bg-slate-50 py-3">
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
                             {["Lessons", "Overview", "Q&A", "Notes", "Assessments"].map(tab => (
                                 <TouchableOpacity
                                     key={tab}
-                                    style={[styles.tab, activeTab === tab && styles.activeTab]}
+                                    className={`px-4 py-2 mr-2 rounded-full flex-row items-center ${activeTab === tab ? 'bg-white shadow-sm' : ''}`}
                                     onPress={() => setActiveTab(tab)}
                                 >
-                                    <Text style={[styles.tabText, activeTab === tab && styles.activeTabText]}>{tab}</Text>
+                                    <Text className={`text-[13px] font-semibold ${activeTab === tab ? 'text-secondary' : 'text-slate-500'}`}>{tab}</Text>
                                 </TouchableOpacity>
                             ))}
                             <TouchableOpacity
-                                style={[styles.tab, styles.liveTab]}
+                                className="px-4 py-2 mr-2 rounded-full flex-row items-center bg-rose-50"
                                 onPress={() => Alert.alert("Join Live Class", "The Zoom session will start at 8:00 PM. Link: zoom.us/j/12345678")}
                             >
-                                <View style={styles.liveIndicator} />
-                                <Text style={[styles.tabText, { color: COLORS.danger }]}>Live</Text>
+                                <View className="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5" />
+                                <Text className="text-[13px] font-semibold text-rose-500">Live</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={[styles.tab, { backgroundColor: isDownloaded ? COLORS.success + "10" : COLORS.primary + "10" }]}
+                                className={`px-4 py-2 mr-2 rounded-full flex-row items-center ${isDownloaded ? 'bg-success/10' : 'bg-primary/10'}`}
                                 onPress={handleDownload}
                                 disabled={isDownloading || isDownloaded}
                             >
                                 <Ionicons
                                     name={isDownloaded ? "cloud-done" : isDownloading ? "sync" : "cloud-download-outline"}
                                     size={16}
-                                    color={isDownloaded ? COLORS.success : COLORS.primary}
+                                    color={isDownloaded ? "#10b981" : "#0f172a"}
                                 />
-                                <Text style={[styles.tabText, { color: isDownloaded ? COLORS.success : COLORS.primary, marginLeft: 4 }]}>
+                                <Text className={`text-[13px] font-semibold ml-1 ${isDownloaded ? 'text-success' : 'text-primary'}`}>
                                     {isDownloaded ? "Saved" : isDownloading ? "Download..." : "Download"}
                                 </Text>
                             </TouchableOpacity>
 
                             {isAllCompleted && (
                                 <TouchableOpacity
-                                    style={[styles.tab, { backgroundColor: COLORS.success + "15" }]}
+                                    className="px-4 py-2 mr-2 rounded-full flex-row items-center bg-success/15"
                                     onPress={() => setShowCompletion(true)}
                                 >
-                                    <Ionicons name="ribbon" size={16} color={COLORS.success} />
-                                    <Text style={[styles.tabText, { color: COLORS.success, marginLeft: 4 }]}>Certificate</Text>
+                                    <Ionicons name="ribbon" size={16} color="#10b981" />
+                                    <Text className="text-[13px] font-semibold text-success ml-1">Certificate</Text>
                                 </TouchableOpacity>
                             )}
                         </ScrollView>
                     </View>
 
                     {activeTab === "Lessons" && (
-                        <View style={styles.lessonList}>
+                        <View className="p-4">
                             {modules.map((module) => (
-                                <View key={module.id} style={styles.moduleContainer}>
-                                    <View style={styles.moduleHeader}>
-                                        <Text style={styles.moduleTitle}>{module.title}</Text>
-                                        <Text style={styles.moduleMeta}>{module.lessons.length} Lessons</Text>
+                                <View key={module.id} className="mb-6">
+                                    <View className="flex-row justify-between items-center mb-3 px-1">
+                                        <Text className="text-[16px] font-extrabold text-primary">{module.title}</Text>
+                                        <Text className="text-[12px] font-semibold text-slate-400">{module.lessons.length} Lessons</Text>
                                     </View>
                                     {module.lessons.map((lesson) => (
                                         <TouchableOpacity
                                             key={lesson.id}
-                                            style={[
-                                                styles.lessonItem,
-                                                activeLesson.id === lesson.id && styles.activeLessonItem
-                                            ]}
+                                            className={`flex-row items-center p-4 rounded-2xl mb-3 bg-white border ${activeLesson.id === lesson.id ? 'border-secondary bg-indigo-50/20' : 'border-slate-100'}`}
                                             onPress={() => handleLessonPress(lesson)}
                                         >
-                                            <View style={[styles.lessonStatus, lesson.completed && styles.statusCompleted]}>
+                                            <View className={`w-7 h-7 rounded-full items-center justify-center mr-4 ${lesson.completed ? 'bg-success' : 'bg-slate-100'}`}>
                                                 {lesson.completed ? (
-                                                    <Ionicons name="checkmark" size={14} color={COLORS.white} />
+                                                    <Ionicons name="checkmark" size={14} color="white" />
                                                 ) : (
-                                                    <Text style={styles.lessonNumber}>{lesson.id}</Text>
+                                                    <Text className="text-[12px] font-bold text-slate-400">{lesson.id}</Text>
                                                 )}
                                             </View>
-                                            <View style={styles.lessonInfo}>
-                                                <Text style={[
-                                                    styles.lessonTitle,
-                                                    activeLesson.id === lesson.id && styles.activeLessonTitle
-                                                ]}>
+                                            <View className="flex-1">
+                                                <Text className={`text-[15px] font-bold ${activeLesson.id === lesson.id ? 'text-secondary' : 'text-primary'}`}>
                                                     {lesson.title}
                                                 </Text>
-                                                <Text style={styles.lessonDuration}>
-                                                    <Ionicons name="time-outline" size={12} color={COLORS.gray[400]} /> {lesson.duration}
+                                                <Text className="text-[12px] text-slate-400 mt-1 font-medium">
+                                                    <Ionicons name="time-outline" size={12} color="#94a3b8" /> {lesson.duration}
                                                 </Text>
                                             </View>
                                         </TouchableOpacity>
@@ -315,45 +301,47 @@ export default function CoursePlayerScreen() {
                     )}
 
                     {activeTab === "Q&A" && (
-                        <View style={styles.qaContainer}>
-                            <View style={styles.discussionHeader}>
-                                <Text style={styles.qaTitle}>Discussion Forum</Text>
-                                <TouchableOpacity style={styles.filterBtn}>
-                                    <Text style={styles.filterText}>Popular</Text>
-                                    <Ionicons name="chevron-down" size={14} color={COLORS.gray[500]} />
+                        <View className="p-5">
+                            <View className="flex-row justify-between items-center mb-4">
+                                <Text className="text-[16px] font-extrabold text-primary">Discussion Forum</Text>
+                                <TouchableOpacity className="flex-row items-center bg-white px-2.5 py-1 rounded-lg border border-slate-100">
+                                    <Text className="text-[12px] text-slate-600 font-semibold mr-1">Popular</Text>
+                                    <Ionicons name="chevron-down" size={14} color="#64748b" />
                                 </TouchableOpacity>
                             </View>
-                            <View style={styles.qaInputRow}>
+                            <View className="flex-row mb-6">
                                 <TextInput
                                     placeholder="Ask a question or start a discussion..."
-                                    style={styles.qaInput}
+                                    className="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-100"
                                     value={discussionText}
                                     onChangeText={setDiscussionText}
                                 />
-                                <TouchableOpacity style={styles.qaSend} onPress={handlePostDiscussion}>
-                                    <Ionicons name="send" size={20} color={COLORS.white} />
+                                <TouchableOpacity className="bg-secondary p-3 rounded-xl ml-2 justify-center" onPress={handlePostDiscussion}>
+                                    <Ionicons name="send" size={20} color="white" />
                                 </TouchableOpacity>
                             </View>
 
                             {(discussions[activeLesson.id as keyof typeof discussions] || []).map((q: any, i: number) => (
-                                <Card key={i} style={styles.qaCard}>
-                                    <View style={styles.qaHeader}>
-                                        <View style={styles.qaAvatar}><Text style={styles.qaAvatarText}>{q.user[0]}</Text></View>
-                                        <View style={{ flex: 1, marginLeft: 8 }}>
-                                            <Text style={styles.qaUser}>{q.user}</Text>
-                                            <Text style={styles.qaTime}>Just now</Text>
+                                <Card key={i} className="p-4 mb-3">
+                                    <View className="flex-row items-center mb-2.5">
+                                        <View className="w-6 h-6 rounded-full bg-secondary/20 items-center justify-center">
+                                            <Text className="text-[10px] font-extrabold text-secondary">{q.user[0]}</Text>
                                         </View>
-                                        <TouchableOpacity style={styles.likeBtn}>
-                                            <Ionicons name="heart-outline" size={16} color={COLORS.gray[400]} />
-                                            <Text style={styles.likeText}>0</Text>
+                                        <View className="flex-1 ml-2">
+                                            <Text className="text-[13px] font-bold text-primary">{q.user}</Text>
+                                            <Text className="text-[11px] text-slate-400 mt-0.5">Just now</Text>
+                                        </View>
+                                        <TouchableOpacity className="flex-row items-center bg-slate-50 px-2 py-1 rounded-lg">
+                                            <Ionicons name="heart-outline" size={16} color="#94a3b8" />
+                                            <Text className="text-[11px] font-bold text-slate-500 ml-1">0</Text>
                                         </TouchableOpacity>
                                     </View>
-                                    <Text style={styles.qaQuestion}>{q.question}</Text>
+                                    <Text className="text-[14px] text-slate-700 leading-5">{q.question}</Text>
                                     {q.reply && (
-                                        <View style={styles.qaReply}>
-                                            <Ionicons name="return-down-forward" size={16} color={COLORS.secondary} />
-                                            <View style={styles.replyContent}>
-                                                <Text style={styles.qaReplyText}>{q.reply}</Text>
+                                        <View className="mt-3 border-t border-slate-50 pt-2.5 flex-row">
+                                            <Ionicons name="return-down-forward" size={16} color="#6366f1" />
+                                            <View className="flex-1 ml-2">
+                                                <Text className="text-[13px] text-secondary font-medium">{q.reply}</Text>
                                             </View>
                                         </View>
                                     )}
@@ -363,36 +351,36 @@ export default function CoursePlayerScreen() {
                     )}
 
                     {activeTab === "Notes" && (
-                        <View style={styles.notesContainer}>
-                            <View style={styles.notesHeader}>
-                                <Text style={styles.notesTitle}>My Private Notes</Text>
-                                <Text style={styles.notesSubtitle}>Taking notes for: {activeLesson.title}</Text>
+                        <View className="p-5">
+                            <View className="mb-4">
+                                <Text className="text-[18px] font-extrabold text-primary">My Private Notes</Text>
+                                <Text className="text-[12px] text-slate-400 mt-0.5">Taking notes for: {activeLesson.title}</Text>
                             </View>
-                            <Card style={styles.notesCard}>
+                            <Card className="p-4 mb-6">
                                 <TextInput
                                     multiline
                                     placeholder="Take a note for this lesson..."
-                                    style={styles.notesInput}
-                                    placeholderTextColor={COLORS.gray[400]}
+                                    className="text-[14px] text-primary leading-6 min-h-[120px] text-start"
+                                    placeholderTextColor="#94a3b8"
                                     value={noteText}
                                     onChangeText={setNoteText}
                                 />
-                                <View style={styles.notesFooter}>
-                                    <Text style={styles.timestampText}>Auto-timestamp: 02:45</Text>
-                                    <TouchableOpacity style={styles.saveNoteBtn} onPress={handleSaveNote}>
-                                        <Text style={styles.saveNoteText}>Save Note</Text>
+                                <View className="flex-row justify-between items-center mt-4 pt-3 border-t border-slate-50">
+                                    <Text className="text-[11px] text-slate-400 font-semibold">Auto-timestamp: 02:45</Text>
+                                    <TouchableOpacity className="bg-secondary px-4 py-2.5 rounded-xl" onPress={handleSaveNote}>
+                                        <Text className="text-white font-bold text-[13px]">Save Note</Text>
                                     </TouchableOpacity>
                                 </View>
                             </Card>
-                            <View style={styles.pastNotes}>
-                                <Text style={styles.pastNotesTitle}>Recent Notes</Text>
+                            <View>
+                                <Text className="text-[16px] font-extrabold text-primary mb-3">Recent Notes</Text>
                                 {pastNotes.length === 0 ? (
-                                    <Text style={{ color: COLORS.gray[400], fontStyle: 'italic', marginTop: 10 }}>No notes saved for this course yet.</Text>
+                                    <Text className="color-slate-400 italic mt-2.5">No notes saved for this course yet.</Text>
                                 ) : (
                                     pastNotes.map((note) => (
-                                        <Card key={note.id} style={styles.pastNoteItem}>
-                                            <Text style={styles.pastNoteTag}>{note.lesson} • {note.time}</Text>
-                                            <Text style={styles.pastNoteText}>{note.text}</Text>
+                                        <Card key={note.id} className="p-4 mb-3">
+                                            <Text className="text-[11px] font-bold text-secondary mb-2 uppercase">{note.lesson} • {note.time}</Text>
+                                            <Text className="text-[13px] text-slate-600 leading-[18px]">{note.text}</Text>
                                         </Card>
                                     ))
                                 )}
@@ -401,31 +389,30 @@ export default function CoursePlayerScreen() {
                     )}
 
                     {activeTab === "Assessments" && (
-                        <View style={styles.assessmentList}>
+                        <View className="p-4">
                             <TouchableOpacity
-                                style={[styles.assessmentCard, isQuizPassed && styles.assessmentCardDone]}
+                                className={`flex-row items-center bg-white p-4 rounded-2xl mb-3 border ${isQuizPassed ? 'border-success bg-success/5' : 'border-slate-100'}`}
                                 onPress={() => {
                                     if (!isAllLessonsCompleted) {
                                         Alert.alert("Locked", "Finish all video lessons first!");
                                         return;
                                     }
-                                    // Simulate finishing quiz with 3/3
                                     setQuizScore(3);
                                     Alert.alert("Quiz Passed", "Score: 3/3 (100%)");
                                 }}
                             >
-                                <View style={[styles.assessmentIcon, { backgroundColor: isQuizPassed ? COLORS.success + "15" : COLORS.secondary + "15" }]}>
-                                    <Ionicons name={isQuizPassed ? "checkmark-circle" : "help-circle"} size={24} color={isQuizPassed ? COLORS.success : COLORS.secondary} />
+                                <View className={`w-12 h-12 rounded-xl items-center justify-center mr-4 ${isQuizPassed ? 'bg-success/15' : 'bg-secondary/15'}`}>
+                                    <Ionicons name={isQuizPassed ? "checkmark-circle" : "help-circle"} size={24} color={isQuizPassed ? "#10b981" : "#6366f1"} />
                                 </View>
-                                <View style={styles.assessmentInfo}>
-                                    <Text style={styles.assessmentName}>Module Quiz</Text>
-                                    <Text style={styles.assessmentMeta}>{isQuizPassed ? "Result: Passed" : "3 Questions • 5 Minutes"}</Text>
+                                <View className="flex-1">
+                                    <Text className="text-[15px] font-bold text-primary">Module Quiz</Text>
+                                    <Text className="text-[12px] text-slate-500 mt-1">{isQuizPassed ? "Result: Passed" : "3 Questions • 5 Minutes"}</Text>
                                 </View>
-                                <Ionicons name="chevron-forward" size={20} color={COLORS.gray[300]} />
+                                <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={[styles.assessmentCard, isAssignmentSubmitted && styles.assessmentCardDone]}
+                                className={`flex-row items-center bg-white p-4 rounded-2xl mb-3 border ${isAssignmentSubmitted ? 'border-success bg-success/5' : 'border-slate-100'}`}
                                 onPress={() => {
                                     if (!isQuizPassed) {
                                         Alert.alert("Locked", "Pass the Module Quiz first!");
@@ -435,27 +422,26 @@ export default function CoursePlayerScreen() {
                                     Alert.alert("Success", "Assignment submitted successfully!");
                                 }}
                             >
-                                <View style={[styles.assessmentIcon, { backgroundColor: isAssignmentSubmitted ? COLORS.success + "15" : COLORS.warning + "15" }]}>
-                                    <Ionicons name={isAssignmentSubmitted ? "checkmark-circle" : "document-text"} size={24} color={isAssignmentSubmitted ? COLORS.success : COLORS.warning} />
+                                <View className={`w-12 h-12 rounded-xl items-center justify-center mr-4 ${isAssignmentSubmitted ? 'bg-success/15' : 'bg-amber-500/15'}`}>
+                                    <Ionicons name={isAssignmentSubmitted ? "checkmark-circle" : "document-text"} size={24} color={isAssignmentSubmitted ? "#10b981" : "#f59e0b"} />
                                 </View>
-                                <View style={styles.assessmentInfo}>
-                                    <Text style={styles.assessmentName}>Assignment Submission</Text>
-                                    <Text style={styles.assessmentMeta}>{isAssignmentSubmitted ? "Status: Submitted" : "Practical Task • Due Oct 30"}</Text>
+                                <View className="flex-1">
+                                    <Text className="text-[15px] font-bold text-primary">Assignment Submission</Text>
+                                    <Text className="text-[12px] text-slate-500 mt-1">{isAssignmentSubmitted ? "Status: Submitted" : "Practical Task • Due Oct 30"}</Text>
                                 </View>
-                                <Ionicons name="chevron-forward" size={20} color={COLORS.gray[300]} />
+                                <Ionicons name="chevron-forward" size={20} color="#cbd5e1" />
                             </TouchableOpacity>
 
-                            {/* Score Summary Box */}
                             {(isQuizPassed || isAssignmentSubmitted) && (
-                                <View style={styles.scoreSummaryBox}>
-                                    <Text style={styles.scoreSummaryTitle}>Final Score Board</Text>
-                                    <View style={styles.scoreRow}>
-                                        <Text style={styles.scoreLabel}>Quiz Performance:</Text>
-                                        <Text style={styles.scoreValueText}>{isQuizPassed ? "100%" : "---"}</Text>
+                                <View className="mt-6 p-5 bg-slate-50 rounded-[20px] border border-slate-100">
+                                    <Text className="text-[16px] font-black text-primary mb-4">Final Score Board</Text>
+                                    <View className="flex-row justify-between mb-2.5">
+                                        <Text className="text-[14px] text-slate-500 font-semibold">Quiz Performance:</Text>
+                                        <Text className="text-[14px] text-primary font-extrabold">{isQuizPassed ? "100%" : "---"}</Text>
                                     </View>
-                                    <View style={styles.scoreRow}>
-                                        <Text style={styles.scoreLabel}>Assignment Status:</Text>
-                                        <Text style={styles.scoreValueText}>{isAssignmentSubmitted ? "Submitted" : "Pending"}</Text>
+                                    <View className="flex-row justify-between">
+                                        <Text className="text-[14px] text-slate-500 font-semibold">Assignment Status:</Text>
+                                        <Text className="text-[14px] text-primary font-extrabold">{isAssignmentSubmitted ? "Submitted" : "Pending"}</Text>
                                     </View>
                                 </View>
                             )}
@@ -463,40 +449,39 @@ export default function CoursePlayerScreen() {
                     )}
 
                     {activeTab === "Overview" && (
-                        <View style={styles.overviewContainer}>
-                            <Text style={styles.overviewTitle}>About this lesson</Text>
-                            <Text style={styles.overviewText}>
+                        <View className="p-5">
+                            <Text className="text-[16px] font-extrabold text-primary mb-3">About this lesson</Text>
+                            <Text className="text-[14px] text-slate-600 leading-[22px]">
                                 In this lesson, we will cover the core concepts of {activeLesson.title}.
                                 Make sure to follow along with the provided source code and join the Q&A if you have any doubts.
                             </Text>
                         </View>
                     )}
 
-                    <View style={{ height: 40 }} />
+                    <View className="h-10" />
                 </ScrollView>
             )}
 
             <Modal visible={showCompletion} transparent animationType="slide">
-                <View style={styles.modalOverlay}>
-                    <Card style={styles.modalCard}>
-                        <View style={styles.successIconBox}>
-                            <Ionicons name="ribbon" size={60} color={COLORS.success} />
+                <View className="flex-1 bg-black/70 justify-center items-center p-5">
+                    <Card className="w-full items-center p-8">
+                        <View className="w-20 h-20 bg-amber-500/15 rounded-full items-center justify-center mb-5">
+                            <Ionicons name="ribbon" size={60} color="#10b981" />
                         </View>
-                        <Text style={styles.modalTitle}>Course Completed!</Text>
-                        <Text style={styles.modalSub}>You have successfully mastered</Text>
-                        <Text style={styles.modalCourseName}>{title || "the course"}</Text>
+                        <Text className="text-[22px] font-black text-primary mb-2">Course Completed!</Text>
+                        <Text className="text-[14px] text-slate-500 mb-1">You have successfully mastered</Text>
+                        <Text className="text-[16px] font-bold text-secondary mb-5 text-center">{title || "the course"}</Text>
 
-                        {/* Styled Certificate Preview */}
-                        <View style={styles.certPreviewBox}>
-                            <View style={styles.certBorder}>
-                                <Ionicons name="medal" size={40} color={COLORS.warning} />
-                                <Text style={styles.certVerifyName}>CERTIFICATE OF COMPLETION</Text>
-                                <View style={styles.certDivider} />
-                                <Text style={styles.certUserName}>John Doe</Text>
-                                <Text style={styles.certCourseTitle}>{title || "Full Stack Web Development"}</Text>
-                                <View style={styles.certFooter}>
-                                    <Text style={styles.certId}>ID: TECH-LMS-2024-X12</Text>
-                                    <Text style={styles.certDate}>Oct 23, 2024</Text>
+                        <View className="w-full p-3 bg-[#FDFCF0] rounded-xl mb-6 border border-[#EEE8AA]">
+                            <View className="p-4 border-2 border-amber-500 border-dashed items-center rounded-lg">
+                                <Ionicons name="medal" size={40} color="#f59e0b" />
+                                <Text className="text-[10px] font-extrabold text-slate-400 my-2 tracking-widest">CERTIFICATE OF COMPLETION</Text>
+                                <View className="w-10 h-[1.5px] bg-amber-500 my-2" />
+                                <Text className="text-[18px] font-black text-primary mb-1">John Doe</Text>
+                                <Text className="text-[12px] text-slate-500 italic mb-3">{title || "Full Stack Web Development"}</Text>
+                                <View className="flex-row justify-between w-full mt-2">
+                                    <Text className="text-[8px] text-slate-400 font-bold">ID: TECH-LMS-2024-X12</Text>
+                                    <Text className="text-[8px] text-slate-400 font-bold">Oct 23, 2024</Text>
                                 </View>
                             </View>
                         </View>
@@ -505,10 +490,10 @@ export default function CoursePlayerScreen() {
                             label="Download Certificate"
                             onPress={() => Alert.alert("Download", "Your high-resolution PDF certificate is being prepared...")}
                             variant="primary"
-                            style={styles.modalBtn}
+                            className="w-full h-[52px] rounded-xl"
                         />
-                        <TouchableOpacity style={styles.closeModal} onPress={() => setShowCompletion(false)}>
-                            <Text style={styles.closeModalText}>Maybe Later</Text>
+                        <TouchableOpacity className="mt-5" onPress={() => setShowCompletion(false)}>
+                            <Text className="text-[13px] font-bold text-slate-400">Maybe Later</Text>
                         </TouchableOpacity>
                     </Card>
                 </View>
@@ -516,161 +501,3 @@ export default function CoursePlayerScreen() {
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    screen: { flex: 1, backgroundColor: COLORS.white },
-    videoContainer: { width: "100%", aspectRatio: 16 / 9, backgroundColor: COLORS.primary },
-    fullscreenVideo: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100%',
-        height: '100%',
-        aspectRatio: undefined,
-        zIndex: 100,
-    },
-    videoPlaceholder: { flex: 1, alignItems: "center", justifyContent: "center" },
-    videoOverlayText: { color: COLORS.white, marginTop: 12, fontSize: 13, fontWeight: "600", opacity: 0.8 },
-    watermarkContainer: { position: "absolute", top: 15, right: 15, backgroundColor: "rgba(255,255,255,0.1)", padding: 4, borderRadius: 4 },
-    fullscreenWatermark: { top: 30, right: 40, padding: 8 },
-    watermarkText: { color: "rgba(255,255,255,0.3)", fontSize: 9, fontWeight: "700" },
-    controls: { position: "absolute", bottom: 0, left: 0, right: 0, height: 50, backgroundColor: "rgba(0,0,0,0.6)", flexDirection: "row", alignItems: "center", paddingHorizontal: 16 },
-    fullscreenControls: { height: 80, paddingHorizontal: 40, paddingBottom: 20 },
-    controlBtn: { padding: 4 },
-    progressTrack: { flex: 1, height: 4, backgroundColor: "rgba(255,255,255,0.3)", borderRadius: 2, marginHorizontal: 12 },
-    progressFill: { height: "100%", backgroundColor: COLORS.secondary, borderRadius: 2 },
-    timeText: { color: COLORS.white, fontSize: 10, fontWeight: "700" },
-    content: { flex: 1 },
-    infoSection: { padding: 20, borderBottomWidth: 1, borderBottomColor: COLORS.gray[100] },
-    titleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-    activeTitle: { fontSize: 18, fontWeight: "800", color: COLORS.primary },
-    courseName: { fontSize: 13, color: COLORS.secondary, marginTop: 4, fontWeight: "700" },
-    completeBtn: { flexDirection: "row", alignItems: "center", backgroundColor: COLORS.secondary, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
-    disabledBtn: { backgroundColor: COLORS.gray[300], opacity: 0.6 },
-    completeBtnText: { color: COLORS.white, fontSize: 12, fontWeight: "700", marginLeft: 4 },
-    alreadyCompletedBadge: { flexDirection: "row", alignItems: "center", backgroundColor: COLORS.success + "10", paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12 },
-    alreadyCompletedText: { fontSize: 13, fontWeight: "800", color: COLORS.success, marginLeft: 6 },
-    tabBar: { backgroundColor: COLORS.gray[50], paddingVertical: 12 },
-    tabScroll: { paddingHorizontal: 16 },
-    tab: { paddingHorizontal: 16, paddingVertical: 8, marginRight: 8, borderRadius: 20, flexDirection: "row", alignItems: "center" },
-    activeTab: { backgroundColor: COLORS.white, elevation: 2, shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2 },
-    tabText: { fontSize: 13, fontWeight: "600", color: COLORS.gray[500] },
-    activeTabText: { color: COLORS.secondary },
-    liveTab: { backgroundColor: COLORS.danger + "10" },
-    liveIndicator: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.danger, marginRight: 6 },
-    lessonList: { padding: 16 },
-    moduleContainer: { marginBottom: 24 },
-    moduleHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12, paddingHorizontal: 4 },
-    moduleTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
-    moduleMeta: { fontSize: 12, fontWeight: "600", color: COLORS.gray[400] },
-    lessonItem: { flexDirection: "row", alignItems: "center", padding: 16, borderRadius: 16, marginBottom: 12, backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.gray[100] },
-    activeLessonItem: { borderColor: COLORS.secondary, backgroundColor: COLORS.secondary + "05" },
-    lessonStatus: { width: 28, height: 28, borderRadius: 14, backgroundColor: COLORS.gray[100], alignItems: "center", justifyContent: "center", marginRight: 16 },
-    statusCompleted: { backgroundColor: COLORS.success },
-    lessonNumber: { fontSize: 12, fontWeight: "700", color: COLORS.gray[400] },
-    lessonInfo: { flex: 1 },
-    lessonTitle: { fontSize: 15, fontWeight: "700", color: COLORS.primary },
-    activeLessonTitle: { color: COLORS.secondary },
-    lessonDuration: { fontSize: 12, color: COLORS.gray[400], marginTop: 4, fontWeight: "500" },
-    qaContainer: { padding: 20 },
-    discussionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
-    qaTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
-    filterBtn: { flexDirection: "row", alignItems: "center", backgroundColor: COLORS.white, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: COLORS.gray[100] },
-    filterText: { fontSize: 12, color: COLORS.gray[600], fontWeight: "600", marginRight: 4 },
-    qaInputRow: { flexDirection: "row", marginBottom: 24 },
-    qaInput: { flex: 1, backgroundColor: COLORS.gray[50], padding: 12, borderRadius: 12, borderWidth: 1, borderColor: COLORS.gray[100] },
-    qaSend: { backgroundColor: COLORS.secondary, padding: 12, borderRadius: 12, marginLeft: 8, justifyContent: "center" },
-    qaCard: { padding: 16, marginBottom: 12 },
-    qaHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-    qaAvatar: { width: 24, height: 24, borderRadius: 12, backgroundColor: COLORS.secondary + "20", alignItems: "center", justifyContent: "center" },
-    qaAvatarText: { fontSize: 10, fontWeight: "800", color: COLORS.secondary },
-    qaUser: { fontSize: 13, fontWeight: "700", color: COLORS.primary },
-    qaTime: { fontSize: 11, color: COLORS.gray[400], marginTop: 1 },
-    likeBtn: { flexDirection: "row", alignItems: "center", backgroundColor: COLORS.gray[50], paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10 },
-    likeText: { fontSize: 11, fontWeight: "700", color: COLORS.gray[500], marginLeft: 4 },
-    qaQuestion: { fontSize: 14, color: COLORS.gray[700], lineHeight: 20 },
-    qaReply: { marginTop: 12, borderTopWidth: 1, borderTopColor: COLORS.gray[50], paddingTop: 10, flexDirection: "row" },
-    replyContent: { flex: 1, marginLeft: 8 },
-    qaReplyText: { fontSize: 13, color: COLORS.secondary, fontWeight: "500" },
-    notesContainer: { padding: 20 },
-    notesHeader: { marginBottom: 16 },
-    notesTitle: { fontSize: 18, fontWeight: "800", color: COLORS.primary },
-    notesSubtitle: { fontSize: 12, color: COLORS.gray[400], marginTop: 2 },
-    notesCard: { padding: 16, marginBottom: 24 },
-    notesInput: { fontSize: 14, color: COLORS.primary, lineHeight: 22, minHeight: 120, textAlignVertical: "top" },
-    notesFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 16, paddingTop: 12, borderTopWidth: 1, borderTopColor: COLORS.gray[50] },
-    timestampText: { fontSize: 11, color: COLORS.gray[400], fontWeight: "600" },
-    saveNoteBtn: { backgroundColor: COLORS.secondary, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 },
-    saveNoteText: { color: COLORS.white, fontWeight: "700", fontSize: 13 },
-    pastNotes: { marginTop: 8 },
-    pastNotesTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary, marginBottom: 12 },
-    pastNoteItem: { padding: 16, marginBottom: 12 },
-    pastNoteTag: { fontSize: 11, fontWeight: "700", color: COLORS.secondary, marginBottom: 8, textTransform: "uppercase" },
-    pastNoteText: { fontSize: 13, color: COLORS.gray[600], lineHeight: 18 },
-    overviewContainer: { padding: 20 },
-    overviewTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary, marginBottom: 12 },
-    overviewText: { fontSize: 14, color: COLORS.gray[600], lineHeight: 22 },
-    assessmentList: { padding: 16 },
-    assessmentCard: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: COLORS.white,
-        padding: 16,
-        borderRadius: 16,
-        marginBottom: 12,
-        borderWidth: 1,
-        borderColor: COLORS.gray[100]
-    },
-    assessmentCardDone: { borderColor: COLORS.success, backgroundColor: COLORS.success + "05" },
-    assessmentIcon: {
-        width: 48,
-        height: 48,
-        borderRadius: 12,
-        alignItems: "center",
-        justifyContent: "center",
-        marginRight: 16
-    },
-    assessmentInfo: { flex: 1 },
-    assessmentName: { fontSize: 15, fontWeight: "700", color: COLORS.primary },
-    assessmentMeta: { fontSize: 12, color: COLORS.gray[500], marginTop: 4 },
-    scoreSummaryBox: { marginTop: 24, padding: 20, backgroundColor: COLORS.gray[50], borderRadius: 20, borderWidth: 1, borderColor: COLORS.gray[100] },
-    scoreSummaryTitle: { fontSize: 16, fontWeight: "900", color: COLORS.primary, marginBottom: 16 },
-    scoreRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10 },
-    scoreLabel: { fontSize: 14, color: COLORS.gray[500], fontWeight: "600" },
-    scoreValueText: { fontSize: 14, color: COLORS.primary, fontWeight: "800" },
-    modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center", padding: 20 },
-    modalCard: { width: "100%", alignItems: "center", padding: 32 },
-    successIconBox: { width: 80, height: 80, backgroundColor: COLORS.warning + "15", borderRadius: 40, alignItems: "center", justifyContent: "center", marginBottom: 20 },
-    modalTitle: { fontSize: 22, fontWeight: "900", color: COLORS.primary, marginBottom: 8 },
-    modalSub: { fontSize: 14, color: COLORS.gray[500], marginBottom: 4 },
-    modalCourseName: { fontSize: 16, fontWeight: "700", color: COLORS.secondary, marginBottom: 20, textAlign: "center" },
-    certPreviewBox: {
-        width: "100%",
-        padding: 12,
-        backgroundColor: "#FDFCF0",
-        borderRadius: 12,
-        marginBottom: 24,
-        borderWidth: 1,
-        borderColor: "#EEE8AA",
-    },
-    certBorder: {
-        padding: 16,
-        borderWidth: 2,
-        borderColor: COLORS.warning,
-        borderStyle: "dashed",
-        alignItems: "center",
-        borderRadius: 8,
-    },
-    certVerifyName: { fontSize: 10, fontWeight: "800", color: COLORS.gray[400], marginVertical: 8, letterSpacing: 1 },
-    certDivider: { width: 40, height: 1.5, backgroundColor: COLORS.warning, marginVertical: 8 },
-    certUserName: { fontSize: 18, fontWeight: "900", color: COLORS.primary, marginBottom: 4 },
-    certCourseTitle: { fontSize: 12, color: COLORS.gray[500], fontStyle: "italic", marginBottom: 12 },
-    certFooter: { flexDirection: "row", justifyContent: "space-between", width: "100%", marginTop: 8 },
-    certId: { fontSize: 8, color: COLORS.gray[400], fontWeight: "700" },
-    certDate: { fontSize: 8, color: COLORS.gray[400], fontWeight: "700" },
-    modalBtn: { width: "100%", height: 52, borderRadius: 14 },
-    closeModal: { marginTop: 20 },
-    closeModalText: { fontSize: 13, fontWeight: "700", color: COLORS.gray[400] }
-});

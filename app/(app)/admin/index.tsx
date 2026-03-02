@@ -1,101 +1,86 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../../hooks";
 import { AdminNavbar, Card } from "../../../components";
-import { COLORS } from "../../../constants/colors";
 
 export default function AdminDashboardScreen() {
   const { user } = useAuth();
   const router = useRouter();
 
   const stats = [
-    { label: "Total Users", value: "1.2k", icon: "people", color: COLORS.secondary, href: "/admin/users" },
-    { label: "Total Courses", value: "45", icon: "book", color: COLORS.success, href: "/admin/courses" },
-    { label: "Revenue", value: "$12k", icon: "cash", color: COLORS.accent, href: "/admin/payments" },
+    { label: "Total Users", value: "1.2k", icon: "people", color: "#6366f1", href: "/admin/users" },
+    { label: "Total Courses", value: "45", icon: "book", color: "#10b981", href: "/admin/courses" },
+    { label: "Revenue", value: "$12k", icon: "cash", color: "#8b5cf6", href: "/admin/payments" },
   ];
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView className="flex-1 bg-light">
       <AdminNavbar title="Admin Dashboard" />
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text style={styles.greeting}>Welcome, {user?.name || "Admin"}!</Text>
-          <Text style={styles.subtitle}>Here's what's happening today.</Text>
+      <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
+        <View className="mb-6 mt-6">
+          <Text className="text-[28px] font-black text-primary">Welcome, {user?.name || "Admin"}!</Text>
+          <Text className="text-[16px] text-slate-500 mt-1">Here's what's happening today.</Text>
         </View>
 
-        <View style={styles.statsGrid}>
+        <View className="flex-row justify-between mb-6 mx-[-4px]">
           {stats.map((stat, index) => (
             <TouchableOpacity
               key={index}
-              style={styles.statWrapper}
+              className="flex-1 mx-1"
               activeOpacity={0.7}
               onPress={() => router.push(stat.href as any)}
             >
-              <Card style={styles.statCard}>
-                <View style={[styles.iconContainer, { backgroundColor: stat.color + "15" }]}>
+              <Card className="p-4 items-start rounded-2xl">
+                <View
+                  className="p-2.5 rounded-xl mb-3"
+                  style={{ backgroundColor: stat.color + "15" }}
+                >
                   <Ionicons name={stat.icon as any} size={24} color={stat.color} />
                 </View>
-                <Text style={styles.statValue}>{stat.value}</Text>
-                <Text style={styles.statLabel}>{stat.label}</Text>
+                <Text className="text-[20px] font-black text-primary">{stat.value}</Text>
+                <Text className="text-[12px] text-slate-500 mt-0.5 font-semibold">{stat.label}</Text>
               </Card>
             </TouchableOpacity>
           ))}
         </View>
 
-        <Text style={styles.sectionTitle}>Overview Analytics</Text>
-        <Card style={styles.activityCard}>
-          <View style={styles.activityHeader}>
-            <Ionicons name="analytics" size={20} color={COLORS.secondary} />
-            <Text style={styles.activityTitle}>Platform Growth</Text>
+        <Text className="text-[18px] font-black text-primary mb-4 mt-2">Overview Analytics</Text>
+        <Card className="p-4 mb-6 rounded-3xl">
+          <View className="flex-row items-center mb-5">
+            <Ionicons name="analytics" size={20} color="#6366f1" />
+            <Text className="text-[16px] font-bold text-primary ml-2">Platform Growth</Text>
           </View>
-          <View style={styles.dummyChart}>
+          <View className="flex-row items-end justify-between h-[100px] px-2.5">
             {[30, 45, 35, 60, 50, 80, 70, 90].map((h, i) => (
-              <View key={i} style={[styles.chartBar, { height: h, backgroundColor: COLORS.secondary + (i === 7 ? "FF" : "40") }]} />
+              <View
+                key={i}
+                className="w-[8%] rounded-t-full"
+                style={{
+                  height: h,
+                  backgroundColor: `#6366f1${i === 7 ? '' : '40'}`
+                }}
+              />
             ))}
           </View>
         </Card>
 
-        <Text style={styles.sectionTitle}>System Status</Text>
-        <View style={styles.statusRow}>
-          <Card style={styles.statusCard}>
-            <Ionicons name="server-outline" size={20} color={COLORS.success} />
-            <Text style={styles.statusLabel}>Servers</Text>
-            <Text style={styles.statusValue}>Online</Text>
+        <Text className="text-[18px] font-black text-primary mb-4 mt-2">System Status</Text>
+        <View className="flex-row justify-between mx-[-6px]">
+          <Card className="flex-1 mx-1.5 items-center p-4 rounded-2xl">
+            <Ionicons name="server-outline" size={20} color="#10b981" />
+            <Text className="text-[12px] text-slate-500 mt-2 font-semibold">Servers</Text>
+            <Text className="text-[15px] font-bold text-primary mt-0.5">Online</Text>
           </Card>
-          <Card style={styles.statusCard}>
-            <Ionicons name="mail-outline" size={20} color={COLORS.secondary} />
-            <Text style={styles.statusLabel}>Mails</Text>
-            <Text style={styles.statusValue}>Active</Text>
+          <Card className="flex-1 mx-1.5 items-center p-4 rounded-2xl">
+            <Ionicons name="mail-outline" size={20} color="#6366f1" />
+            <Text className="text-[12px] text-slate-500 mt-2 font-semibold">Mails</Text>
+            <Text className="text-[15px] font-bold text-primary mt-0.5">Active</Text>
           </Card>
         </View>
-        <View style={{ height: 40 }} />
+        <View className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.light },
-  scroll: { flex: 1, padding: 16 },
-  header: { marginBottom: 24, marginTop: 8 },
-  greeting: { fontSize: 28, fontWeight: "800", color: COLORS.primary },
-  subtitle: { fontSize: 16, color: COLORS.gray[500], marginTop: 4 },
-  statsGrid: { flexDirection: "row", justifyContent: "space-between", marginBottom: 24 },
-  statWrapper: { flex: 1 },
-  statCard: { marginHorizontal: 4, alignItems: "flex-start", padding: 16 },
-  iconContainer: { padding: 10, borderRadius: 12, marginBottom: 12 },
-  statValue: { fontSize: 20, fontWeight: "800", color: COLORS.primary },
-  statLabel: { fontSize: 12, color: COLORS.gray[500], marginTop: 2 },
-  sectionTitle: { fontSize: 18, fontWeight: "800", color: COLORS.primary, marginBottom: 16, marginTop: 8 },
-  activityCard: { padding: 16, marginBottom: 24 },
-  activityHeader: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
-  activityTitle: { fontSize: 16, fontWeight: "700", color: COLORS.primary, marginLeft: 8 },
-  dummyChart: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", height: 100, paddingHorizontal: 10 },
-  chartBar: { width: "8%", borderRadius: 4 },
-  statusRow: { flexDirection: "row", justifyContent: "space-between" },
-  statusCard: { flex: 1, marginHorizontal: 6, alignItems: "center", padding: 16 },
-  statusLabel: { fontSize: 12, color: COLORS.gray[500], marginTop: 8 },
-  statusValue: { fontSize: 15, fontWeight: "700", color: COLORS.primary, marginTop: 2 },
-});

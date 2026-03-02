@@ -22,16 +22,21 @@ export const authApi = createApi({
     login: builder.mutation<{ token: string; user: User }, { email: string; password: string }>({
       queryFn: async (credentials) => {
         await new Promise((r) => setTimeout(r, 400));
-        // Demo: admin@test.com -> admin, teacher@test.com -> instructor
+        const emailLower = credentials.email.toLowerCase();
         const role =
-          credentials.email === "admin@test.com"
+          emailLower === "admin@test.com" || emailLower === "admin"
             ? ("admin" as const)
-            : credentials.email === "teacher@test.com"
+            : emailLower === "teacher@test.com" || emailLower === "teacher"
               ? ("instructor" as const)
               : ("student" as const);
+
+        let name = credentials.email.split("@")[0];
+        // Capitalize for better UX
+        name = name.charAt(0).toUpperCase() + name.slice(1);
+
         const user = createMockUser({
-          email: credentials.email,
-          name: credentials.email.split("@")[0],
+          email: credentials.email.includes("@") ? credentials.email : `${credentials.email}@test.com`,
+          name,
           role,
         });
         return {

@@ -1,15 +1,14 @@
-import { View, Text, ScrollView, Alert, StyleSheet, TouchableOpacity, Animated, KeyboardAvoidingView, Platform } from "react-native";
+import { View, Text, ScrollView, Alert, TouchableOpacity, Animated, KeyboardAvoidingView, Platform } from "react-native";
 import { useState, useRef, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import { Button, Input, Card, Navbar } from "../../components";
+import { Button, Input } from "../../components";
 import { useRegisterMutation } from "../../store/api/authApi";
 import { setUser, setToken } from "../../store/slices/authSlice";
 import { validateForm } from "../../utils/validateForm";
 import { AppDispatch } from "../../store/store";
 import { useRouter } from "expo-router";
-import { COLORS } from "../../constants/colors";
 
 type RegisterRole = "student" | "instructor";
 
@@ -66,76 +65,81 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
+        className="flex-1"
       >
         <ScrollView
-          style={styles.scroll}
-          contentContainerStyle={styles.scrollContent}
+          className="flex-1"
+          contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
         >
-          <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} activeOpacity={0.7}>
-              <Ionicons name="arrow-back" size={24} color={COLORS.primary} />
+          <Animated.View className="mb-8" style={{ opacity: fadeAnim }}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              className="w-10 h-10 rounded-full bg-white items-center justify-center mb-5 shadow shadow-black/10 elevation-2"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back" size={24} color="#1e293b" />
             </TouchableOpacity>
-            <Text style={styles.title}>Create Account</Text>
-            <Text style={styles.subtitle}>Join our learning community today</Text>
+            <Text className="text-[28px] font-extrabold text-primary mb-2">Create Account</Text>
+            <Text className="text-[16px] text-slate-500">Join our learning community today</Text>
           </Animated.View>
 
-          <View style={styles.roleContainer}>
-            <Text style={styles.sectionLabel}>I want to join as a:</Text>
-            <View style={styles.roleRow}>
+          <View className="mb-8">
+            <Text className="text-[14px] font-bold text-primary mb-4 ml-1">I want to join as a:</Text>
+            <View className="flex-row justify-between">
               <TouchableOpacity
-                style={[styles.roleCard, role === "student" && styles.roleCardActive]}
+                className={`w-[48%] bg-white rounded-2xl p-4 items-center border-[1.5px] shadow-sm elevation-2 ${role === "student" ? 'border-secondary' : 'border-slate-100'}`}
                 onPress={() => setRole("student")}
                 activeOpacity={0.7}
               >
-                <View style={[styles.roleIconBox, role === "student" && styles.roleIconBoxActive]}>
-                  <Ionicons name="school" size={28} color={role === "student" ? COLORS.white : COLORS.gray[400]} />
+                <View className={`w-14 h-14 rounded-full items-center justify-center mb-3 ${role === "student" ? 'bg-secondary' : 'bg-slate-50'}`}>
+                  <Ionicons name="school" size={28} color={role === "student" ? "white" : "#94a3b8"} />
                 </View>
-                <Text style={[styles.roleName, role === "student" && styles.roleNameActive]}>Student</Text>
-                {role === "student" && <Ionicons name="checkmark-circle" size={20} color={COLORS.secondary} style={styles.checkIcon} />}
+                <Text className={`text-[15px] font-bold ${role === "student" ? 'text-secondary' : 'text-slate-500'}`}>Student</Text>
+                {role === "student" && <Ionicons name="checkmark-circle" size={20} color="#6366f1" className="absolute top-2 right-2" />}
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.roleCard, role === "instructor" && styles.roleCardActive]}
+                className={`w-[48%] bg-white rounded-2xl p-4 items-center border-[1.5px] shadow-sm elevation-2 ${role === "instructor" ? 'border-secondary' : 'border-slate-100'}`}
                 onPress={() => setRole("instructor")}
                 activeOpacity={0.7}
               >
-                <View style={[styles.roleIconBox, role === "instructor" && styles.roleIconBoxActive]}>
-                  <Ionicons name="briefcase" size={28} color={role === "instructor" ? COLORS.white : COLORS.gray[400]} />
+                <View className={`w-14 h-14 rounded-full items-center justify-center mb-3 ${role === "instructor" ? 'bg-secondary' : 'bg-slate-50'}`}>
+                  <Ionicons name="briefcase" size={28} color={role === "instructor" ? "white" : "#94a3b8"} />
                 </View>
-                <Text style={[styles.roleName, role === "instructor" && styles.roleNameActive]}>Instructor</Text>
-                {role === "instructor" && <Ionicons name="checkmark-circle" size={20} color={COLORS.secondary} style={styles.checkIcon} />}
+                <Text className={`text-[15px] font-bold ${role === "instructor" ? 'text-secondary' : 'text-slate-500'}`}>Instructor</Text>
+                {role === "instructor" && <Ionicons name="checkmark-circle" size={20} color="#6366f1" className="absolute top-2 right-2" />}
               </TouchableOpacity>
             </View>
           </View>
 
-          <View style={styles.form}>
-            <View style={styles.field}>
-              <Text style={styles.label}>Full Name</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="person-outline" size={20} color={COLORS.gray[400]} style={styles.inputIcon} />
+          <View className="w-full">
+            <View className="mb-5">
+              <Text className="text-[14px] font-bold text-primary mb-2 ml-1">Full Name</Text>
+              <View className="flex-row items-center bg-white rounded-2xl border border-slate-200 px-3">
+                <Ionicons name="person-outline" size={20} color="#94a3b8" className="mr-2" />
                 <Input
+                  className="flex-1"
                   placeholder="John Doe"
                   value={name}
                   onChangeText={(text) => {
                     setName(text);
                     setErrors((e) => ({ ...e, name: "" }));
                   }}
-                  style={styles.input}
                 />
               </View>
-              {errors.name && <Text style={styles.error}>{errors.name}</Text>}
+              {errors.name && <Text className="text-rose-500 text-[12px] mt-1 ml-3">{errors.name}</Text>}
             </View>
 
-            <View style={styles.field}>
-              <Text style={styles.label}>Email Address</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="mail-outline" size={20} color={COLORS.gray[400]} style={styles.inputIcon} />
+            <View className="mb-5">
+              <Text className="text-[14px] font-bold text-primary mb-2 ml-1">Email Address</Text>
+              <View className="flex-row items-center bg-white rounded-2xl border border-slate-200 px-3">
+                <Ionicons name="mail-outline" size={20} color="#94a3b8" className="mr-2" />
                 <Input
+                  className="flex-1"
                   placeholder="john@example.com"
                   value={email}
                   onChangeText={(text) => {
@@ -144,17 +148,17 @@ export default function RegisterScreen() {
                   }}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  style={styles.input}
                 />
               </View>
-              {errors.email && <Text style={styles.error}>{errors.email}</Text>}
+              {errors.email && <Text className="text-rose-500 text-[12px] mt-1 ml-3">{errors.email}</Text>}
             </View>
 
-            <View style={styles.field}>
-              <Text style={styles.label}>Password</Text>
-              <View style={styles.inputWrapper}>
-                <Ionicons name="lock-closed-outline" size={20} color={COLORS.gray[400]} style={styles.inputIcon} />
+            <View className="mb-5">
+              <Text className="text-[14px] font-bold text-primary mb-2 ml-1">Password</Text>
+              <View className="flex-row items-center bg-white rounded-2xl border border-slate-200 px-3">
+                <Ionicons name="lock-closed-outline" size={20} color="#94a3b8" className="mr-2" />
                 <Input
+                  className="flex-1"
                   placeholder="Create a password"
                   value={password}
                   onChangeText={(text) => {
@@ -162,11 +166,10 @@ export default function RegisterScreen() {
                     setErrors((e) => ({ ...e, password: "" }));
                   }}
                   secureTextEntry
-                  style={styles.input}
                 />
               </View>
-              <Text style={styles.fieldHint}>Must be at least 6 characters</Text>
-              {errors.password && <Text style={styles.error}>{errors.password}</Text>}
+              <Text className="text-[12px] text-slate-500 mt-1.5 ml-1">Must be at least 6 characters</Text>
+              {errors.password && <Text className="text-rose-500 text-[12px] mt-1 ml-3">{errors.password}</Text>}
             </View>
 
             <Button
@@ -174,35 +177,34 @@ export default function RegisterScreen() {
               onPress={handleRegister}
               disabled={isLoading}
               variant="primary"
-              size="lg"
-              style={styles.registerBtn}
+              className="h-14 rounded-2xl bg-secondary mt-2 shadow-lg shadow-indigo-500/30 elevation-5"
             />
 
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>OR</Text>
-              <View style={styles.dividerLine} />
+            <View className="flex-row items-center my-8">
+              <View className="flex-1 h-[1px] bg-slate-200" />
+              <Text className="mx-4 text-slate-400 font-semibold">OR</Text>
+              <View className="flex-1 h-[1px] bg-slate-200" />
             </View>
 
-            <View style={styles.socialContainer}>
-              <TouchableOpacity style={[styles.socialBtn, { borderColor: '#DB4437' }]} activeOpacity={0.8}>
+            <View className="flex-row justify-center mb-6 mt-2">
+              <TouchableOpacity className="w-14 h-14 rounded-full border border-[#DB4437] items-center justify-center mx-3 bg-white shadow-sm elevation-3" activeOpacity={0.8}>
                 <Ionicons name="logo-google" size={24} color="#DB4437" />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.socialBtn, { borderColor: '#4267B2' }]} activeOpacity={0.8}>
+              <TouchableOpacity className="w-14 h-14 rounded-full border border-[#4267B2] items-center justify-center mx-3 bg-white shadow-sm elevation-3" activeOpacity={0.8}>
                 <Ionicons name="logo-facebook" size={24} color="#4267B2" />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.socialBtn, { borderColor: '#000000' }]} activeOpacity={0.8}>
+              <TouchableOpacity className="w-14 h-14 rounded-full border border-[#000000] items-center justify-center mx-3 bg-white shadow-sm elevation-3" activeOpacity={0.8}>
                 <Ionicons name="logo-apple" size={24} color="#000000" />
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
-              style={styles.loginLink}
+              className="items-center mt-6"
               onPress={() => router.push("/auth/login")}
               activeOpacity={0.7}
             >
-              <Text style={styles.loginText}>
-                Already have an account? <Text style={styles.loginLinkBold}>Sign In</Text>
+              <Text className="text-slate-600 text-[15px]">
+                Already have an account? <Text className="text-secondary font-bold">Sign In</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -211,151 +213,3 @@ export default function RegisterScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.light },
-  scroll: { flex: 1 },
-  scrollContent: { padding: 24, paddingBottom: 40 },
-  header: { marginBottom: 32 },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: COLORS.white,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: COLORS.primary,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: COLORS.gray[500],
-  },
-  roleContainer: { marginBottom: 32 },
-  sectionLabel: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: COLORS.primary,
-    marginBottom: 16,
-    marginLeft: 4,
-  },
-  roleRow: { flexDirection: "row", justifyContent: "space-between" },
-  roleCard: {
-    flex: 0.48,
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    padding: 16,
-    alignItems: "center",
-    borderWidth: 1.5,
-    borderColor: COLORS.border,
-    shadowColor: COLORS.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  roleCardActive: {
-    borderColor: COLORS.secondary,
-    backgroundColor: COLORS.white,
-  },
-  roleIconBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: COLORS.gray[100],
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  roleIconBoxActive: {
-    backgroundColor: COLORS.secondary,
-  },
-  roleName: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: COLORS.gray[500],
-  },
-  roleNameActive: {
-    color: COLORS.secondary,
-  },
-  checkIcon: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-  },
-  form: { width: "100%" },
-  field: { marginBottom: 20 },
-  label: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: COLORS.primary,
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: 12,
-  },
-  inputIcon: { marginRight: 10 },
-  input: { flex: 1, height: 50, borderWidth: 0, paddingLeft: 0 },
-  fieldHint: { fontSize: 12, color: COLORS.gray[500], marginTop: 6, marginLeft: 4 },
-  error: { color: COLORS.danger, fontSize: 12, marginTop: 4, marginLeft: 12 },
-  registerBtn: {
-    borderRadius: 12,
-    height: 56,
-    justifyContent: "center",
-    backgroundColor: COLORS.secondary,
-    marginTop: 10,
-    shadowColor: COLORS.secondary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  loginLink: { alignItems: "center", marginTop: 24 },
-  loginText: { color: COLORS.gray[600], fontSize: 15 },
-  loginLinkBold: { color: COLORS.secondary, fontWeight: "700" },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 30
-  },
-  dividerLine: { flex: 1, height: 1, backgroundColor: COLORS.border },
-  dividerText: { marginHorizontal: 16, color: COLORS.gray[400], fontWeight: "600" },
-  socialContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 20,
-    marginTop: 10
-  },
-  socialBtn: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    marginHorizontal: 12,
-    backgroundColor: COLORS.white,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
-  },
-});

@@ -1,9 +1,8 @@
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../hooks";
 import { Navbar, Card, ProgressBar } from "../components";
-import { COLORS } from "../constants/colors";
 
 export default function DashboardScreen() {
   const router = useRouter();
@@ -11,87 +10,66 @@ export default function DashboardScreen() {
 
   if (!isAuthenticated) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.centeredText}>Not authenticated</Text>
+      <View className="flex-1 bg-white justify-center items-center">
+        <Text className="text-primary font-bold mb-4">Not authenticated</Text>
         <TouchableOpacity
-          style={styles.loginBtn}
+          className="bg-secondary px-6 py-3 rounded-lg"
           onPress={() => router.push("/auth/login")}
         >
-          <Text style={styles.loginBtnText}>Go to Login</Text>
+          <Text className="text-white font-semibold">Go to Login</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView className="flex-1 bg-light">
       <Navbar title="Dashboard" />
 
-      <ScrollView style={styles.scroll}>
-        <Card style={styles.card}>
-          <Text style={styles.welcome}>Welcome, {user?.name}! 👋</Text>
-          <Text style={styles.role}>
-            Role: <Text style={styles.roleBold}>{user?.role}</Text>
+      <ScrollView className="flex-1 p-4">
+        <Card className="mb-6">
+          <Text className="text-2xl font-bold text-primary mb-2">Welcome, {user?.name}! 👋</Text>
+          <Text className="text-slate-600">
+            Role: <Text className="font-bold capitalize">{user?.role}</Text>
           </Text>
         </Card>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Your Progress</Text>
+        <View className="mb-6">
+          <Text className="text-lg font-bold text-primary mb-3">Your Progress</Text>
 
-          <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>Course 1</Text>
+          <Card className="mb-3">
+            <Text className="text-sm font-semibold text-slate-600 mb-2">Course 1</Text>
             <ProgressBar progress={65} showLabel={true} />
           </Card>
 
-          <Card style={styles.statCard}>
-            <Text style={styles.statLabel}>Course 2</Text>
+          <Card className="mb-3">
+            <Text className="text-sm font-semibold text-slate-600 mb-2">Course 2</Text>
             <ProgressBar progress={45} showLabel={true} />
           </Card>
 
           <Card>
-            <Text style={styles.statLabel}>Course 3</Text>
+            <Text className="text-sm font-semibold text-slate-600 mb-2">Course 3</Text>
             <ProgressBar progress={80} showLabel={true} />
           </Card>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Access</Text>
+        <View className="mb-6">
+          <Text className="text-lg font-bold text-primary mb-3">Quick Access</Text>
 
-          <TouchableOpacity style={[styles.quickBtn, styles.quickSecondary]} onPress={() => router.push("/courses")}>
-            <Text style={styles.quickBtnText}>📚 Browse Courses</Text>
+          <TouchableOpacity className="bg-secondary rounded-lg p-4 mb-3" onPress={() => router.push("/student/explore" as any)}>
+            <Text className="text-white font-semibold">📚 Browse Courses</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.quickBtn, styles.quickSuccess]} onPress={() => router.push("/profile")}>
-            <Text style={styles.quickBtnText}>👤 My Profile</Text>
+          <TouchableOpacity className="bg-success rounded-lg p-4 mb-3" onPress={() => router.push("/student/profile" as any)}>
+            <Text className="text-white font-semibold">👤 My Profile</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.quickBtn, styles.quickWarning]} onPress={() => router.push("/settings")}>
-            <Text style={styles.quickBtnText}>⚙️ Settings</Text>
+          <TouchableOpacity className="bg-warning rounded-lg p-4 mb-3" onPress={() => router.push("/student/profile" as any)}>
+            <Text className="text-white font-semibold">⚙️ Settings</Text>
           </TouchableOpacity>
         </View>
+        <View className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.light },
-  scroll: { flex: 1, padding: 16 },
-  centered: { flex: 1, backgroundColor: COLORS.white, justifyContent: "center", alignItems: "center" },
-  centeredText: { color: COLORS.primary, fontWeight: "700", marginBottom: 16 },
-  loginBtn: { backgroundColor: COLORS.secondary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 },
-  loginBtnText: { color: COLORS.white, fontWeight: "600" },
-  card: { marginBottom: 24 },
-  welcome: { fontSize: 24, fontWeight: "700", color: COLORS.primary, marginBottom: 8 },
-  role: { color: COLORS.gray[600] },
-  roleBold: { fontWeight: "600", textTransform: "capitalize" },
-  section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: COLORS.primary, marginBottom: 12 },
-  statCard: { marginBottom: 12 },
-  statLabel: { fontSize: 14, fontWeight: "600", color: COLORS.gray[600], marginBottom: 8 },
-  quickBtn: { borderRadius: 8, padding: 16, marginBottom: 12 },
-  quickSecondary: { backgroundColor: COLORS.secondary },
-  quickSuccess: { backgroundColor: COLORS.success },
-  quickWarning: { backgroundColor: COLORS.warning },
-  quickBtnText: { color: COLORS.white, fontWeight: "600" },
-});

@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { AdminNavbar, Card } from "../../../components";
-import { COLORS } from "../../../constants/colors";
 
 const INITIAL_PENDING = [
   { id: "1", title: "Complete Web Design", instructor: "Jane Smith", date: "2024-03-20", category: "Design", description: "Learn modern web design from scratch using Figma and Adobe XD." },
@@ -59,43 +58,43 @@ export default function ApprovalScreen() {
   };
 
   const renderItem = ({ item }: { item: typeof INITIAL_PENDING[0] }) => (
-    <Card style={styles.courseCard}>
-      <View style={styles.header}>
-        <View style={styles.titleInfo}>
-          <Text style={styles.courseTitle}>{item.title}</Text>
-          <Text style={styles.instructor}>by {item.instructor}</Text>
+    <Card className="mb-4 p-4 rounded-2xl">
+      <View className="flex-row justify-between items-start mb-4">
+        <View className="flex-1 mr-3">
+          <Text className="text-[16px] font-extrabold text-primary">{item.title}</Text>
+          <Text className="text-[13px] text-slate-400 mt-1 font-semibold">by {item.instructor}</Text>
         </View>
-        <View style={styles.categoryBadge}>
-          <Text style={styles.categoryText}>{item.category}</Text>
+        <View className="bg-secondary/15 px-2.5 py-1.5 rounded-lg">
+          <Text className="text-[11px] font-black text-secondary">{item.category}</Text>
         </View>
       </View>
 
-      <View style={styles.footer}>
-        <View style={styles.dateInfo}>
-          <Ionicons name="calendar-outline" size={14} color={COLORS.gray[500]} />
-          <Text style={styles.dateText}>{item.date}</Text>
+      <View className="flex-row justify-between items-center border-t border-slate-50 pt-3.5">
+        <View className="flex-row items-center">
+          <Ionicons name="calendar-outline" size={14} color="#94a3b8" />
+          <Text className="text-[12px] text-slate-500 ml-1 font-medium">{item.date}</Text>
         </View>
-        <View style={styles.actions}>
+        <View className="flex-row">
           <TouchableOpacity
-            style={[styles.actionBtn, styles.approveBtn]}
+            className="w-10 h-10 rounded-full items-center justify-center ml-2.5 bg-success"
             activeOpacity={0.7}
             onPress={() => handleApprove(item.id, item.title)}
           >
-            <Ionicons name="checkmark-outline" size={20} color={COLORS.white} />
+            <Ionicons name="checkmark-outline" size={20} color="white" />
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.actionBtn, styles.rejectBtn]}
+            className="w-10 h-10 rounded-full items-center justify-center ml-2.5 bg-rose-500"
             activeOpacity={0.7}
             onPress={() => handleReject(item.id, item.title)}
           >
-            <Ionicons name="close-outline" size={20} color={COLORS.white} />
+            <Ionicons name="close-outline" size={20} color="white" />
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.actionBtn, styles.viewBtn]}
+            className="w-10 h-10 rounded-full items-center justify-center ml-2.5 bg-white border border-slate-100"
             activeOpacity={0.7}
             onPress={() => handleViewDetails(item)}
           >
-            <Ionicons name="eye-outline" size={20} color={COLORS.secondary} />
+            <Ionicons name="eye-outline" size={20} color="#6366f1" />
           </TouchableOpacity>
         </View>
       </View>
@@ -103,54 +102,29 @@ export default function ApprovalScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.screen} edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
       <AdminNavbar title="Course Approval" />
-      <View style={styles.infoBar}>
-        <Text style={styles.infoText}>
+      <View className="px-4 py-3.5 bg-white border-b border-slate-100">
+        <Text className="text-[13px] font-bold text-slate-500">
           {courses.length === 0 ? "No pending approvals" : `${courses.length} courses awaiting approval`}
         </Text>
       </View>
 
       {courses.length === 0 ? (
-        <View style={styles.emptyState}>
-          <Ionicons name="checkmark-circle-outline" size={80} color={COLORS.success + "40"} />
-          <Text style={styles.emptyTitle}>All caught up!</Text>
-          <Text style={styles.emptySub}>There are no new course submissions to review at this time.</Text>
+        <View className="flex-1 items-center justify-center px-10">
+          <Ionicons name="checkmark-circle-outline" size={80} color="#10b98160" />
+          <Text className="text-[22px] font-black text-primary mt-5">All caught up!</Text>
+          <Text className="text-[14px] text-slate-400 text-center mt-2.5 leading-[22px]">There are no new course submissions to review at this time.</Text>
         </View>
       ) : (
         <FlatList
           data={courses}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={{ padding: 16 }}
           showsVerticalScrollIndicator={false}
         />
       )}
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.light },
-  infoBar: { paddingHorizontal: 16, paddingVertical: 14, backgroundColor: COLORS.white, borderBottomWidth: 1, borderBottomColor: COLORS.gray[100] },
-  infoText: { fontSize: 13, fontWeight: "700", color: COLORS.gray[500] },
-  list: { padding: 16 },
-  courseCard: { marginBottom: 16, padding: 16, borderRadius: 16 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
-  titleInfo: { flex: 1, marginRight: 12 },
-  courseTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
-  instructor: { fontSize: 13, color: COLORS.gray[400], marginTop: 4, fontWeight: "600" },
-  categoryBadge: { backgroundColor: COLORS.secondary + "15", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
-  categoryText: { fontSize: 11, fontWeight: "800", color: COLORS.secondary },
-  footer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: COLORS.gray[50], paddingTop: 14 },
-  dateInfo: { flexDirection: "row", alignItems: "center" },
-  dateText: { fontSize: 12, color: COLORS.gray[500], marginLeft: 4, fontWeight: "500" },
-  actions: { flexDirection: "row" },
-  actionBtn: { width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", marginLeft: 10 },
-  approveBtn: { backgroundColor: COLORS.success },
-  rejectBtn: { backgroundColor: COLORS.danger },
-  viewBtn: { backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.gray[100] },
-  emptyState: { flex: 1, alignItems: "center", justifyContent: "center", paddingHorizontal: 40 },
-  emptyTitle: { fontSize: 22, fontWeight: "900", color: COLORS.primary, marginTop: 20 },
-  emptySub: { fontSize: 14, color: COLORS.gray[400], textAlign: "center", marginTop: 10, lineHeight: 22 },
-});

@@ -1,9 +1,8 @@
-import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useAuth } from "../hooks";
 import { Navbar, Card, Button } from "../components";
-import { COLORS } from "../constants/colors";
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -11,56 +10,44 @@ export default function SettingsScreen() {
 
   if (!isAuthenticated) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.centeredText}>Not logged in</Text>
+      <View className="flex-1 bg-white justify-center items-center">
+        <Text className="text-primary font-bold mb-4">Not logged in</Text>
         <Button label="Go to Login" onPress={() => router.push("/auth/login")} variant="secondary" />
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.screen}>
+    <SafeAreaView className="flex-1 bg-light">
       <Navbar title="Settings" showBack={true} onBackPress={() => router.back()} />
 
-      <ScrollView style={styles.scroll}>
-        <Text style={styles.title}>Account Settings</Text>
+      <ScrollView className="flex-1 p-4">
+        <Text className="text-[20px] font-bold text-primary mb-4">Account Settings</Text>
 
-        <Card style={styles.card}>
-          <Text style={styles.cardTitle}>Profile</Text>
-          <Text style={styles.cardDesc}>Update your profile information</Text>
-          <Button label="Edit Profile" onPress={() => router.push("/profile")} variant="secondary" />
+        <Card className="mb-4">
+          <Text className="font-bold text-primary mb-2">Profile</Text>
+          <Text className="text-[14px] text-slate-600 mb-3">Update your profile information</Text>
+          <Button label="Edit Profile" onPress={() => router.push("/student/profile" as any)} variant="secondary" />
         </Card>
 
-        <Card style={styles.card}>
-          <Text style={styles.cardTitle}>Notifications</Text>
-          <Text style={styles.cardDesc}>Manage notification preferences</Text>
-          <Text style={styles.successText}>Notifications enabled</Text>
+        <Card className="mb-4">
+          <Text className="font-bold text-primary mb-2">Notifications</Text>
+          <Text className="text-[14px] text-slate-600 mb-3">Manage notification preferences</Text>
+          <Text className="text-[14px] text-success font-semibold">Notifications enabled</Text>
         </Card>
 
-        <Card style={styles.card}>
-          <Text style={styles.cardTitle}>Security</Text>
-          <Text style={styles.cardDesc}>Change password and security settings</Text>
-          <Button label="Change Password" onPress={() => {}} variant="primary" />
+        <Card className="mb-4">
+          <Text className="font-bold text-primary mb-2">Security</Text>
+          <Text className="text-[14px] text-slate-600 mb-3">Change password and security settings</Text>
+          <Button label="Change Password" onPress={() => { }} variant="primary" />
         </Card>
 
-        <Card style={styles.cardLast}>
-          <Text style={styles.cardTitle}>About</Text>
-          <Text style={styles.cardDesc}>LMS App v1.0.0</Text>
+        <Card className="mb-8">
+          <Text className="font-bold text-primary mb-2">About</Text>
+          <Text className="text-[14px] text-slate-600">LMS App v1.0.0</Text>
         </Card>
+        <View className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: COLORS.light },
-  scroll: { flex: 1, padding: 16 },
-  centered: { flex: 1, backgroundColor: COLORS.white, justifyContent: "center", alignItems: "center" },
-  centeredText: { color: COLORS.primary, fontWeight: "700", marginBottom: 16 },
-  title: { fontSize: 20, fontWeight: "700", color: COLORS.primary, marginBottom: 16 },
-  card: { marginBottom: 16 },
-  cardLast: { marginBottom: 32 },
-  cardTitle: { fontWeight: "600", color: COLORS.primary, marginBottom: 8 },
-  cardDesc: { fontSize: 14, color: COLORS.gray[600], marginBottom: 12 },
-  successText: { fontSize: 14, color: COLORS.success },
-});

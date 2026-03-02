@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Tabs, useRouter } from "expo-router";
+import { Redirect, Tabs, useRouter } from "expo-router";
 import { useDispatch } from "react-redux";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Sidebar } from "../../../components";
 import { SidebarProvider } from "../../../contexts/SidebarContext";
 import { logout } from "../../../store/slices/authSlice";
+import { useAuth } from "../../../hooks";
 import { COLORS } from "../../../constants/colors";
 
 const SIDEBAR_MENU = [
@@ -18,10 +19,16 @@ const SIDEBAR_MENU = [
 ];
 
 export default function StudentLayout() {
+  const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const dispatch = useDispatch();
+
+  // Role Guard
+  if (user && user.role !== "student") {
+    return <Redirect href={"/(app)" as any} />;
+  }
 
   const handleMenuPress = (href: string) => {
     setSidebarOpen(false);

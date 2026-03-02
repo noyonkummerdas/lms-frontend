@@ -1,17 +1,25 @@
-import { View, TouchableOpacity, StyleSheet, ViewStyle, StyleProp } from "react-native";
-import { COLORS } from "../constants/colors";
+import { View, TouchableOpacity, ViewStyle, StyleProp } from "react-native";
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface CardProps {
   children: React.ReactNode;
   style?: StyleProp<ViewStyle>;
+  className?: string;
   onPress?: () => void;
 }
 
-export default function Card({ children, style, onPress }: CardProps) {
-  const Wrapper = onPress ? TouchableOpacity : View;
+export default function Card({ children, style, className, onPress }: CardProps) {
+  const Wrapper = (onPress ? TouchableOpacity : View) as any;
+
   return (
     <Wrapper
-      style={[styles.card, style]}
+      className={cn("bg-white border border-border rounded-lg p-4", className)}
+      style={style}
       onPress={onPress}
       activeOpacity={onPress ? 0.7 : 1}
     >
@@ -19,13 +27,3 @@ export default function Card({ children, style, onPress }: CardProps) {
     </Wrapper>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 8,
-    padding: 16,
-  },
-});

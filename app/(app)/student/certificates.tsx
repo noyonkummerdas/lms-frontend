@@ -1,9 +1,8 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Navbar, Card } from "../../../components";
-import { COLORS } from "../../../constants/colors";
 
 const DATA = [
     { id: "1", title: "React Native Basics", date: "Jan 12, 2024", id_code: "CERT-9921-X", icon: "logo-react", color: "#61DAFB" },
@@ -15,77 +14,47 @@ export default function CertificatesScreen() {
     const router = useRouter();
 
     return (
-        <SafeAreaView style={styles.screen} edges={["top"]}>
+        <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
             <Navbar title="My Certificates" showBack={true} onBackPress={() => router.back()} />
 
-            <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-                <View style={styles.header}>
-                    <Text style={styles.title}>Your Achievements</Text>
-                    <Text style={styles.subtitle}>You have earned {DATA.length} professional certificates.</Text>
+            <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
+                <View className="mb-6 mt-4">
+                    <Text className="text-2xl font-extrabold text-primary">Your Achievements</Text>
+                    <Text className="text-[14px] text-slate-500 mt-1">You have earned {DATA.length} professional certificates.</Text>
                 </View>
 
                 {DATA.map((item) => (
-                    <Card key={item.id} style={styles.certCard}>
-                        <View style={[styles.iconBox, { backgroundColor: item.color + "15" }]}>
+                    <Card key={item.id} className="flex-row items-center p-4 mb-4 bg-white">
+                        <View
+                            className="w-16 h-16 rounded-2xl items-center justify-center mr-4"
+                            style={{ backgroundColor: item.color + "15" }}
+                        >
                             <Ionicons name={item.icon as any} size={32} color={item.color} />
                         </View>
-                        <View style={styles.info}>
-                            <Text style={styles.certTitle}>{item.title}</Text>
-                            <Text style={styles.certDate}>Issued on {item.date}</Text>
-                            <Text style={styles.certCode}>ID: {item.id_code}</Text>
+                        <View className="flex-1">
+                            <Text className="text-[16px] font-bold text-primary mb-1">{item.title}</Text>
+                            <Text className="text-[12px] text-slate-400 mb-0.5">Issued on {item.date}</Text>
+                            <Text className="text-[11px] font-bold text-secondary uppercase">ID: {item.id_code}</Text>
                         </View>
                         <TouchableOpacity
-                            style={styles.downloadBtn}
+                            className="p-2 rounded-xl bg-secondary/10"
                             onPress={() => Alert.alert("Download", "Preparing your high-resolution PDF certificate...")}
                         >
-                            <Ionicons name="download-outline" size={24} color={COLORS.secondary} />
+                            <Ionicons name="download-outline" size={24} color="#6366f1" />
                         </TouchableOpacity>
                     </Card>
                 ))}
 
-                <View style={styles.shareSection}>
-                    <Text style={styles.shareTitle}>Share Your Success</Text>
-                    <Text style={styles.shareDesc}>Show the world your new skills on LinkedIn or Twitter!</Text>
-                    <TouchableOpacity style={styles.shareBtn}>
-                        <Ionicons name="share-social-outline" size={20} color={COLORS.white} />
-                        <Text style={styles.shareBtnText}>Share All Certificates</Text>
+                <View className="mt-8 items-center p-6 bg-white rounded-3xl">
+                    <Text className="text-[18px] font-extrabold text-primary mb-2">Share Your Success</Text>
+                    <Text className="text-[14px] text-slate-500 text-center mb-5">Show the world your new skills on LinkedIn or Twitter!</Text>
+                    <TouchableOpacity className="flex-row items-center bg-secondary px-6 py-3.5 rounded-2xl">
+                        <Ionicons name="share-social-outline" size={20} color="white" />
+                        <Text className="text-white font-bold text-[15px] ml-2">Share All Certificates</Text>
                     </TouchableOpacity>
                 </View>
-                <View style={{ height: 40 }} />
+                <View className="h-10" />
             </ScrollView>
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    screen: { flex: 1, backgroundColor: COLORS.light },
-    scroll: { flex: 1, padding: 20 },
-    header: { marginBottom: 24 },
-    title: { fontSize: 24, fontWeight: "800", color: COLORS.primary },
-    subtitle: { fontSize: 14, color: COLORS.gray[500], marginTop: 4 },
-    certCard: {
-        flexDirection: "row",
-        alignItems: "center",
-        padding: 16,
-        marginBottom: 16,
-        backgroundColor: COLORS.white
-    },
-    iconBox: { width: 64, height: 64, borderRadius: 16, alignItems: "center", justifyContent: "center", marginRight: 16 },
-    info: { flex: 1 },
-    certTitle: { fontSize: 16, fontWeight: "700", color: COLORS.primary, marginBottom: 4 },
-    certDate: { fontSize: 12, color: COLORS.gray[400], marginBottom: 2 },
-    certCode: { fontSize: 11, fontWeight: "700", color: COLORS.secondary, textTransform: "uppercase" },
-    downloadBtn: { padding: 8, borderRadius: 12, backgroundColor: COLORS.secondary + "10" },
-    shareSection: { marginTop: 32, alignItems: "center", padding: 24, backgroundColor: COLORS.white, borderRadius: 24 },
-    shareTitle: { fontSize: 18, fontWeight: "800", color: COLORS.primary, marginBottom: 8 },
-    shareDesc: { fontSize: 14, color: COLORS.gray[500], textAlign: "center", marginBottom: 20 },
-    shareBtn: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: COLORS.secondary,
-        paddingHorizontal: 24,
-        paddingVertical: 14,
-        borderRadius: 16
-    },
-    shareBtnText: { color: COLORS.white, fontWeight: "700", fontSize: 15, marginLeft: 8 }
-});

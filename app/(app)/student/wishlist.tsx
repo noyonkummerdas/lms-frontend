@@ -1,10 +1,9 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Navbar, Card, Button } from "../../../components";
-import { COLORS } from "../../../constants/colors";
 
 const MOCK_WISHLIST = [
     { id: 2, title: "Advanced TypeScript", instructor: "Jane Smith", icon: "code-slash", color: "#3178C6", price: "$59.99", rating: 4.9 },
@@ -20,87 +19,66 @@ export default function WishlistScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.screen} edges={["top"]}>
+        <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
             <Navbar title="My Wishlist" showBack={true} onBackPress={() => router.back()} />
 
-            <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+            <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                 {wishlist.length === 0 ? (
-                    <View style={styles.emptyState}>
-                        <View style={styles.emptyIconCircle}>
-                            <Ionicons name="heart-outline" size={40} color={COLORS.gray[300]} />
+                    <View className="flex-1 items-center justify-center mt-[120px]">
+                        <View className="w-20 h-20 rounded-full bg-white items-center justify-center mb-5 shadow-sm elevation-2">
+                            <Ionicons name="heart-outline" size={40} color="#cbd5e1" />
                         </View>
-                        <Text style={styles.emptyTitle}>Your Wishlist is Empty</Text>
-                        <Text style={styles.emptySub}>Save courses you're interested in and they'll appear here.</Text>
+                        <Text className="text-[22px] font-black text-primary">Your Wishlist is Empty</Text>
+                        <Text className="text-[14px] text-slate-500 text-center mt-2.5 px-10 leading-[22px]">Save courses you're interested in and they'll appear here.</Text>
                         <Button
                             label="Explore Courses"
                             onPress={() => router.push("/student/explore")}
                             variant="primary"
-                            style={styles.exploreBtn}
+                            className="mt-8 px-8 h-[50px] rounded-full"
                         />
                     </View>
                 ) : (
-                    <View style={styles.listContainer}>
-                        <Text style={styles.countText}>{wishlist.length} Courses in Wishlist</Text>
+                    <View className="p-4">
+                        <Text className="text-[14px] font-bold text-slate-500 mb-4 ml-1">{wishlist.length} Courses in Wishlist</Text>
                         {wishlist.map((c) => (
-                            <Card key={c.id} style={styles.card}>
-                                <View style={[styles.iconBox, { backgroundColor: c.color + "15" }]}>
+                            <Card key={c.id} className="flex-row items-center p-3 mb-4 rounded-2xl">
+                                <View
+                                    className="w-16 h-16 rounded-2xl items-center justify-center mr-3"
+                                    style={{ backgroundColor: c.color + "15" }}
+                                >
                                     <Ionicons name={c.icon as any} size={32} color={c.color} />
                                 </View>
-                                <View style={styles.info}>
-                                    <Text style={styles.courseTitle} numberOfLines={1}>{c.title}</Text>
-                                    <Text style={styles.instructor}>by {c.instructor}</Text>
-                                    <View style={styles.metaRow}>
-                                        <Text style={styles.price}>{c.price}</Text>
-                                        <View style={styles.ratingInfo}>
-                                            <Ionicons name="star" size={14} color={COLORS.warning} />
-                                            <Text style={styles.ratingText}>{c.rating}</Text>
+                                <View className="flex-1">
+                                    <Text className="text-[16px] font-extrabold text-primary" numberOfLines={1}>{c.title}</Text>
+                                    <Text className="text-[12px] text-slate-500 mt-0.5">by {c.instructor}</Text>
+                                    <View className="flex-row items-center mt-2">
+                                        <Text className="text-[15px] font-black text-secondary mr-3">{c.price}</Text>
+                                        <View className="flex-row items-center">
+                                            <Ionicons name="star" size={14} color="#f59e0b" />
+                                            <Text className="text-[13px] font-bold text-primary ml-1">{c.rating}</Text>
                                         </View>
                                     </View>
                                 </View>
-                                <View style={styles.actions}>
+                                <View className="items-center justify-between h-16 ml-2">
                                     <TouchableOpacity
-                                        style={styles.removeBtn}
+                                        className="p-2"
                                         onPress={() => removeFromWishlist(c.id)}
                                     >
-                                        <Ionicons name="trash-outline" size={20} color={COLORS.danger} />
+                                        <Ionicons name="trash-outline" size={20} color="#ef4444" />
                                     </TouchableOpacity>
                                     <TouchableOpacity
-                                        style={styles.buyBtn}
+                                        className="p-2"
                                         onPress={() => router.push(`/student/explore`)}
                                     >
-                                        <Ionicons name="cart-outline" size={20} color={COLORS.secondary} />
+                                        <Ionicons name="cart-outline" size={20} color="#6366f1" />
                                     </TouchableOpacity>
                                 </View>
                             </Card>
                         ))}
                     </View>
                 )}
-                <View style={{ height: 40 }} />
+                <View className="h-10" />
             </ScrollView>
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    screen: { flex: 1, backgroundColor: COLORS.light },
-    scroll: { flex: 1 },
-    listContainer: { padding: 16 },
-    countText: { fontSize: 14, fontWeight: "700", color: COLORS.gray[500], marginBottom: 16, marginLeft: 4 },
-    card: { flexDirection: "row", alignItems: "center", padding: 12, marginBottom: 16 },
-    iconBox: { width: 64, height: 64, borderRadius: 16, alignItems: "center", justifyContent: "center", marginRight: 12 },
-    info: { flex: 1 },
-    courseTitle: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
-    instructor: { fontSize: 12, color: COLORS.gray[500], marginTop: 2 },
-    metaRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
-    price: { fontSize: 15, fontWeight: "900", color: COLORS.secondary, marginRight: 12 },
-    ratingInfo: { flexDirection: "row", alignItems: "center" },
-    ratingText: { fontSize: 13, fontWeight: "700", color: COLORS.primary, marginLeft: 4 },
-    actions: { alignItems: "center", justifyContent: "space-between", height: 64, marginLeft: 8 },
-    removeBtn: { padding: 8 },
-    buyBtn: { padding: 8 },
-    emptyState: { flex: 1, alignItems: "center", justifyContent: "center", marginTop: 120 },
-    emptyIconCircle: { width: 80, height: 80, borderRadius: 40, backgroundColor: COLORS.white, alignItems: "center", justifyContent: "center", marginBottom: 20, elevation: 2 },
-    emptyTitle: { fontSize: 22, fontWeight: "900", color: COLORS.primary },
-    emptySub: { fontSize: 14, color: COLORS.gray[500], textAlign: "center", marginTop: 10, paddingHorizontal: 40, lineHeight: 22 },
-    exploreBtn: { marginTop: 32, paddingHorizontal: 32, height: 50, borderRadius: 25 },
-});
