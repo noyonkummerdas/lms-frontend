@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, TextInput, ScrollView, Image } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, TextInput, ScrollView, Image, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
@@ -11,6 +11,8 @@ export default function AdminCoursesScreen() {
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState("All");
+    const [selectedCourse, setSelectedCourse] = useState<any>(null);
+    const [detailsModalVisible, setDetailsModalVisible] = useState(false);
     const { data: coursesData, isLoading, refetch } = useGetAdminCoursesQuery();
     const [deleteCourse] = useDeleteCourseMutation();
 
@@ -38,6 +40,11 @@ export default function AdminCoursesScreen() {
                 }
             ]
         );
+    };
+
+    const handleViewDetails = (course: any) => {
+        setSelectedCourse(course);
+        setDetailsModalVisible(true);
     };
 
     const filteredCourses = useMemo(() => {
@@ -78,7 +85,11 @@ export default function AdminCoursesScreen() {
                     <Ionicons name="pricetag-outline" size={14} color={COLORS.gray[400]} />
                     <Text style={styles.statText}>{item.price}</Text>
                 </View>
-                <TouchableOpacity style={styles.manageBtn} activeOpacity={0.7} onPress={() => Alert.alert(t('edit'), `Managing ${item.title}`)}>
+                <TouchableOpacity
+                    style={styles.manageBtn}
+                    activeOpacity={0.7}
+                    onPress={() => handleViewDetails(item)}
+                >
                     <Text style={styles.manageBtnText}>{t('action', { defaultValue: 'Manage' })}</Text>
                     <Ionicons name="chevron-forward" size={14} color={COLORS.secondary} />
                 </TouchableOpacity>
@@ -129,12 +140,104 @@ export default function AdminCoursesScreen() {
                 showsVerticalScrollIndicator={false}
                 refreshing={isLoading}
                 onRefresh={refetch}
-                ListEmptyComponent={() => (
-                    <View style={{ marginTop: 50, alignItems: 'center' }}>
-                        <Text style={{ color: COLORS.gray[400] }}>{t('noCoursesFound')}</Text>
-                    </View>
-                )}
             />
+
+            {/* Course Details Modal */}
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={detailsModalVisible}
+                onRequestClose={() => setDetailsModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>{t('courseDetails', { defaultValue: 'Course Details' })}</Text>
+                            <TouchableOpacity onPress={() => setDetailsModalVisible(false)}>
+                                <Ionicons name="close" size={24} color={COLORS.primary} />
+                            </TouchableOpacity>
+                        </View>
+
+                        <ScrollView style={styles.modalScroll}>
+                            {selectedCourse && (
+                                <View style={styles.detailsContainer}>
+                                    <Image
+                                        source={{ uri: selectedCourse.thumbnail || "https://picsum.photos/seed/course/400/200" }}
+                                        style={styles.detailImage}
+                                    />
+
+                                    <View style={styles.detailSection}>
+                                        <Text style={styles.detailLabel}>{t('courseTitle')}</Text>
+                                        <Text style={styles.detailValue}>{selectedCourse.title}</Text>
+                                    </View>
+
+                                    <View style={styles.detailSection}>
+                                        <Text style={styles.detailLabel}>{t('instructor')}</Text>
+                                        <Text style={styles.detailValue}>{(selectedCourse.instructor as any)?.name || "N/A"}</Text>
+                                    </View>
+
+                                    <View style={styles.detailSection}>
+                                        <Text style={styles.detailLabel}>{t('category')}</Text>
+                                        <Text style={styles.detailValue}>{(selectedCourse.category as any)?.name || "N/A"}</Text>
+                                    </View>
+
+                                    <View style={styles.rowSection}>
+                                        <View style={[styles.detailSection, { flex: 1 }]}>
+                                            <Text style={styles.detailLabel}>{t('price')}</Text>
+                                            <Text style={styles.detailValue}>{selectedCourse.price}</Text>
+                                        </View>
+                                        <View style={[styles.detailSection, { flex: 1 }]}>
+                                            <Text style={styles.detailLabel}>{t('status')}</Text>
+                                            <View style={[styles.statusBadge, {
+                                                alignSelf: 'flex-start',
+                                                backgroundColor: selectedCourse.status === "published" ? COLORS.success + "15" :
+                                                    selectedCourse.status === "pending" ? COLORS.warning + "15" : COLORS.gray[100]
+                                            }]}>
+                                                <Text style={[styles.statusText, {
+                                                    color: selectedCourse.status === "published" ? COLORS.success :
+                                                        selectedCourse.status === "pending" ? COLORS.warning : COLORS.gray[500]
+                                                }]}>{selectedCourse.status}</Text>
+                                            </View>
+                                        </View>
+                                    </View>
+
+                                    <View style={styles.detailSection}>
+                                        <Text style={styles.detailLabel}>{t('description')}</Text>
+                                        <Text style={styles.detailDescription}>{selectedCourse.description || "No description provided."}</Text>
+                                    </View>
+
+                                    <View style={styles.metaSection}>
+                                        <Text style={styles.metaTitle}>System Information</Text>
+                                        <View style={styles.metaRow}>
+                                            <Text style={styles.metaLabel}>ID:</Text>
+                                            <Text style={styles.metaValue}>{selectedCourse._id}</Text>
+                                        </View>
+                                        <View style={styles.metaRow}>
+                                            <Text style={styles.metaLabel}>Created:</Text>
+                                            <Text style={styles.metaValue}>{new Date(selectedCourse.createdAt).toLocaleString()}</Text>
+                                        </View>
+                                        <View style={styles.metaRow}>
+                                            <Text style={styles.metaLabel}>Updated:</Text>
+                                            <Text style={styles.metaValue}>{new Date(selectedCourse.updatedAt).toLocaleString()}</Text>
+                                        </View>
+                                        <View style={styles.metaRow}>
+                                            <Text style={styles.metaLabel}>Version (__v):</Text>
+                                            <Text style={styles.metaValue}>{selectedCourse.__v}</Text>
+                                        </View>
+                                    </View>
+                                </View>
+                            )}
+                        </ScrollView>
+
+                        <TouchableOpacity
+                            style={styles.closeBtn}
+                            onPress={() => setDetailsModalVisible(false)}
+                        >
+                            <Text style={styles.closeBtnText}>{t('close', { defaultValue: 'Close' })}</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 }
@@ -164,4 +267,23 @@ const styles = StyleSheet.create({
     statText: { fontSize: 12, color: COLORS.gray[500], marginLeft: 4, fontWeight: "700" },
     manageBtn: { flexDirection: "row", alignItems: "center", marginLeft: "auto" },
     manageBtnText: { fontSize: 13, fontWeight: "700", color: COLORS.secondary, marginRight: 4 },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+    modalContent: { backgroundColor: COLORS.white, borderTopLeftRadius: 30, borderTopRightRadius: 30, height: '85%', paddingBottom: 20 },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: COLORS.gray[100] },
+    modalTitle: { fontSize: 18, fontWeight: '800', color: COLORS.primary },
+    modalScroll: { flex: 1 },
+    detailsContainer: { padding: 20 },
+    detailImage: { width: '100%', height: 200, borderRadius: 20, marginBottom: 24, backgroundColor: COLORS.gray[50] },
+    detailSection: { marginBottom: 20 },
+    detailLabel: { fontSize: 12, fontWeight: '700', color: COLORS.gray[400], textTransform: 'uppercase', marginBottom: 6 },
+    detailValue: { fontSize: 16, fontWeight: '700', color: COLORS.primary },
+    detailDescription: { fontSize: 14, color: COLORS.gray[600], lineHeight: 22 },
+    rowSection: { flexDirection: 'row', marginBottom: 20 },
+    metaSection: { marginTop: 10, padding: 16, backgroundColor: COLORS.gray[50], borderRadius: 16 },
+    metaTitle: { fontSize: 14, fontWeight: '800', color: COLORS.primary, marginBottom: 12 },
+    metaRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+    metaLabel: { fontSize: 12, color: COLORS.gray[500], fontWeight: '600' },
+    metaValue: { fontSize: 12, color: COLORS.gray[400], fontWeight: '500', fontFamily: 'monospace' },
+    closeBtn: { margin: 20, marginTop: 10, backgroundColor: COLORS.primary, height: 54, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+    closeBtnText: { color: COLORS.white, fontSize: 16, fontWeight: '700' },
 });

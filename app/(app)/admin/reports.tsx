@@ -1,35 +1,84 @@
-import { useState } from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
+import { useState, useMemo } from "react";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions, ActivityIndicator, RefreshControl, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
+import { useGetAdminStatsQuery } from "../../../store/api/reportApi";
 
 const { width } = Dimensions.get("window");
 
 export default function ReportsScreen() {
   const { t } = useTranslation();
-  const [activeRange, setActiveRange] = useState("Month");
+  const [activeRange, setActiveRange] = useState("month");
   const timeRanges = ["day", "week", "month", "year"];
 
-  const kpis = [
-    { label: t('revenueLabel'), value: "$42,850", trend: "+12.5%", icon: "cash-outline", color: COLORS.success },
-    { label: t('enrolled'), value: "3,120", trend: "+8.2%", icon: "people-outline", color: COLORS.secondary },
-    { label: t('avgDaily'), value: "142", trend: "-2.1%", icon: "stats-chart-outline", color: COLORS.warning },
-  ];
+  const { data: stats, isLoading, refetch } = useGetAdminStatsQuery();
+
+  const kpis = useMemo(() => {
+    if (!stats) return [
+      { label: t('revenueLabel'), value: "$0", trend: "+0%", icon: "cash-outline", color: COLORS.success },
+      { label: t('enrolled'), value: "0", trend: "+0%", icon: "people-outline", color: COLORS.secondary },
+      { label: t('totalUsers'), value: "0", trend: "+0%", icon: "person-outline", color: COLORS.primary },
+    ];
+
+    return [
+      { label: t('revenueLabel'), value: `$${stats.totalRevenue.toLocaleString()}`, trend: "+12.5%", icon: "cash-outline", color: COLORS.success },
+      { label: t('enrolled'), value: stats.totalEnrollments.toString(), trend: "+8.2%", icon: "people-outline", color: COLORS.secondary },
+      { label: t('totalUsers'), value: stats.totalStudents.toString(), trend: "+5.1%", icon: "person-outline", color: COLORS.primary },
+    ];
+  }, [stats, t]);
+
+  const monthLabels = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
+
+  const enrollmentData = useMemo(() => {
+    const data = new Array(12).fill(20); // Base height for bars
+    if (stats?.monthlyEnrollments) {
+      stats.monthlyEnrollments.forEach(item => {
+        const monthIndex = item._id.month - 1;
+        if (monthIndex >= 0 && monthIndex < 12) {
+          data[monthIndex] = Math.min(160, item.count * 10 + 20); // Scale count for visualization
+        }
+      });
+    }
+    return data;
+  }, [stats]);
+
+  const distribution = useMemo(() => {
+    if (!stats || !stats.categoryDistribution || stats.categoryDistribution.length === 0) return null;
+
+    // Sort and take top 2 for display simplicity
+    const sorted = [...stats.categoryDistribution].sort((a, b) => b.count - a.count);
+    const total = sorted.reduce((acc, curr) => acc + curr.count, 0);
+
+    return {
+      top: sorted[0],
+      others: sorted.slice(1),
+      percentage: total > 0 ? Math.round((sorted[0].count / total) * 100) : 0
+    };
+  }, [stats]);
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <AdminNavbar title={t('analyticsHub')} />
 
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} colors={[COLORS.secondary]} />
+        }
+      >
         <View style={styles.header}>
           <View>
             <Text style={styles.welcomeText}>{t('systemPerformance')}</Text>
             <Text style={styles.subtext}>{t('insightfulData')}</Text>
           </View>
-          <TouchableOpacity style={styles.downloadBtn}>
+          <TouchableOpacity
+            style={styles.downloadBtn}
+            onPress={() => Alert.alert("Export", "Analytics export coming soon!")}
+          >
             <Ionicons name="cloud-download-outline" size={20} color={COLORS.white} />
           </TouchableOpacity>
         </View>
@@ -48,27 +97,33 @@ export default function ReportsScreen() {
         </View>
 
         {/* KPI Section */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.kpiScroll} contentContainerStyle={styles.kpiContainer}>
-          {kpis.map((kpi, i) => (
-            <Card key={i} style={styles.kpiCard}>
-              <View style={[styles.kpiIconBox, { backgroundColor: kpi.color + "15" }]}>
-                <Ionicons name={kpi.icon as any} size={22} color={kpi.color} />
-              </View>
-              <Text style={styles.kpiLabel}>{kpi.label}</Text>
-              <Text style={styles.kpiValue}>{kpi.value}</Text>
-              <View style={styles.trendBox}>
-                <Ionicons
-                  name={kpi.trend.startsWith("+") ? "trending-up" : "trending-down"}
-                  size={14}
-                  color={kpi.trend.startsWith("+") ? COLORS.success : COLORS.danger}
-                />
-                <Text style={[styles.trendText, { color: kpi.trend.startsWith("+") ? COLORS.success : COLORS.danger }]}>
-                  {kpi.trend}
-                </Text>
-              </View>
-            </Card>
-          ))}
-        </ScrollView>
+        {isLoading && !stats ? (
+          <View style={{ height: 120, justifyContent: 'center' }}>
+            <ActivityIndicator color={COLORS.secondary} />
+          </View>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.kpiScroll} contentContainerStyle={styles.kpiContainer}>
+            {kpis.map((kpi, i) => (
+              <Card key={i} style={styles.kpiCard}>
+                <View style={[styles.kpiIconBox, { backgroundColor: kpi.color + "15" }]}>
+                  <Ionicons name={kpi.icon as any} size={22} color={kpi.color} />
+                </View>
+                <Text style={styles.kpiLabel}>{kpi.label}</Text>
+                <Text style={styles.kpiValue}>{kpi.value}</Text>
+                <View style={styles.trendBox}>
+                  <Ionicons
+                    name={kpi.trend.startsWith("+") ? "trending-up" : "trending-down"}
+                    size={14}
+                    color={kpi.trend.startsWith("+") ? COLORS.success : COLORS.danger}
+                  />
+                  <Text style={[styles.trendText, { color: kpi.trend.startsWith("+") ? COLORS.success : COLORS.danger }]}>
+                    {kpi.trend}
+                  </Text>
+                </View>
+              </Card>
+            ))}
+          </ScrollView>
+        )}
 
         {/* Main Enrollment Chart */}
         <Text style={styles.sectionTitle}>{t('userEngagement')}</Text>
@@ -76,29 +131,28 @@ export default function ReportsScreen() {
           <View style={styles.chartHeader}>
             <View>
               <Text style={styles.chartTitle}>{t('newEnrollments')}</Text>
-              <Text style={styles.chartSub}>Jan - Dec 2024</Text>
+              <Text style={styles.chartSub}>All Time Tracking</Text>
             </View>
             <View style={styles.chartLegend}>
               <View style={styles.legendDot} />
-              <Text style={styles.legendLabel}>{t('target')}</Text>
+              <Text style={styles.legendLabel}>{t('enrolled')}</Text>
             </View>
           </View>
 
           <View style={styles.barChartContainer}>
-            {[40, 70, 50, 90, 110, 85, 130, 150, 120, 160, 140, 110].map((h, i) => (
+            {enrollmentData.map((h, i) => (
               <View key={i} style={styles.barGroup}>
                 <View style={[styles.bar, {
                   height: h,
-                  backgroundColor: i === 7 ? COLORS.secondary : COLORS.secondary + "30",
+                  backgroundColor: h > 20 ? COLORS.secondary : COLORS.secondary + "30",
                   borderTopLeftRadius: 6,
                   borderTopRightRadius: 6
                 }]} />
-                <View style={[styles.barOverlay, { height: h * 0.4 }]} />
               </View>
             ))}
           </View>
           <View style={styles.monthLabels}>
-            {["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"].map((m, i) => (
+            {monthLabels.map((m, i) => (
               <Text key={i} style={styles.monthLabel}>{m}</Text>
             ))}
           </View>
@@ -111,47 +165,63 @@ export default function ReportsScreen() {
             <View style={styles.donutContainer}>
               <View style={styles.donutOuter}>
                 <View style={styles.donutInner}>
-                  <Text style={styles.donutCenterValue}>82%</Text>
-                  <Text style={styles.donutCenterLabel}>{t('health')}</Text>
+                  <Text style={styles.donutCenterValue}>{distribution ? `${distribution.percentage}%` : '0%'}</Text>
+                  <Text style={styles.donutCenterLabel}>{distribution?.top?.name || "None"}</Text>
                 </View>
               </View>
             </View>
             <View style={styles.distributionLabels}>
-              <View style={styles.distLabel}><View style={[styles.distDot, { backgroundColor: COLORS.secondary }]} /><Text style={styles.distText}>{t('development')}</Text></View>
-              <View style={styles.distLabel}><View style={[styles.distDot, { backgroundColor: COLORS.success }]} /><Text style={styles.distText}>{t('design')}</Text></View>
+              {distribution?.top && (
+                <View style={styles.distLabel}>
+                  <View style={[styles.distDot, { backgroundColor: COLORS.secondary }]} />
+                  <Text style={styles.distText} numberOfLines={1}>{distribution.top.name}</Text>
+                </View>
+              )}
+              {distribution?.others[0] && (
+                <View style={styles.distLabel}>
+                  <View style={[styles.distDot, { backgroundColor: COLORS.success }]} />
+                  <Text style={styles.distText} numberOfLines={1}>{distribution.others[0].name}</Text>
+                </View>
+              )}
             </View>
           </Card>
 
           <Card style={styles.categoryCard}>
-            <Text style={styles.cardTitleSmall}>{t('conversionRate')}</Text>
+            <Text style={styles.cardTitleSmall}>Platform Users</Text>
             <View style={styles.conversionBox}>
-              <Text style={styles.hugePercentage}>6.8%</Text>
+              <Text style={styles.hugePercentage}>{stats?.totalStudents || 0}</Text>
               <View style={styles.conversionVisual}>
                 <View style={styles.conversionTrack}>
-                  <View style={[styles.conversionFill, { width: '68%' }]} />
+                  <View style={[styles.conversionFill, { width: '100%' }]} />
                 </View>
               </View>
-              <Text style={styles.conversionMeta}>+1.2% {t('thisMonth')}</Text>
+              <Text style={styles.conversionMeta}>{stats?.totalInstructors || 0} {t('instructor', { count: 2 })}</Text>
             </View>
           </Card>
         </View>
 
         <Text style={styles.sectionTitle}>{t('topInstructors')}</Text>
         <Card style={styles.instructorCard}>
-          {[
-            { name: "Prof. Sarah Wilson", sales: "$12,400", students: 1200, avatar: "SW" },
-            { name: "John Archer", sales: "$9,850", students: 850, avatar: "JA" },
-            { name: "Emily Blunt", sales: "$7,200", students: 600, avatar: "EB" }
-          ].map((item, i) => (
-            <View key={i} style={[styles.instructorRow, i === 2 && styles.noBorder]}>
-              <View style={styles.instructorAvatar}><Text style={styles.avatarText}>{item.avatar}</Text></View>
-              <View style={styles.instructorInfo}>
-                <Text style={styles.instructorName}>{item.name}</Text>
-                <Text style={styles.instructorMeta}>{t('studentsSupervised', { count: item.students, defaultValue: '{{count}} students supervised' })}</Text>
+          {stats?.topInstructors && stats.topInstructors.length > 0 ? (
+            stats.topInstructors.map((item, i) => (
+              <View key={i} style={[styles.instructorRow, i === stats.topInstructors.length - 1 && styles.noBorder]}>
+                <View style={styles.instructorAvatar}>
+                  <Text style={styles.avatarText}>{item.name.charAt(0)}</Text>
+                </View>
+                <View style={styles.instructorInfo}>
+                  <Text style={styles.instructorName}>{item.name}</Text>
+                  <Text style={styles.instructorMeta}>
+                    {t('studentsCount', { count: item.studentCount, defaultValue: `${item.studentCount} Students` })}
+                  </Text>
+                </View>
+                <Text style={styles.earningsText}>${item.totalRevenue.toLocaleString()}</Text>
               </View>
-              <Text style={styles.earningsText}>{item.sales}</Text>
+            ))
+          ) : (
+            <View style={{ padding: 30, alignItems: 'center' }}>
+              <Text style={{ color: COLORS.gray[400] }}>No instructor data found</Text>
             </View>
-          ))}
+          )}
         </Card>
 
         <View style={{ height: 60 }} />

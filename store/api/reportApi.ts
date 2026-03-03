@@ -3,9 +3,13 @@ import { baseQuery } from "./baseQuery";
 
 export interface AdminStats {
     totalRevenue: number;
-    totalUsers: number;
-    activeCourses: number;
-    recentTransactions: any[];
+    totalEnrollments: number;
+    totalStudents: number;
+    totalInstructors: number;
+    totalCourses: number;
+    monthlyEnrollments: any[];
+    categoryDistribution: any[];
+    topInstructors: any[];
 }
 
 export interface InstructorStats {
