@@ -5,6 +5,7 @@ import { View, Animated, StyleSheet, Dimensions, Image, Text, StatusBar } from "
 import { Provider } from "react-redux";
 import { store } from "../store/store";
 import "../styles/global.css";
+import "../utils/i18n"; // Import i18n configuration
 
 const { width } = Dimensions.get("window");
 

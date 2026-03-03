@@ -2,30 +2,32 @@ import { useState } from "react";
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Dimensions } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 
 const { width } = Dimensions.get("window");
 
 export default function ReportsScreen() {
+  const { t } = useTranslation();
   const [activeRange, setActiveRange] = useState("Month");
   const timeRanges = ["Day", "Week", "Month", "Year"];
 
   const kpis = [
-    { label: "Revenue", value: "$42,850", trend: "+12.5%", icon: "cash-outline", color: COLORS.success },
-    { label: "Enrolled", value: "3,120", trend: "+8.2%", icon: "people-outline", color: COLORS.secondary },
-    { label: "Avg. Daily", value: "142", trend: "-2.1%", icon: "stats-chart-outline", color: COLORS.warning },
+    { label: t('revenueLabel'), value: "$42,850", trend: "+12.5%", icon: "cash-outline", color: COLORS.success },
+    { label: t('enrolled'), value: "3,120", trend: "+8.2%", icon: "people-outline", color: COLORS.secondary },
+    { label: t('avgDaily'), value: "142", trend: "-2.1%", icon: "stats-chart-outline", color: COLORS.warning },
   ];
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
-      <AdminNavbar title="Analytics Hub" />
+      <AdminNavbar title={t('analyticsHub')} />
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.welcomeText}>System Performance</Text>
-            <Text style={styles.subtext}>Insightful data for your ecosystem</Text>
+            <Text style={styles.welcomeText}>{t('systemPerformance')}</Text>
+            <Text style={styles.subtext}>{t('insightfulData')}</Text>
           </View>
           <TouchableOpacity style={styles.downloadBtn}>
             <Ionicons name="cloud-download-outline" size={20} color={COLORS.white} />
@@ -40,7 +42,7 @@ export default function ReportsScreen() {
               style={[styles.filterTab, activeRange === range && styles.filterTabActive]}
               onPress={() => setActiveRange(range)}
             >
-              <Text style={[styles.filterTabText, activeRange === range && styles.filterTabTextActive]}>{range}</Text>
+              <Text style={[styles.filterTabText, activeRange === range && styles.filterTabTextActive]}>{t(range.toLowerCase())}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -69,16 +71,16 @@ export default function ReportsScreen() {
         </ScrollView>
 
         {/* Main Enrollment Chart */}
-        <Text style={styles.sectionTitle}>User Engagement</Text>
+        <Text style={styles.sectionTitle}>{t('userEngagement')}</Text>
         <Card style={styles.mainChartCard}>
           <View style={styles.chartHeader}>
             <View>
-              <Text style={styles.chartTitle}>New Enrollments</Text>
+              <Text style={styles.chartTitle}>{t('newEnrollments')}</Text>
               <Text style={styles.chartSub}>Jan - Dec 2024</Text>
             </View>
             <View style={styles.chartLegend}>
               <View style={styles.legendDot} />
-              <Text style={styles.legendLabel}>Target</Text>
+              <Text style={styles.legendLabel}>{t('target')}</Text>
             </View>
           </View>
 
@@ -105,7 +107,7 @@ export default function ReportsScreen() {
         {/* Category Performance */}
         <View style={styles.categoryRow}>
           <Card style={styles.categoryCard}>
-            <Text style={styles.cardTitleSmall}>Course Distribution</Text>
+            <Text style={styles.cardTitleSmall}>{t('courseDistribution')}</Text>
             <View style={styles.donutContainer}>
               <View style={styles.donutOuter}>
                 <View style={styles.donutInner}>
@@ -121,7 +123,7 @@ export default function ReportsScreen() {
           </Card>
 
           <Card style={styles.categoryCard}>
-            <Text style={styles.cardTitleSmall}>Conversion Rate</Text>
+            <Text style={styles.cardTitleSmall}>{t('conversionRate')}</Text>
             <View style={styles.conversionBox}>
               <Text style={styles.hugePercentage}>6.8%</Text>
               <View style={styles.conversionVisual}>
@@ -129,12 +131,12 @@ export default function ReportsScreen() {
                   <View style={[styles.conversionFill, { width: '68%' }]} />
                 </View>
               </View>
-              <Text style={styles.conversionMeta}>+1.2% this month</Text>
+              <Text style={styles.conversionMeta}>+1.2% {t('thisMonth')}</Text>
             </View>
           </Card>
         </View>
 
-        <Text style={styles.sectionTitle}>Top Instructors</Text>
+        <Text style={styles.sectionTitle}>{t('topInstructors')}</Text>
         <Card style={styles.instructorCard}>
           {[
             { name: "Prof. Sarah Wilson", sales: "$12,400", students: 1200, avatar: "SW" },

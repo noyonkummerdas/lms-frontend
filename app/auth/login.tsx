@@ -9,14 +9,18 @@ import { setUser, setToken } from "../../store/slices/authSlice";
 import { validateForm } from "../../utils/validateForm";
 import { AppDispatch } from "../../store/store";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { LanguageSwitcher } from "../../components";
 
 export default function LoginScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const [login, { isLoading }] = useLoginMutation();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -43,6 +47,8 @@ export default function LoginScreen() {
 
     try {
       const result = await login({ email, password }).unwrap();
+      console.log("[LOGIN_SUCCESS] User logged in:", JSON.stringify(result.user, null, 2));
+      console.log("[LOGIN_SUCCESS] Token received:", result.token);
 
       console.log(`[LOGIN_DEBUG] Role assigned: ${result.user.role}`);
 
@@ -61,9 +67,10 @@ export default function LoginScreen() {
         router.replace("/student" as any);
       }
 
-      Alert.alert("Success", `Welcome, ${result.user.name}!`);
+      Alert.alert(t('signIn'), `${t('welcome')}, ${result.user.name}!`);
     } catch (error: any) {
       const message = error?.data?.message || error?.message || "Invalid credentials";
+      console.error("[LOGIN_ERROR] Details:", JSON.stringify(error, null, 2));
       Alert.alert("Login Failed", message);
     }
   };
@@ -81,16 +88,19 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
         >
           <Animated.View className="items-center mb-10" style={{ opacity: fadeAnim }}>
+            <View className="absolute top-0 right-0 z-50">
+              <LanguageSwitcher />
+            </View>
             <View className="w-24 h-24 rounded-full bg-white items-center justify-center mb-5 shadow-lg shadow-black/10 elevation-4">
               <Ionicons name="school" size={64} color="#6366f1" />
             </View>
-            <Text className="text-[28px] font-extrabold text-primary mb-2">Welcome Back</Text>
-            <Text className="text-[16px] text-slate-500 text-center">Sign in to your LMS account</Text>
+            <Text className="text-[28px] font-extrabold text-primary mb-2">{t('welcome')}</Text>
+            <Text className="text-[16px] text-slate-500 text-center">{t('signInTitle')}</Text>
           </Animated.View>
 
           <View className="w-full">
             <View className="mb-5">
-              <Text className="text-[14px] font-bold text-primary mb-2 ml-1">Email Address</Text>
+              <Text className="text-[14px] font-bold text-primary mb-2 ml-1">{t('email')}</Text>
               <View className="flex-row items-center bg-white rounded-2xl border border-slate-200 px-3">
                 <Ionicons name="mail-outline" size={20} color="#94a3b8" className="mr-2" />
                 <Input
@@ -109,19 +119,30 @@ export default function LoginScreen() {
             </View>
 
             <View className="mb-5">
-              <Text className="text-[14px] font-bold text-primary mb-2 ml-1">Password</Text>
+              <Text className="text-[14px] font-bold text-primary mb-2 ml-1">{t('password')}</Text>
               <View className="flex-row items-center bg-white rounded-2xl border border-slate-200 px-3">
                 <Ionicons name="lock-closed-outline" size={20} color="#94a3b8" className="mr-2" />
                 <Input
                   className="flex-1"
-                  placeholder="Your password"
+                  placeholder={t('password')}
                   value={password}
                   onChangeText={(text) => {
                     setPassword(text);
                     setErrors((prev) => ({ ...prev, password: "" }));
                   }}
-                  secureTextEntry
+                  secureTextEntry={!showPassword}
                 />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  activeOpacity={0.7}
+                  className="p-1"
+                >
+                  <Ionicons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={20}
+                    color="#94a3b8"
+                  />
+                </TouchableOpacity>
               </View>
               {errors.password && <Text className="text-rose-500 text-[12px] mt-1 ml-3">{errors.password}</Text>}
             </View>
@@ -131,11 +152,11 @@ export default function LoginScreen() {
               activeOpacity={0.7}
               onPress={() => router.push("/auth/forgot-password")}
             >
-              <Text className="text-secondary font-semibold text-[14px]">Forgot Password?</Text>
+              <Text className="text-secondary font-semibold text-[14px]">{t('forgotPassword')}</Text>
             </TouchableOpacity>
 
             <Button
-              label={isLoading ? "Logging in..." : "Sign In"}
+              label={isLoading ? t('loggingIn') : t('signIn')}
               onPress={handleLogin}
               disabled={isLoading}
               variant="primary"
@@ -144,7 +165,7 @@ export default function LoginScreen() {
 
             <View className="flex-row items-center my-8">
               <View className="flex-1 h-[1px] bg-slate-200" />
-              <Text className="mx-4 text-slate-400 font-semibold">OR</Text>
+              <Text className="mx-4 text-slate-400 font-semibold">{t('or')}</Text>
               <View className="flex-1 h-[1px] bg-slate-200" />
             </View>
 
@@ -166,7 +187,7 @@ export default function LoginScreen() {
               activeOpacity={0.7}
             >
               <Text className="text-slate-600 text-[15px]">
-                Don't have an account? <Text className="text-secondary font-bold">Create Account</Text>
+                {t('noAccount')} <Text className="text-secondary font-bold">{t('createAccount')}</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -174,12 +195,12 @@ export default function LoginScreen() {
           <View className="mt-10 bg-slate-100 p-4 rounded-2xl border border-slate-200">
             <View className="flex-row items-center mb-2">
               <Ionicons name="information-circle" size={18} color="#6366f1" />
-              <Text className="text-[14px] font-bold text-primary ml-2">Demo Credentials</Text>
+              <Text className="text-[14px] font-bold text-primary ml-2">{t('demoCredentials')}</Text>
             </View>
             <View className="space-y-1">
-              <Text className="text-[12px] text-slate-600">• Admin: <Text className="font-bold text-secondary">admin</Text>@test.com</Text>
-              <Text className="text-[12px] text-slate-600">• Teacher: <Text className="font-bold text-secondary">teacher</Text>@test.com</Text>
-              <Text className="text-[12px] text-slate-600">• Student: any other email</Text>
+              <Text className="text-[12px] text-slate-600">• {t('admin')}: <Text className="font-bold text-secondary">admin</Text>@example.com</Text>
+              <Text className="text-[12px] text-slate-600">• {t('instructor')}: <Text className="font-bold text-secondary">instructor</Text>@example.com</Text>
+              <Text className="text-[12px] text-slate-600">• {t('student')}: <Text className="font-bold text-secondary">student</Text>@example.com</Text>
             </View>
           </View>
         </ScrollView>

@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 interface NavbarProps {
   title?: string;
@@ -31,7 +32,9 @@ export default function Navbar({
         </TouchableOpacity>
       )}
       <Text className="color-white text-[18px] font-extrabold flex-1 text-center">{title}</Text>
-      <View className="w-10" />
+      <View className="items-end justify-center">
+        <LanguageSwitcher />
+      </View>
     </View>
   );
 }

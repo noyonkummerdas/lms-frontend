@@ -1,30 +1,40 @@
-import { useState } from "react";
 import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
-
-const INITIAL_PENDING = [
-  { id: "1", title: "Complete Web Design", instructor: "Jane Smith", date: "2024-03-20", category: "Design", description: "Learn modern web design from scratch using Figma and Adobe XD." },
-  { id: "2", title: "Advanced Python", instructor: "Mark Davis", date: "2024-03-19", category: "Development", description: "Deep dive into Python decorators, generators, and async programming." },
-  { id: "3", title: "Digital Marketing 101", instructor: "Sarah Brown", date: "2024-03-18", category: "Business", description: "Master SEO, SEM, and social media marketing strategies." },
-];
+import { useGetAdminCoursesQuery, useUpdateCourseMutation } from "../../../store/api/courseApi";
+import { useMemo } from "react";
 
 export default function ApprovalScreen() {
-  const [courses, setCourses] = useState(INITIAL_PENDING);
+  const { t } = useTranslation();
+  const { data: coursesData, isLoading, refetch } = useGetAdminCoursesQuery();
+  const [updateCourse] = useUpdateCourseMutation();
+
+  console.log("[APPROVAL_DEBUG] Fetched Courses:", JSON.stringify(coursesData, null, 2));
+
+  const pendingCourses = useMemo(() => {
+    if (!coursesData) return [];
+    return coursesData.filter(c => c.status === "pending");
+  }, [coursesData]);
 
   const handleApprove = (id: string, title: string) => {
     Alert.alert(
-      "Confirm Approval",
-      `Are you sure you want to approve "${title}"? This will make it live for all students.`,
+      t('confirmApproval'),
+      `${t('confirm')} "${title}"?`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
         {
-          text: "Approve",
+          text: t('approve'),
           style: "default",
-          onPress: () => {
-            setCourses(prev => prev.filter(c => c.id !== id));
-            Alert.alert("Success", "Course has been approved and is now live.");
+          onPress: async () => {
+            try {
+              await updateCourse({ id, data: { status: "published" } }).unwrap();
+              Alert.alert(t('success'), t('courseApproved'));
+            } catch (err) {
+              console.error("[APPROVAL_DEBUG] Approve Failed:", err);
+              Alert.alert(t('error'), t('error'));
+            }
           }
         }
       ]
@@ -33,46 +43,51 @@ export default function ApprovalScreen() {
 
   const handleReject = (id: string, title: string) => {
     Alert.alert(
-      "Reject Course",
-      `Provide a reason for rejecting "${title}".`,
+      t('rejectCourse'),
+      `${t('confirm')} "${title}"?`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
         {
-          text: "Reject",
+          text: t('reject'),
           style: "destructive",
-          onPress: () => {
-            setCourses(prev => prev.filter(c => c.id !== id));
-            Alert.alert("Rejected", "Course submission has been rejected.");
+          onPress: async () => {
+            try {
+              await updateCourse({ id, data: { status: "draft" } }).unwrap();
+              Alert.alert(t('removed'), t('courseRejected'));
+            } catch (err) {
+              console.error("[APPROVAL_DEBUG] Reject Failed:", err);
+              Alert.alert(t('error'), t('error'));
+            }
           }
         }
       ]
     );
   };
 
-  const handleViewDetails = (course: typeof INITIAL_PENDING[0]) => {
+  const handleViewDetails = (course: any) => {
     Alert.alert(
-      "Course Details",
-      `Title: ${course.title}\nInstructor: ${course.instructor}\nCategory: ${course.category}\n\nDescription: ${course.description}`,
-      [{ text: "Close" }]
+      t('courseDetails'),
+      `${t('name')}: ${course.title}\n${t('instructor')}: ${(course.instructor as any)?.name}\n${t('category')}: ${(course.category as any)?.name}`,
+      [{ text: t('cancel') }]
     );
   };
 
-  const renderItem = ({ item }: { item: typeof INITIAL_PENDING[0] }) => (
+  const renderItem = ({ item }: { item: any }) => (
     <Card className="mb-4 p-4 rounded-2xl">
       <View className="flex-row justify-between items-start mb-4">
         <View className="flex-1 mr-3">
           <Text className="text-[16px] font-extrabold text-primary">{item.title}</Text>
-          <Text className="text-[13px] text-slate-400 mt-1 font-semibold">by {item.instructor}</Text>
+          <Text className="text-[13px] text-slate-400 mt-1 font-semibold">{t('by')} {(item.instructor as any)?.name}</Text>
         </View>
         <View className="bg-secondary/15 px-2.5 py-1.5 rounded-lg">
-          <Text className="text-[11px] font-black text-secondary">{item.category}</Text>
+          <Text className="text-[11px] font-black text-secondary">{(item.category as any)?.name}</Text>
         </View>
       </View>
 
       <View className="flex-row justify-between items-center border-t border-slate-50 pt-3.5">
         <View className="flex-row items-center">
           <Ionicons name="calendar-outline" size={14} color="#94a3b8" />
-          <Text className="text-[12px] text-slate-500 ml-1 font-medium">{item.date}</Text>
+          <Text className="text-[12px] text-slate-500 ml-1 font-medium">{new Date(item.createdAt).toLocaleDateString()}</Text>
         </View>
         <View className="flex-row">
           <TouchableOpacity
@@ -103,26 +118,28 @@ export default function ApprovalScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
-      <AdminNavbar title="Course Approval" />
+      <AdminNavbar title={t('courseApproval')} />
       <View className="px-4 py-3.5 bg-white border-b border-slate-100">
         <Text className="text-[13px] font-bold text-slate-500">
-          {courses.length === 0 ? "No pending approvals" : `${courses.length} courses awaiting approval`}
+          {pendingCourses.length === 0 ? t('noPendingApprovals') : t('awaitingApproval', { count: pendingCourses.length })}
         </Text>
       </View>
 
-      {courses.length === 0 ? (
+      {pendingCourses.length === 0 ? (
         <View className="flex-1 items-center justify-center px-10">
           <Ionicons name="checkmark-circle-outline" size={80} color="#10b98160" />
-          <Text className="text-[22px] font-black text-primary mt-5">All caught up!</Text>
-          <Text className="text-[14px] text-slate-400 text-center mt-2.5 leading-[22px]">There are no new course submissions to review at this time.</Text>
+          <Text className="text-[22px] font-black text-primary mt-5">{t('allCaughtUp')}</Text>
+          <Text className="text-[14px] text-slate-400 text-center mt-2.5 leading-[22px]">{t('noSubmissionsToReview')}</Text>
         </View>
       ) : (
         <FlatList
-          data={courses}
+          data={pendingCourses}
           renderItem={renderItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item: any) => item._id || item.id}
           contentContainerStyle={{ padding: 16 }}
           showsVerticalScrollIndicator={false}
+          refreshing={isLoading}
+          onRefresh={refetch}
         />
       )}
     </SafeAreaView>

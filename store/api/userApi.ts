@@ -1,35 +1,44 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { User } from "../../types/User";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api";
+import { baseQuery } from "./baseQuery";
 
 export const userApi = createApi({
   reducerPath: "userApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${API_URL}/users`,
-    prepareHeaders: (headers, { getState }: any) => {
-      const token = getState().auth.token;
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery,
   tagTypes: ["User"],
   endpoints: (builder) => ({
     getUser: builder.query<User, string>({
-      query: (id) => `/${id}`,
+      query: (id) => `/users/${id}`,
       providesTags: ["User"],
+    }),
+    getUsers: builder.query<User[], void>({
+      query: () => "/users",
+      providesTags: (result) =>
+        result
+          ? [...result.map(({ id }) => ({ type: "User" as const, id })), { type: "User", id: "LIST" }]
+          : [{ type: "User", id: "LIST" }],
     }),
     updateUser: builder.mutation<User, { id: string; data: Partial<User> }>({
       query: ({ id, data }) => ({
-        url: `/${id}`,
+        url: `/users/${id}`,
         method: "PUT",
         body: data,
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: (result, error, { id }) => [{ type: "User", id }, { type: "User", id: "LIST" }],
+    }),
+    deleteUser: builder.mutation<{ message: string }, string>({
+      query: (id) => ({
+        url: `/users/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: [{ type: "User", id: "LIST" }],
     }),
   }),
 });
 
-export const { useGetUserQuery, useUpdateUserMutation } = userApi;
+export const {
+  useGetUserQuery,
+  useGetUsersQuery,
+  useUpdateUserMutation,
+  useDeleteUserMutation
+} = userApi;

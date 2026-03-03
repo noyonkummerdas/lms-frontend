@@ -5,37 +5,29 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Navbar, Card, ProgressBar } from "../../../components";
 import { useSidebar } from "../../../contexts/SidebarContext";
-
-const INITIAL_COURSES = [
-  { id: 1, title: "React Native Basics", progress: 65, totalLessons: 24, completed: 16, lastAccessed: "2 hours ago", favorite: true },
-  { id: 2, title: "TypeScript Mastery", progress: 30, totalLessons: 18, completed: 5, lastAccessed: "Yesterday", favorite: false },
-  { id: 3, title: "Mobile UI Design", progress: 100, totalLessons: 12, completed: 12, lastAccessed: "3 days ago", favorite: true },
-  { id: 4, title: "Advanced Animations", progress: 0, totalLessons: 15, completed: 0, lastAccessed: "Never", favorite: false },
-  { id: 5, title: "Backend with Node.js", progress: 100, totalLessons: 20, completed: 20, lastAccessed: "1 week ago", favorite: false },
-];
+import { useGetMyEnrolledCoursesQuery } from "../../../store/api/enrollmentApi";
 
 export default function MyCoursesScreen() {
   const router = useRouter();
   const sidebar = useSidebar();
-  const [refreshing, setRefreshing] = useState(false);
+  const { data: enrolledCourses, isLoading, refetch } = useGetMyEnrolledCoursesQuery();
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 2000);
-  }, []);
+  console.log("[STUDENT_COURSES_DEBUG] Enrolled Courses:", JSON.stringify(enrolledCourses, null, 2));
+
   const [activeFilter, setActiveFilter] = useState("All");
 
   const filteredCourses = useMemo(() => {
+    if (!enrolledCourses) return [];
     if (activeFilter === "In Progress") {
-      return INITIAL_COURSES.filter(c => c.progress > 0 && c.progress < 100);
+      return enrolledCourses.filter(c => (c as any).progress > 0 && (c as any).progress < 100);
     } else if (activeFilter === "Completed") {
-      return INITIAL_COURSES.filter(c => c.progress === 100);
+      return enrolledCourses.filter(c => (c as any).progress === 100);
     } else if (activeFilter === "Favorite") {
-      return INITIAL_COURSES.filter(c => c.favorite);
+      return enrolledCourses.filter(c => (c as any).favorite);
     } else {
-      return INITIAL_COURSES;
+      return enrolledCourses;
     }
-  }, [activeFilter]);
+  }, [activeFilter, enrolledCourses]);
 
   const FILTERS = ["All", "In Progress", "Completed", "Favorite"];
 
@@ -69,7 +61,7 @@ export default function MyCoursesScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#6366f1"]} tintColor="#6366f1" />
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} colors={["#6366f1"]} tintColor="#6366f1" />
         }
       >
         {filteredCourses.length === 0 ? (
@@ -98,30 +90,30 @@ export default function MyCoursesScreen() {
             >
               <Card className="mb-4 p-4 rounded-[20px]">
                 <View className="flex-row items-center mb-[18px]">
-                  <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-3 ${c.progress === 100 ? 'bg-success/15' : 'bg-secondary/15'}`}>
+                  <View className={`w-12 h-12 rounded-2xl items-center justify-center mr-3 ${(c as any).progress === 100 ? 'bg-success/15' : 'bg-secondary/15'}`}>
                     <Ionicons
-                      name={c.progress === 100 ? "checkmark-circle" : "play-circle"}
+                      name={(c as any).progress === 100 ? "checkmark-circle" : "play-circle"}
                       size={28}
-                      color={c.progress === 100 ? "#10b981" : "#6366f1"}
+                      color={(c as any).progress === 100 ? "#10b981" : "#6366f1"}
                     />
                   </View>
                   <View className="flex-1">
                     <Text className="text-[16px] font-extrabold text-primary" numberOfLines={1}>{c.title}</Text>
-                    <Text className="text-[12px] text-slate-400 mt-0.5 font-semibold">{c.completed} / {c.totalLessons} Lessons</Text>
+                    <Text className="text-[12px] text-slate-400 mt-0.5 font-semibold">{(c as any).completedCount || 0} / {c.lessonsCount} Lessons</Text>
                   </View>
-                  {c.favorite && (
+                  {(c as any).favorite && (
                     <Ionicons name="heart" size={18} color="#ef4444" className="ml-2" />
                   )}
                 </View>
 
                 <View className="mb-5">
-                  <ProgressBar progress={c.progress} showLabel={true} />
+                  <ProgressBar progress={(c as any).progress || 0} showLabel={true} />
                 </View>
 
                 <View className="flex-row justify-between items-center border-t border-slate-50 pt-[14px]">
                   <View className="flex-row items-center">
                     <Ionicons name="time-outline" size={14} color="#94a3b8" />
-                    <Text className="text-[12px] text-slate-400 font-semibold ml-1">{c.lastAccessed}</Text>
+                    <Text className="text-[12px] text-slate-400 font-semibold ml-1">{(c as any).lastAccessed || "Recently"}</Text>
                   </View>
                   <TouchableOpacity
                     className="flex-row items-center"
@@ -131,7 +123,7 @@ export default function MyCoursesScreen() {
                       params: { id: c.id.toString(), title: c.title }
                     } as any)}
                   >
-                    <Text className="text-[14px] font-bold text-secondary mr-1">{c.progress === 100 ? "Review" : "Continue"}</Text>
+                    <Text className="text-[14px] font-bold text-secondary mr-1">{(c as any).progress === 100 ? "Review" : "Continue"}</Text>
                     <Ionicons
                       name={c.progress === 100 ? "refresh" : "arrow-forward"}
                       size={14}

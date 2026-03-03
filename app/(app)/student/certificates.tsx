@@ -2,6 +2,7 @@ import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Navbar, Card } from "../../../components";
 
 const DATA = [
@@ -11,16 +12,17 @@ const DATA = [
 ];
 
 export default function CertificatesScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
 
     return (
         <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
-            <Navbar title="My Certificates" showBack={true} onBackPress={() => router.back()} />
+            <Navbar title={t('myCertificates')} showBack={true} onBackPress={() => router.back()} />
 
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
                 <View className="mb-6 mt-4">
-                    <Text className="text-2xl font-extrabold text-primary">Your Achievements</Text>
-                    <Text className="text-[14px] text-slate-500 mt-1">You have earned {DATA.length} professional certificates.</Text>
+                    <Text className="text-2xl font-extrabold text-primary">{t('yourAchievements')}</Text>
+                    <Text className="text-[14px] text-slate-500 mt-1">{t('certificatesSubtitle', { count: DATA.length })}</Text>
                 </View>
 
                 {DATA.map((item) => (
@@ -46,11 +48,11 @@ export default function CertificatesScreen() {
                 ))}
 
                 <View className="mt-8 items-center p-6 bg-white rounded-3xl">
-                    <Text className="text-[18px] font-extrabold text-primary mb-2">Share Your Success</Text>
-                    <Text className="text-[14px] text-slate-500 text-center mb-5">Show the world your new skills on LinkedIn or Twitter!</Text>
+                    <Text className="text-[18px] font-extrabold text-primary mb-2">{t('shareSuccess')}</Text>
+                    <Text className="text-[14px] text-slate-500 text-center mb-5">{t('shareSubtitle')}</Text>
                     <TouchableOpacity className="flex-row items-center bg-secondary px-6 py-3.5 rounded-2xl">
                         <Ionicons name="share-social-outline" size={20} color="white" />
-                        <Text className="text-white font-bold text-[15px] ml-2">Share All Certificates</Text>
+                        <Text className="text-white font-bold text-[15px] ml-2">{t('shareAll')}</Text>
                     </TouchableOpacity>
                 </View>
                 <View className="h-10" />

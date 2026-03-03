@@ -1,56 +1,72 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { InstructorNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
-
-const STUDENTS = [
-  { id: "1", name: "Alex Johnson", email: "alex@test.com", course: "React Native Basics", progress: 85, avatar: "AJ" },
-  { id: "2", name: "Sarah Williams", email: "sarah@test.com", course: "React Native Basics", progress: 45, avatar: "SW" },
-  { id: "3", name: "James Miller", email: "james@test.com", course: "Advanced TypeScript", progress: 12, avatar: "JM" },
-  { id: "4", name: "Emma Davis", email: "emma@test.com", course: "Mobile UI Design", progress: 60, avatar: "ED" },
-];
+import { useGetInstructorStudentsQuery } from "../../../store/api/enrollmentApi";
 
 export default function StudentsScreen() {
+  const { t } = useTranslation();
+  const { data: studentsData, isLoading } = useGetInstructorStudentsQuery();
+
+  console.log("[INSTRUCTOR_STUDENTS_DEBUG] Students:", JSON.stringify(studentsData, null, 2));
+
+  const STUDENTS = studentsData?.map(e => ({
+    id: e._id,
+    name: e.student?.name || "Student",
+    email: e.student?.email,
+    course: e.course?.title,
+    progress: Math.round(e.completionPercentage || 0),
+    avatar: (e.student?.name || "S").substring(0, 2).toUpperCase()
+  })) || [];
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
-      <InstructorNavbar title="Students" />
+      <InstructorNavbar title={t('students')} />
       <View style={styles.header}>
         <View style={styles.tabActive}>
-          <Text style={styles.tabTextActive}>All Students</Text>
+          <Text style={styles.tabTextActive}>{t('allStudents')}</Text>
         </View>
         <View style={styles.tabInactive}>
-          <Text style={styles.tabTextInactive}>Active</Text>
+          <Text style={styles.tabTextInactive}>{t('activeStatus')}</Text>
         </View>
       </View>
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        {STUDENTS.map((item) => (
-          <Card key={item.id} style={styles.studentCard}>
-            <View style={styles.studentInfo}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{item.avatar}</Text>
+        {isLoading ? (
+          <ActivityIndicator size="large" color={COLORS.secondary} style={{ marginTop: 40 }} />
+        ) : STUDENTS.length === 0 ? (
+          <View style={{ alignItems: 'center', marginTop: 40 }}>
+            <Text style={{ color: COLORS.gray[400], fontSize: 16 }}>{t('noStudentsEnrolled')}</Text>
+          </View>
+        ) : (
+          STUDENTS.map((item) => (
+            <Card key={item.id} style={styles.studentCard}>
+              <View style={styles.studentInfo}>
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>{item.avatar}</Text>
+                </View>
+                <View style={styles.details}>
+                  <Text style={styles.studentName}>{item.name}</Text>
+                  <Text style={styles.courseName}>{item.course}</Text>
+                </View>
+                <TouchableOpacity style={styles.msgBtn} activeOpacity={0.7} onPress={() => { }}>
+                  <Ionicons name="chatbubble-outline" size={20} color={COLORS.secondary} />
+                </TouchableOpacity>
               </View>
-              <View style={styles.details}>
-                <Text style={styles.studentName}>{item.name}</Text>
-                <Text style={styles.courseName}>{item.course}</Text>
-              </View>
-              <TouchableOpacity style={styles.msgBtn} activeOpacity={0.7} onPress={() => { }}>
-                <Ionicons name="chatbubble-outline" size={20} color={COLORS.secondary} />
-              </TouchableOpacity>
-            </View>
 
-            <View style={styles.progressSection}>
-              <View style={styles.progressHeader}>
-                <Text style={styles.progressLabel}>Course Progress</Text>
-                <Text style={styles.progressValue}>{item.progress}%</Text>
+              <View style={styles.progressSection}>
+                <View style={styles.progressHeader}>
+                  <Text style={styles.progressLabel}>{t('courseProgress')}</Text>
+                  <Text style={styles.progressValue}>{item.progress}%</Text>
+                </View>
+                <View style={styles.progressBar}>
+                  <View style={[styles.progressFill, { width: `${item.progress}%` }]} />
+                </View>
               </View>
-              <View style={styles.progressBar}>
-                <View style={[styles.progressFill, { width: `${item.progress}%` }]} />
-              </View>
-            </View>
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
         <View style={{ height: 40 }} />
       </ScrollView>
     </SafeAreaView>

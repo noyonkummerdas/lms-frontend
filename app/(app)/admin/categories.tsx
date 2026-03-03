@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 
@@ -15,6 +16,7 @@ const CATEGORIES = [
 ];
 
 export default function CategoriesScreen() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCategories = useMemo(() => {
@@ -30,8 +32,8 @@ export default function CategoriesScreen() {
           <Ionicons name={item.icon as any} size={28} color={item.color} />
         </View>
         <Text style={styles.catName}>{item.name}</Text>
-        <Text style={styles.catCount}>{item.count} Courses</Text>
-        <TouchableOpacity style={styles.editBtn} activeOpacity={0.7} onPress={() => Alert.alert("Edit Category", `Managing ${item.name}`)}>
+        <Text style={styles.catCount}>{item.count} {t('courses')}</Text>
+        <TouchableOpacity style={styles.editBtn} activeOpacity={0.7} onPress={() => Alert.alert(t('edit'), `Managing ${item.name}`)}>
           <Ionicons name="ellipsis-horizontal" size={16} color={COLORS.gray[400]} />
         </TouchableOpacity>
       </Card>
@@ -40,34 +42,34 @@ export default function CategoriesScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
-      <AdminNavbar title="Category Management" />
+      <AdminNavbar title={t('categoryManagement')} />
       <View style={styles.header}>
         <View style={styles.searchBar}>
           <Ionicons name="search" size={18} color={COLORS.gray[400]} />
           <TextInput
-            placeholder="Search..."
+            placeholder={t('searchPlaceholder')}
             style={styles.searchInput}
             placeholderTextColor={COLORS.gray[400]}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
         </View>
-        <TouchableOpacity style={styles.addBtn} activeOpacity={0.7} onPress={() => Alert.alert("Add Category", "Create a new course category")}>
+        <TouchableOpacity style={styles.addBtn} activeOpacity={0.7} onPress={() => Alert.alert(t('create'), "Create a new course category")}>
           <Ionicons name="add" size={20} color={COLORS.white} />
-          <Text style={styles.addBtnText}>New</Text>
+          <Text style={styles.addBtnText}>{t('create')}</Text>
         </TouchableOpacity>
       </View>
       <FlatList
         data={filteredCategories}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item._id || item.id}
         numColumns={2}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           <View style={{ alignItems: 'center', marginTop: 40, width: '100%' }}>
             <Ionicons name="grid-outline" size={48} color={COLORS.gray[300]} />
-            <Text style={{ color: COLORS.gray[500], marginTop: 12, fontSize: 16 }}>No categories found</Text>
+            <Text style={{ color: COLORS.gray[500], marginTop: 12, fontSize: 16 }}>{t('noCoursesFound')}</Text>
           </View>
         }
       />

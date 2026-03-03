@@ -2,50 +2,57 @@ import { useState, useMemo } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
-
-const INITIAL_USERS = [
-  { id: "1", name: "John Doe", email: "john@example.com", role: "Student", status: "Active", avatar: "https://i.pravatar.cc/150?u=1" },
-  { id: "2", name: "Jane Smith", email: "jane@test.com", role: "Instructor", status: "Active", avatar: "https://i.pravatar.cc/150?u=2" },
-  { id: "3", name: "Mike Ross", email: "mike@ross.com", role: "Student", status: "Inactive", avatar: "https://i.pravatar.cc/150?u=3" },
-  { id: "4", name: "Harvey Specter", email: "harvey@specter.com", role: "Instructor", status: "Active", avatar: "https://i.pravatar.cc/150?u=4" },
-  { id: "5", name: "Donna Paulsen", email: "donna@test.com", role: "Admin", status: "Active", avatar: "https://i.pravatar.cc/150?u=5" },
-];
+import { useGetUsersQuery, useDeleteUserMutation, useUpdateUserMutation } from "../../../store/api/userApi";
+import { User } from "../../../types/User";
 
 export default function UsersScreen() {
-  const [users, setUsers] = useState(INITIAL_USERS);
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
+  const { data: usersData, isLoading, refetch } = useGetUsersQuery();
+  const [updateUser] = useUpdateUserMutation();
+  const [deleteUser] = useDeleteUserMutation();
+
+  console.log("[USERS_DEBUG] Fetched Users:", JSON.stringify(usersData, null, 2));
 
   const filteredUsers = useMemo(() => {
-    return users.filter(user =>
+    if (!usersData) return [];
+    return usersData.filter(user =>
       user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       user.role.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [searchQuery, users]);
+  }, [searchQuery, usersData]);
 
   const toggleUserStatus = (id: string, currentStatus: string, name: string) => {
-    const isDeactivating = currentStatus === "Active";
+    const isDeactivating = currentStatus === "Active" || currentStatus === "active";
+    const newStatus = isDeactivating ? "inactive" : "active";
+
     Alert.alert(
-      isDeactivating ? "Deactivate User" : "Activate User",
-      `Are you sure you want to ${isDeactivating ? "deactivate" : "activate"} ${name}?`,
+      isDeactivating ? t('deactivateUser') : t('activateUser'),
+      isDeactivating ? t('confirmDeactivate', { name }) : t('confirmActivate', { name }),
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
         {
-          text: isDeactivating ? "Deactivate" : "Activate",
+          text: isDeactivating ? t('deactivate') : t('activate'),
           style: isDeactivating ? "destructive" : "default",
-          onPress: () => {
-            setUsers(prev => prev.map(u =>
-              u.id === id ? { ...u, status: isDeactivating ? "Inactive" : "Active" } : u
-            ));
+          onPress: async () => {
+            try {
+              await updateUser({ id, data: { status: newStatus } }).unwrap();
+              Alert.alert(t('success'), t('userStatusUpdated', { name, status: t(newStatus === 'active' ? 'activeStatus' : 'inactiveStatus') }));
+            } catch (err) {
+              console.error("[USERS_DEBUG] Update Status Failed:", err);
+              Alert.alert(t('error'), t('error_updating_status', { defaultValue: 'Failed to update user status' }));
+            }
           }
         }
       ]
     );
   };
 
-  const renderItem = ({ item }: { item: typeof INITIAL_USERS[0] }) => (
+  const renderItem = ({ item }: { item: User | any }) => (
     <Card style={styles.userCard}>
       <View style={styles.userInfo}>
         <Image
@@ -64,9 +71,9 @@ export default function UsersScreen() {
             <View style={styles.roleBadge}>
               <Text style={styles.roleText}>{item.role}</Text>
             </View>
-            <View style={[styles.statusBadge, { backgroundColor: item.status === "Active" ? COLORS.success + "15" : COLORS.danger + "15" }]}>
-              <Text style={[styles.statusText, { color: item.status === "Active" ? COLORS.success : COLORS.danger }]}>
-                {item.status}
+            <View style={[styles.statusBadge, { backgroundColor: item.status === "Active" || item.status === "active" ? COLORS.success + "15" : COLORS.danger + "15" }]}>
+              <Text style={[styles.statusText, { color: item.status === "Active" || item.status === "active" ? COLORS.success : COLORS.danger }]}>
+                {t(item.status === 'Active' || item.status === 'active' ? 'activeStatus' : 'inactiveStatus')}
               </Text>
             </View>
           </View>
@@ -75,13 +82,13 @@ export default function UsersScreen() {
 
       <View style={styles.actions}>
         <TouchableOpacity
-          style={[styles.actionBtn, { backgroundColor: item.status === "Active" ? COLORS.danger + "10" : COLORS.success + "10" }]}
-          onPress={() => toggleUserStatus(item.id, item.status, item.name)}
+          style={[styles.actionBtn, { backgroundColor: item.status === "Active" || item.status === "active" ? COLORS.danger + "10" : COLORS.success + "10" }]}
+          onPress={() => toggleUserStatus(item._id || item.id || "", item.status, item.name)}
         >
           <Ionicons
-            name={item.status === "Active" ? "person-remove-outline" : "person-add-outline"}
+            name={item.status === "Active" || item.status === "active" ? "person-remove-outline" : "person-add-outline"}
             size={20}
-            color={item.status === "Active" ? COLORS.danger : COLORS.success}
+            color={item.status === "Active" || item.status === "active" ? COLORS.danger : COLORS.success}
           />
         </TouchableOpacity>
       </View>
@@ -90,12 +97,12 @@ export default function UsersScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
-      <AdminNavbar title="User Management" />
+      <AdminNavbar title={t('userManagement')} />
       <View style={styles.header}>
         <View style={styles.searchBar}>
           <Ionicons name="search" size={20} color={COLORS.gray[400]} />
           <TextInput
-            placeholder="Search users..."
+            placeholder={t('searchUsers')}
             style={styles.searchInput}
             placeholderTextColor={COLORS.gray[400]}
             value={searchQuery}
@@ -107,9 +114,16 @@ export default function UsersScreen() {
       <FlatList
         data={filteredUsers}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item._id || item.id || Math.random().toString()}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        refreshing={isLoading}
+        onRefresh={refetch}
+        ListEmptyComponent={() => (
+          <View style={{ marginTop: 50, alignItems: 'center' }}>
+            <Text style={{ color: COLORS.gray[400] }}>{t('noUsersFound')}</Text>
+          </View>
+        )}
       />
     </SafeAreaView>
   );

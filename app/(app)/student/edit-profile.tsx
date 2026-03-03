@@ -3,10 +3,12 @@ import { View, Text, ScrollView, TextInput, TouchableOpacity, Alert } from "reac
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Navbar, Button } from "../../../components";
 import { useAuth } from "../../../hooks";
 
 export default function EditProfileScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
     const { user } = useAuth();
     const [name, setName] = useState(user?.name || "");
@@ -15,13 +17,13 @@ export default function EditProfileScreen() {
     const [bio, setBio] = useState("Passionate learner exploring React Native and Fullstack development.");
 
     const handleSave = () => {
-        Alert.alert("Success", "Profile updated successfully!");
+        Alert.alert(t('success'), t('profileUpdated'));
         router.back();
     };
 
     return (
         <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-            <Navbar title="Edit Profile" showBack={true} onBackPress={() => router.back()} />
+            <Navbar title={t('editProfile')} showBack={true} onBackPress={() => router.back()} />
 
             <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
                 <View className="items-center mb-8 mt-4">
@@ -31,27 +33,27 @@ export default function EditProfileScreen() {
                             <Ionicons name="camera" size={20} color="white" />
                         </TouchableOpacity>
                     </View>
-                    <Text className="text-[14px] text-secondary font-bold">Change Profile Photo</Text>
+                    <Text className="text-[14px] text-secondary font-bold">{t('changeProfilePhoto')}</Text>
                 </View>
 
                 <View className="mb-8">
-                    <Text className="text-[14px] font-bold text-primary mb-2 ml-1">Full Name</Text>
+                    <Text className="text-[14px] font-bold text-primary mb-2 ml-1">{t('fullName')}</Text>
                     <TextInput
                         className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-[16px] text-primary mb-4"
                         value={name}
                         onChangeText={setName}
-                        placeholder="Enter your name"
+                        placeholder={t('enterName')}
                     />
 
-                    <Text className="text-[14px] font-bold text-primary mb-2 ml-1">Email Address</Text>
+                    <Text className="text-[14px] font-bold text-primary mb-2 ml-1">{t('email')}</Text>
                     <TextInput
                         className="bg-slate-100 p-4 rounded-xl border border-slate-100 text-[16px] text-slate-400 mb-4"
                         value={email}
                         editable={false}
                     />
-                    <Text className="text-[12px] text-slate-400 -mt-3 mb-4 ml-1">Email cannot be changed.</Text>
+                    <Text className="text-[12px] text-slate-400 -mt-3 mb-4 ml-1">{t('emailCannotBeChanged')}</Text>
 
-                    <Text className="text-[14px] font-bold text-primary mb-2 ml-1">Phone Number</Text>
+                    <Text className="text-[14px] font-bold text-primary mb-2 ml-1">{t('phoneNumber')}</Text>
                     <TextInput
                         className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-[16px] text-primary mb-4"
                         value={phone}
@@ -59,7 +61,7 @@ export default function EditProfileScreen() {
                         keyboardType="phone-pad"
                     />
 
-                    <Text className="text-[14px] font-bold text-primary mb-2 ml-1">About Me</Text>
+                    <Text className="text-[14px] font-bold text-primary mb-2 ml-1">{t('aboutMe')}</Text>
                     <TextInput
                         className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-[16px] text-primary h-24 text-start"
                         value={bio}
@@ -70,7 +72,7 @@ export default function EditProfileScreen() {
                 </View>
 
                 <Button
-                    label="Save Changes"
+                    label={t('saveChanges')}
                     onPress={handleSave}
                     variant="primary"
                     className="h-14 rounded-2xl"

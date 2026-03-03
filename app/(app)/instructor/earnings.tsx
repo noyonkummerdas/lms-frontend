@@ -1,6 +1,7 @@
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { InstructorNavbar, Card, Button } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 
@@ -11,25 +12,26 @@ const HISTORY = [
 ];
 
 export default function EarningsScreen() {
+  const { t } = useTranslation();
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
-      <InstructorNavbar title="Earnings" />
+      <InstructorNavbar title={t('earnings')} />
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <Card style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Current Balance</Text>
+          <Text style={styles.balanceLabel}>{t('currentBalance')}</Text>
           <Text style={styles.balanceValue}>$1,240.50</Text>
           <Button
-            label="Withdraw Funds"
+            label={t('withdrawFunds')}
             onPress={() => { }}
             style={styles.withdrawBtn}
           />
         </Card>
 
-        <Text style={styles.sectionTitle}>Monthly Overview</Text>
+        <Text style={styles.sectionTitle}>{t('monthlyOverview')}</Text>
         <Card style={styles.chartCard}>
           <View style={styles.chartHeader}>
-            <Text style={styles.chartTotal}>$3,450.00 Total Earned</Text>
-            <Text style={styles.chartPeriod}>Last 6 Months</Text>
+            <Text style={styles.chartTotal}>$3,450.00 {t('totalEarned')}</Text>
+            <Text style={styles.chartPeriod}>{t('last6Months')}</Text>
           </View>
           <View style={styles.barContainer}>
             {[40, 60, 45, 80, 55, 70].map((h, i) => (
@@ -41,7 +43,7 @@ export default function EarningsScreen() {
           </View>
         </Card>
 
-        <Text style={styles.sectionTitle}>Transaction History</Text>
+        <Text style={styles.sectionTitle}>{t('transactionHistory')}</Text>
         {HISTORY.map((item) => (
           <Card key={item.id} style={styles.historyCard}>
             <View style={styles.historyIcon}>
@@ -52,14 +54,14 @@ export default function EarningsScreen() {
               />
             </View>
             <View style={styles.historyDetails}>
-              <Text style={styles.historyType}>{item.type}</Text>
+              <Text style={styles.historyType}>{t(item.type.toLowerCase())}</Text>
               <Text style={styles.historyDate}>{item.date}</Text>
             </View>
             <View style={styles.historyAction}>
               <Text style={[styles.historyAmount, { color: item.type === "Sale" ? COLORS.success : COLORS.primary }]}>
                 {item.amount}
               </Text>
-              <Text style={styles.historyStatus}>{item.status}</Text>
+              <Text style={styles.historyStatus}>{t(item.status.toLowerCase() + 'Status')}</Text>
             </View>
           </Card>
         ))}

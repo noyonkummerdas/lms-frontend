@@ -1,32 +1,41 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Assignment } from "../../types/Assignment";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { Assignment, AssignmentSubmission } from "../../types/Assignment";
+import { baseQuery } from "./baseQuery";
 
 export const assignmentApi = createApi({
   reducerPath: "assignmentApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${API_URL}/assignments`,
-    prepareHeaders: (headers, { getState }: any) => {
-      const token = getState().auth.token;
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery,
   tagTypes: ["Assignment"],
   endpoints: (builder) => ({
-    getAssignments: builder.query<Assignment[], string>({
-      query: (courseId) => `?courseId=${courseId}`,
-      providesTags: ["Assignment"],
+    createAssignment: builder.mutation<Assignment, Partial<Assignment>>({
+      query: (body) => ({
+        url: "/assignments",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Assignment"],
     }),
-    getAssignment: builder.query<Assignment, string>({
-      query: (id) => `/${id}`,
-      providesTags: ["Assignment"],
+    submitAssignment: builder.mutation<AssignmentSubmission, { id: string; fileUrl: string }>({
+      query: ({ id, fileUrl }) => ({
+        url: `/assignments/${id}/submit`,
+        method: "POST",
+        body: { fileUrl },
+      }),
+      invalidatesTags: ["Assignment"],
+    }),
+    gradeAssignment: builder.mutation<AssignmentSubmission, { id: string; subId: string; grade: number; feedback: string }>({
+      query: ({ id, subId, grade, feedback }) => ({
+        url: `/assignments/${id}/grade/${subId}`,
+        method: "PUT",
+        body: { grade, feedback },
+      }),
+      invalidatesTags: ["Assignment"],
     }),
   }),
 });
 
-export const { useGetAssignmentsQuery, useGetAssignmentQuery } =
-  assignmentApi;
+export const {
+  useCreateAssignmentMutation,
+  useSubmitAssignmentMutation,
+  useGradeAssignmentMutation
+} = assignmentApi;

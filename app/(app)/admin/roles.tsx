@@ -2,17 +2,19 @@ import { useState, useMemo } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 
 const ROLES_DATA = [
-    { id: "1", title: "Administrator", users: 5, permissions: "Full Access", color: COLORS.danger },
-    { id: "2", title: "Instructor", users: 24, permissions: "Course Management, Analytics", color: COLORS.secondary },
-    { id: "3", title: "Student", users: 1250, permissions: "Course Access, Community", color: COLORS.success },
-    { id: "4", title: "Editor", users: 8, permissions: "Content Editing, Categories", color: COLORS.warning },
+    { id: "1", title: "administrator", users: 5, permissions: "Full Access", color: COLORS.danger },
+    { id: "2", title: "instructor", users: 24, permissions: "Course Management, Analytics", color: COLORS.secondary },
+    { id: "3", title: "student", users: 1250, permissions: "Course Access, Community", color: COLORS.success },
+    { id: "4", title: "editor", users: 8, permissions: "Content Editing, Categories", color: COLORS.warning },
 ];
 
 export default function RolesScreen() {
+    const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState("");
 
     const filteredRoles = useMemo(() => {
@@ -23,7 +25,7 @@ export default function RolesScreen() {
     }, [searchQuery]);
 
     const handleEdit = (role: string) => {
-        Alert.alert("Edit Role", `Editing permissions for: ${role}`);
+        Alert.alert(t('edit'), `${t('edit')} ${t(role)}`);
     };
 
     const renderItem = ({ item }: { item: typeof ROLES_DATA[0] }) => (
@@ -33,8 +35,8 @@ export default function RolesScreen() {
                     <Ionicons name="shield-checkmark" size={24} color={item.color} />
                 </View>
                 <View style={styles.roleInfo}>
-                    <Text style={styles.roleTitle}>{item.title}</Text>
-                    <Text style={styles.userCount}>{item.users} Active Users</Text>
+                    <Text style={styles.roleTitle}>{t(item.title)}</Text>
+                    <Text style={styles.userCount}>{item.users} {t('activeUsers')}</Text>
                 </View>
                 <TouchableOpacity
                     style={styles.editBtn}
@@ -46,7 +48,7 @@ export default function RolesScreen() {
             </View>
 
             <View style={styles.permissionsRow}>
-                <Text style={styles.permLabel}>Primary Permissions:</Text>
+                <Text style={styles.permLabel}>{t('primaryPermissions')}</Text>
                 <Text style={styles.permValue}>{item.permissions}</Text>
             </View>
         </Card>
@@ -54,33 +56,33 @@ export default function RolesScreen() {
 
     return (
         <SafeAreaView style={styles.screen} edges={["top"]}>
-            <AdminNavbar title="Role Management" />
+            <AdminNavbar title={t('roleManagement')} />
             <View style={styles.header}>
                 <View style={styles.searchBar}>
                     <Ionicons name="search" size={18} color={COLORS.gray[400]} />
                     <TextInput
-                        placeholder="Search roles..."
+                        placeholder={t('searchRoles')}
                         style={styles.searchInput}
                         placeholderTextColor={COLORS.gray[400]}
                         value={searchQuery}
                         onChangeText={setSearchQuery}
                     />
                 </View>
-                <TouchableOpacity style={styles.addBtn} activeOpacity={0.7} onPress={() => Alert.alert("Add Role", "Define a new system role")}>
+                <TouchableOpacity style={styles.addBtn} activeOpacity={0.7} onPress={() => Alert.alert(t('create'), "Define a new system role")}>
                     <Ionicons name="add" size={20} color={COLORS.white} />
-                    <Text style={styles.addBtnText}>New</Text>
+                    <Text style={styles.addBtnText}>{t('create')}</Text>
                 </TouchableOpacity>
             </View>
             <FlatList
                 data={filteredRoles}
                 renderItem={renderItem}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item: any) => item._id || item.id}
                 contentContainerStyle={styles.list}
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
                     <View style={{ alignItems: 'center', marginTop: 40 }}>
                         <Ionicons name="shield-outline" size={48} color={COLORS.gray[300]} />
-                        <Text style={{ color: COLORS.gray[500], marginTop: 12, fontSize: 16 }}>No roles found</Text>
+                        <Text style={{ color: COLORS.gray[500], marginTop: 12, fontSize: 16 }}>{t('noResults')}</Text>
                     </View>
                 }
             />

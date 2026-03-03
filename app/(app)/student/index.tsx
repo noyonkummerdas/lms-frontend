@@ -3,49 +3,35 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../hooks";
 import { Navbar, Card } from "../../../components";
 import { useSidebar } from "../../../contexts/SidebarContext";
+import { useGetMyEnrolledCoursesQuery, useGetLearningProgressQuery } from "../../../store/api/enrollmentApi";
 
 export default function StudentHomeScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { user } = useAuth();
   const sidebar = useSidebar();
-  const [lang, setLang] = useState<"EN" | "BN">("EN");
 
-  const t = {
-    EN: {
-      greeting: "Hi",
-      subtitle: "Ready to learn something new?",
-      active: "Active Courses",
-      completed: "Completed",
-      achievements: "Your Achievements",
-      announcement: "New Announcement",
-      continue: "Continue Learning",
-      explore: "Explore All Courses",
-      bundles: "Course Bundles"
-    },
-    BN: {
-      greeting: "হ্যালো",
-      subtitle: "নতুন কিছু শিখতে প্রস্তুত তো?",
-      active: "অ্যাক্টিভ কোর্স",
-      completed: "সম্পন্ন হয়েছে",
-      achievements: "আপনার অর্জন",
-      announcement: "নতুন ঘোষণা",
-      continue: "পড়া চালিয়ে যান",
-      explore: "সব কোর্স দেখুন",
-      bundles: "কোর্স বান্ডেল"
-    }
-  }[lang];
+  const { data: enrolledCourses, isLoading: loadingCourses } = useGetMyEnrolledCoursesQuery();
+  const { data: progressData } = useGetLearningProgressQuery();
 
-  const featured = [
-    { id: 1, title: "React Native Basics", icon: "logo-react", progress: 65, color: "#61DAFB" },
-    { id: 2, title: "TypeScript Mastery", icon: "code-slash", progress: 30, color: "#3178C6" },
-  ];
+  console.log("[STUDENT_DASHBOARD_DEBUG] Enrolled Courses:", JSON.stringify(enrolledCourses, null, 2));
 
-  const toggleLang = () => {
-    setLang(lang === "EN" ? "BN" : "EN");
-  };
+  const activeCourses = enrolledCourses?.filter(c => (c as any).progress > 0 && (c as any).progress < 100) || [];
+  const completedCourses = enrolledCourses?.filter(c => (c as any).progress === 100) || [];
+
+  // For "Continue Learning" section
+  const featured = enrolledCourses?.slice(0, 2).map((c, idx) => ({
+    id: c.id,
+    title: c.title,
+    icon: idx === 0 ? "logo-react" : "code-slash",
+    progress: (c as any).progress || 0,
+    color: idx === 0 ? "#61DAFB" : "#3178C6"
+  })) || [];
+
 
   return (
     <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
@@ -54,21 +40,15 @@ export default function StudentHomeScreen() {
         <View className="flex-row justify-between items-center mb-6 mt-4">
           <View>
             <View className="flex-row items-center">
-              <Text className="text-2xl font-extrabold text-primary">Hi, {user?.name}!</Text>
+              <Text className="text-2xl font-extrabold text-primary">{t('greeting', { name: user?.name })}</Text>
               <View className="flex-row items-center bg-[#FF6B6B10] px-2 py-1 rounded-xl ml-3">
                 <Ionicons name="flame" size={16} color="#FF6B6B" />
                 <Text className="text-[12px] font-extrabold text-[#FF6B6B] ml-1">7 Days</Text>
               </View>
             </View>
-            <Text className="text-[15px] text-slate-500 mt-1">{t.subtitle}</Text>
+            <Text className="text-[15px] text-slate-500 mt-1">{t('learningSubtitle')}</Text>
           </View>
           <View className="flex-row items-center">
-            <TouchableOpacity
-              className="mr-3 px-2.5 py-1.5 rounded-lg bg-white border border-border"
-              onPress={toggleLang}
-            >
-              <Text className="text-[13px] font-bold text-secondary">{lang}</Text>
-            </TouchableOpacity>
             <TouchableOpacity
               className="p-2 rounded-xl bg-white border border-border"
               onPress={() => router.push("/(app)/student/notifications")}
@@ -89,27 +69,27 @@ export default function StudentHomeScreen() {
 
         <View className="flex-row justify-between mb-6">
           <Card className="flex-1 mx-1 p-4 items-center">
-            <Text className="text-2xl font-bold text-primary">4</Text>
-            <Text className="text-[12px] text-slate-500 mt-1">Active Courses</Text>
+            <Text className="text-2xl font-bold text-primary">{activeCourses.length}</Text>
+            <Text className="text-[12px] text-slate-500 mt-1">{t('active')}</Text>
           </Card>
           <Card className="flex-1 mx-1 p-4 items-center">
-            <Text className="text-2xl font-bold text-primary">12</Text>
-            <Text className="text-[12px] text-slate-500 mt-1">Completed</Text>
+            <Text className="text-2xl font-bold text-primary">{completedCourses.length}</Text>
+            <Text className="text-[12px] text-slate-500 mt-1">{t('completed')}</Text>
           </Card>
         </View>
 
         {/* Gamification: Badges Section */}
         <View className="mb-6">
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-[18px] font-bold text-primary">{t.achievements}</Text>
-            <TouchableOpacity><Text className="text-secondary font-semibold text-[14px]">See All</Text></TouchableOpacity>
+            <Text className="text-[18px] font-bold text-primary">{t('achievements')}</Text>
+            <TouchableOpacity><Text className="text-secondary font-semibold text-[14px]">{t('seeAll')}</Text></TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="ml-[-16px] pl-4">
             {[
-              { id: 1, name: lang === "EN" ? "Early Bird" : "ভোরবেলা পাখি", icon: "sunny", color: "#FFD93D" },
-              { id: 2, name: lang === "EN" ? "Fast Learner" : "দ্রুত শিক্ষার্থী", icon: "rocket", color: "#6C5CE7" },
-              { id: 3, name: lang === "EN" ? "Quiz Master" : "কুইজ মাস্টার", icon: "ribbon", color: "#00B894" },
-              { id: 4, name: lang === "EN" ? "7-Day Streak" : "৭ দিনের ধারা", icon: "flame", color: "#FF7675" },
+              { id: 1, name: t('earlyBird'), icon: "sunny", color: "#FFD93D" },
+              { id: 2, name: t('fastLearner'), icon: "rocket", color: "#6C5CE7" },
+              { id: 3, name: t('quizMaster'), icon: "ribbon", color: "#00B894" },
+              { id: 4, name: t('streak'), icon: "flame", color: "#FF7675" },
             ].map((badge) => (
               <View key={badge.id} className="items-center mr-5">
                 <View
@@ -124,7 +104,7 @@ export default function StudentHomeScreen() {
           </ScrollView>
         </View>
 
-        <Text className="text-[18px] font-bold text-primary mb-3">{t.continue}</Text>
+        <Text className="text-[18px] font-bold text-primary mb-3">{t('continueLearning')}</Text>
         {featured.map((c) => (
           <TouchableOpacity key={c.id} onPress={() => router.push(`/courses/${c.id}`)} activeOpacity={0.8}>
             <Card className="mb-4 flex-row items-center p-3">
@@ -157,14 +137,14 @@ export default function StudentHomeScreen() {
           activeOpacity={0.9}
         >
           <Ionicons name="search" size={20} color="white" style={{ marginRight: 8 }} />
-          <Text className="text-white font-bold text-[16px]">{t.explore}</Text>
+          <Text className="text-white font-bold text-[16px]">{t('exploreAll')}</Text>
         </TouchableOpacity>
 
         {/* Course Bundles */}
         <View className="mt-6 mb-5">
           <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-[18px] font-bold text-primary">{t.bundles}</Text>
-            <TouchableOpacity><Text className="text-secondary font-semibold text-[14px]">See All</Text></TouchableOpacity>
+            <Text className="text-[18px] font-bold text-primary">{t('courseBundles')}</Text>
+            <TouchableOpacity><Text className="text-secondary font-semibold text-[14px]">{t('seeAll')}</Text></TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="ml-[-16px] pl-4">
             {[1, 2].map((b) => (

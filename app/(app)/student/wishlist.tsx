@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { Navbar, Card, Button } from "../../../components";
 
 const MOCK_WISHLIST = [
@@ -11,6 +12,7 @@ const MOCK_WISHLIST = [
 ];
 
 export default function WishlistScreen() {
+    const { t } = useTranslation();
     const router = useRouter();
     const [wishlist, setWishlist] = useState(MOCK_WISHLIST);
 
@@ -20,7 +22,7 @@ export default function WishlistScreen() {
 
     return (
         <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
-            <Navbar title="My Wishlist" showBack={true} onBackPress={() => router.back()} />
+            <Navbar title={t('myWishlist')} showBack={true} onBackPress={() => router.back()} />
 
             <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
                 {wishlist.length === 0 ? (
@@ -28,10 +30,10 @@ export default function WishlistScreen() {
                         <View className="w-20 h-20 rounded-full bg-white items-center justify-center mb-5 shadow-sm elevation-2">
                             <Ionicons name="heart-outline" size={40} color="#cbd5e1" />
                         </View>
-                        <Text className="text-[22px] font-black text-primary">Your Wishlist is Empty</Text>
-                        <Text className="text-[14px] text-slate-500 text-center mt-2.5 px-10 leading-[22px]">Save courses you're interested in and they'll appear here.</Text>
+                        <Text className="text-[22px] font-black text-primary">{t('wishlistEmpty')}</Text>
+                        <Text className="text-[14px] text-slate-500 text-center mt-2.5 px-10 leading-[22px]">{t('wishlistEmptySubtitle')}</Text>
                         <Button
-                            label="Explore Courses"
+                            label={t('exploreCourses')}
                             onPress={() => router.push("/student/explore")}
                             variant="primary"
                             className="mt-8 px-8 h-[50px] rounded-full"
@@ -39,7 +41,7 @@ export default function WishlistScreen() {
                     </View>
                 ) : (
                     <View className="p-4">
-                        <Text className="text-[14px] font-bold text-slate-500 mb-4 ml-1">{wishlist.length} Courses in Wishlist</Text>
+                        <Text className="text-[14px] font-bold text-slate-500 mb-4 ml-1">{t('coursesInWishlist', { count: wishlist.length })}</Text>
                         {wishlist.map((c) => (
                             <Card key={c.id} className="flex-row items-center p-3 mb-4 rounded-2xl">
                                 <View
@@ -50,7 +52,7 @@ export default function WishlistScreen() {
                                 </View>
                                 <View className="flex-1">
                                     <Text className="text-[16px] font-extrabold text-primary" numberOfLines={1}>{c.title}</Text>
-                                    <Text className="text-[12px] text-slate-500 mt-0.5">by {c.instructor}</Text>
+                                    <Text className="text-[12px] text-slate-500 mt-0.5">{t('by')} {c.instructor}</Text>
                                     <View className="flex-row items-center mt-2">
                                         <Text className="text-[15px] font-black text-secondary mr-3">{c.price}</Text>
                                         <View className="flex-row items-center">

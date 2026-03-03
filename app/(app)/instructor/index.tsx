@@ -2,17 +2,23 @@ import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../hooks";
 import { InstructorNavbar, Card } from "../../../components";
+import { useGetInstructorStatsQuery } from "../../../store/api/courseApi";
 
 export default function InstructorDashboardScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [withdrawalStatus, setWithdrawalStatus] = useState<"idle" | "pending" | "processing">("idle");
+  const { data: statsData, isLoading } = useGetInstructorStatsQuery();
+
+  console.log("[INSTRUCTOR_STATS_DEBUG] Data:", JSON.stringify(statsData, null, 2));
 
   const stats = [
-    { label: "Active Students", value: "1,280", icon: "people", color: "#10b981" },
-    { label: "Total Earnings", value: "$4,120", icon: "wallet", color: "#6366f1" },
-    { label: "Pending Payout", value: withdrawalStatus === "idle" ? "$850" : "$0", icon: "time", color: "#F39C12" },
+    { label: t('active'), value: statsData?.totalStudents?.toString() || "0", icon: "people", color: "#10b981" },
+    { label: t('totalEarnings'), value: `$${statsData?.earnings || 0}`, icon: "wallet", color: "#6366f1" },
+    { label: t('pendingPayout'), value: withdrawalStatus === "idle" ? "$850" : "$0", icon: "time", color: "#F39C12" },
   ];
 
   const handleWithdrawal = () => {
@@ -25,7 +31,7 @@ export default function InstructorDashboardScreen() {
           text: "Confirm",
           onPress: () => {
             setWithdrawalStatus("pending");
-            Alert.alert("Success", "Withdrawal request submitted! It will take 1-3 business days.");
+            Alert.alert(t('success', { defaultValue: 'Success' }), t('withdrawalSuccess', { defaultValue: 'Withdrawal request submitted! It will take 1-3 business days.' }));
           }
         }
       ]
@@ -34,11 +40,11 @@ export default function InstructorDashboardScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-light">
-      <InstructorNavbar title="Instructor Dashboard" />
+      <InstructorNavbar title={t('instructorDashboard')} />
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
         <View className="mb-6 mt-4">
-          <Text className="text-[28px] font-extrabold text-primary">Hello, {user?.name}!</Text>
-          <Text className="text-[16px] text-slate-500 mt-1">Your students are making progress.</Text>
+          <Text className="text-[28px] font-extrabold text-primary">{t('greeting', { name: user?.name })}</Text>
+          <Text className="text-[16px] text-slate-500 mt-1">{t('instructorSubtitle')}</Text>
         </View>
 
         <View className="flex-row justify-between mb-6">
@@ -57,10 +63,10 @@ export default function InstructorDashboardScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-[18px] font-bold text-primary mb-3">Course Discovery Insights</Text>
+          <Text className="text-[18px] font-bold text-primary mb-3">{t('insights')}</Text>
           <Card className="p-4">
             <View className="flex-row justify-between items-center mb-5">
-              <Text className="text-[13px] font-bold text-slate-500 uppercase">Student Engagement (Last 7 Days)</Text>
+              <Text className="text-[13px] font-bold text-slate-500 uppercase">{t('engagement')}</Text>
               <Ionicons name="trending-up" size={18} color="#10b981" />
             </View>
             <View className="flex-row justify-between items-end h-40 pb-2">
@@ -86,10 +92,10 @@ export default function InstructorDashboardScreen() {
         </View>
 
         <View className="mb-6">
-          <Text className="text-[18px] font-bold text-primary mb-3">Finance & Payouts</Text>
+          <Text className="text-[18px] font-bold text-primary mb-3">{t('financePayouts')}</Text>
           <Card className="p-5 flex-row justify-between items-center bg-white">
             <View className="flex-1">
-              <Text className="text-[13px] text-slate-500 mb-1">Available for Withdrawal</Text>
+              <Text className="text-[13px] text-slate-500 mb-1">{t('availableWithdrawal')}</Text>
               <Text className="text-2xl font-black text-primary">{withdrawalStatus === "idle" ? "$850.00" : "$0.00"}</Text>
             </View>
             <TouchableOpacity
@@ -98,7 +104,7 @@ export default function InstructorDashboardScreen() {
               disabled={withdrawalStatus !== "idle"}
             >
               <Text className={`font-bold mr-2 text-[14px] ${withdrawalStatus === "idle" ? 'color-white' : 'color-success'}`}>
-                {withdrawalStatus === "idle" ? "Request Withdrawal" : "Reviewing..."}
+                {withdrawalStatus === "idle" ? t('requestWithdrawal') : t('withdrawing')}
               </Text>
               <Ionicons
                 name={withdrawalStatus === "idle" ? "arrow-forward" : "checkmark-circle"}

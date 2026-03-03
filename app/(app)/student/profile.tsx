@@ -2,32 +2,34 @@ import { View, Text, ScrollView, TouchableOpacity, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../hooks";
 import { Navbar, Card } from "../../../components";
 import { useSidebar } from "../../../contexts/SidebarContext";
 
 export default function StudentProfileScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
   const sidebar = useSidebar();
 
   const SETTINGS = [
-    { label: "Edit Profile", icon: "person-outline", color: "#6366f1", route: "/student/edit-profile" },
-    { label: "My Certificates", icon: "ribbon-outline", color: "#f59e0b", route: "/student/certificates" },
-    { label: "Payment History", icon: "wallet-outline", color: "#10b981", route: "payment" },
-    { label: "Notification Settings", icon: "notifications-outline", color: "#8b5cf6", route: "notif" },
-    { label: "Help & Support", icon: "help-circle-outline", color: "#64748b", route: "help" },
+    { label: t('editProfile'), icon: "person-outline", color: "#6366f1", route: "/student/edit-profile" },
+    { label: t('myCertificates'), icon: "ribbon-outline", color: "#f59e0b", route: "/student/certificates" },
+    { label: t('paymentHistory'), icon: "wallet-outline", color: "#10b981", route: "payment" },
+    { label: t('notificationSettings'), icon: "notifications-outline", color: "#8b5cf6", route: "notif" },
+    { label: t('helpSupport'), icon: "help-circle-outline", color: "#64748b", route: "help" },
   ];
 
   return (
     <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
-      <Navbar title="Profile" showMenu={true} onMenuPress={sidebar?.toggle} />
+      <Navbar title={t('profile')} showMenu={true} onMenuPress={sidebar?.toggle} />
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="items-center py-8 bg-white">
           <TouchableOpacity
             className="mb-4 relative"
             activeOpacity={0.8}
-            onPress={() => Alert.alert("Upload", "Choose a new profile picture")}
+            onPress={() => Alert.alert(t('upload'), t('chooseProfilePic'))}
           >
             <View className="w-[100px] h-[100px] rounded-full bg-secondary items-center justify-center">
               <Text className="text-[40px] font-extrabold text-white">{user?.name?.charAt(0) || "S"}</Text>
@@ -36,26 +38,26 @@ export default function StudentProfileScreen() {
               <Ionicons name="camera" size={18} color="white" />
             </View>
           </TouchableOpacity>
-          <Text className="text-2xl font-extrabold text-primary mb-1">{user?.name || "Student Name"}</Text>
-          <Text className="text-[13px] font-bold text-secondary tracking-widest uppercase">LearNER</Text>
+          <Text className="text-2xl font-extrabold text-primary mb-1">{user?.name || t('student')}</Text>
+          <Text className="text-[13px] font-bold text-secondary tracking-widest uppercase">{t('learner')}</Text>
         </View>
 
         <View className="flex-row bg-white py-5 border-t border-slate-100 mb-6">
           <TouchableOpacity className="flex-1 items-center" onPress={() => router.push("/student/courses")}>
             <Text className="text-[18px] font-extrabold text-primary">8</Text>
-            <Text className="text-[12px] text-slate-500 mt-0.5">Courses</Text>
+            <Text className="text-[12px] text-slate-500 mt-0.5">{t('courses')}</Text>
           </TouchableOpacity>
           <View className="flex-1 items-center">
             <Text className="text-[18px] font-extrabold text-primary">12</Text>
-            <Text className="text-[12px] text-slate-500 mt-0.5">Finished</Text>
+            <Text className="text-[12px] text-slate-500 mt-0.5">{t('completed')}</Text>
           </View>
-          <TouchableOpacity className="flex-1 items-center" onPress={() => Alert.alert("Certificates", "You have earned 4 certificates!")}>
+          <TouchableOpacity className="flex-1 items-center" onPress={() => router.push("/student/certificates")}>
             <Text className="text-[18px] font-extrabold text-primary">4</Text>
-            <Text className="text-[12px] text-slate-500 mt-0.5">Certificates</Text>
+            <Text className="text-[12px] text-slate-500 mt-0.5">{t('achievements')}</Text>
           </TouchableOpacity>
         </View>
 
-        <Text className="text-[16px] font-bold text-primary mx-4 mb-3">Account Settings</Text>
+        <Text className="text-[16px] font-bold text-primary mx-4 mb-3">{t('settings')}</Text>
         <Card className="mx-4 p-0 overflow-hidden mb-6">
           {SETTINGS.map((item, index) => (
             <TouchableOpacity
@@ -82,7 +84,7 @@ export default function StudentProfileScreen() {
           activeOpacity={0.7}
         >
           <Ionicons name="log-out-outline" size={20} color="#ef4444" />
-          <Text className="text-[16px] font-bold text-rose-500 ml-2">Logout</Text>
+          <Text className="text-[16px] font-bold text-rose-500 ml-2">{t('logout')}</Text>
         </TouchableOpacity>
 
         <View className="h-10" />

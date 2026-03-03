@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 
@@ -12,6 +13,7 @@ const TRANSACTIONS = [
 ];
 
 export default function PaymentsScreen() {
+  const { t } = useTranslation();
   const renderItem = ({ item }: { item: typeof TRANSACTIONS[0] }) => (
     <Card style={styles.txCard}>
       <View style={styles.txHeader}>
@@ -35,7 +37,7 @@ export default function PaymentsScreen() {
           <Text style={[styles.statusText, {
             color: item.status === "Completed" ? COLORS.success :
               item.status === "Pending" ? COLORS.warning : COLORS.danger
-          }]}>{item.status}</Text>
+          }]}>{t(item.status.toLowerCase() + 'Status')}</Text>
         </View>
       </View>
     </Card>
@@ -43,10 +45,10 @@ export default function PaymentsScreen() {
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
-      <AdminNavbar title="Payments & Revenue" />
+      <AdminNavbar title={t('paymentManagement')} />
       <View style={styles.statsContainer}>
         <Card style={styles.mainStatCard}>
-          <Text style={styles.statLabel}>Total Revenue</Text>
+          <Text style={styles.statLabel}>{t('totalRevenue')}</Text>
           <Text style={styles.statValue}>$12,450.00</Text>
           <View style={styles.trendRow}>
             <Ionicons name="trending-up" size={16} color={COLORS.success} />
@@ -56,16 +58,16 @@ export default function PaymentsScreen() {
       </View>
 
       <View style={styles.listHeader}>
-        <Text style={styles.listTitle}>Recent Transactions</Text>
+        <Text style={styles.listTitle}>{t('recentTransactions')}</Text>
         <TouchableOpacity activeOpacity={0.7} onPress={() => { }}>
-          <Text style={styles.seeAll}>See All</Text>
+          <Text style={styles.seeAll}>{t('seeAll')}</Text>
         </TouchableOpacity>
       </View>
 
       <FlatList
         data={TRANSACTIONS}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item._id || item.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
       />

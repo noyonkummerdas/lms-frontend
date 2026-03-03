@@ -1,36 +1,47 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { Enrollment } from "../../types/Enrollment";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api";
+import { Course } from "../../types/Course";
+import { baseQuery } from "./baseQuery";
 
 export const enrollmentApi = createApi({
   reducerPath: "enrollmentApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${API_URL}/enrollments`,
-    prepareHeaders: (headers, { getState }: any) => {
-      const token = getState().auth.token;
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery,
   tagTypes: ["Enrollment"],
   endpoints: (builder) => ({
-    getEnrollments: builder.query<Enrollment[], string>({
-      query: (userId) => `?userId=${userId}`,
-      providesTags: ["Enrollment"],
-    }),
-    enrollCourse: builder.mutation<Enrollment, { userId: string; courseId: string }>({
+    enrollInCourse: builder.mutation<Enrollment, { courseId: string }>({
       query: (body) => ({
-        url: "/",
+        url: "/enroll",
         method: "POST",
         body,
+      }),
+      invalidatesTags: ["Enrollment"],
+    }),
+    getMyEnrolledCourses: builder.query<Course[], void>({
+      query: () => "/enroll/my-courses",
+      providesTags: ["Enrollment"],
+    }),
+    getLearningProgress: builder.query<{ progress: number }, void>({
+      query: () => "/enroll/progress",
+      providesTags: ["Enrollment"],
+    }),
+    getInstructorStudents: builder.query<any[], void>({
+      query: () => "/enroll/instructor/students",
+      providesTags: ["Enrollment"],
+    }),
+    markLessonCompleted: builder.mutation<void, { courseId: string; lessonId: string }>({
+      query: ({ courseId, lessonId }) => ({
+        url: `/enroll/${courseId}/lesson/${lessonId}`,
+        method: "PUT",
       }),
       invalidatesTags: ["Enrollment"],
     }),
   }),
 });
 
-export const { useGetEnrollmentsQuery, useEnrollCourseMutation } =
-  enrollmentApi;
+export const {
+  useEnrollInCourseMutation,
+  useGetMyEnrolledCoursesQuery,
+  useGetLearningProgressQuery,
+  useMarkLessonCompletedMutation,
+  useGetInstructorStudentsQuery
+} = enrollmentApi;

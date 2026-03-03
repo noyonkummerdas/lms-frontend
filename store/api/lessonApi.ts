@@ -1,31 +1,50 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
 import { Lesson } from "../../types/Lesson";
-
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000/api";
+import { baseQuery } from "./baseQuery";
 
 export const lessonApi = createApi({
   reducerPath: "lessonApi",
-  baseQuery: fetchBaseQuery({
-    baseUrl: `${API_URL}/lessons`,
-    prepareHeaders: (headers, { getState }: any) => {
-      const token = getState().auth.token;
-      if (token) {
-        headers.set("authorization", `Bearer ${token}`);
-      }
-      return headers;
-    },
-  }),
+  baseQuery,
   tagTypes: ["Lesson"],
   endpoints: (builder) => ({
     getLessons: builder.query<Lesson[], string>({
-      query: (courseId) => `?courseId=${courseId}`,
+      query: (courseId) => `/lessons?courseId=${courseId}`,
       providesTags: ["Lesson"],
     }),
     getLesson: builder.query<Lesson, string>({
-      query: (id) => `/${id}`,
-      providesTags: ["Lesson"],
+      query: (id) => `/lessons/${id}`,
+      providesTags: (result, error, id) => [{ type: "Lesson", id }],
+    }),
+    addLesson: builder.mutation<Lesson, Partial<Lesson>>({
+      query: (body) => ({
+        url: "/lessons",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Lesson"],
+    }),
+    updateLesson: builder.mutation<Lesson, { id: string; data: Partial<Lesson> }>({
+      query: ({ id, data }) => ({
+        url: `/lessons/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => ["Lesson", { type: "Lesson", id }],
+    }),
+    deleteLesson: builder.mutation<void, string>({
+      query: (id) => ({
+        url: `/lessons/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Lesson"],
     }),
   }),
 });
 
-export const { useGetLessonsQuery, useGetLessonQuery } = lessonApi;
+export const {
+  useGetLessonsQuery,
+  useGetLessonQuery,
+  useAddLessonMutation,
+  useUpdateLessonMutation,
+  useDeleteLessonMutation
+} = lessonApi;

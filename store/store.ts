@@ -8,6 +8,10 @@ import { assignmentApi } from "./api/assignmentApi";
 import { enrollmentApi } from "./api/enrollmentApi";
 import { paymentApi } from "./api/paymentApi";
 import { certificateApi } from "./api/certificateApi";
+import { discussionApi } from "./api/discussionApi";
+import { notificationApi } from "./api/notificationApi";
+import { reportApi } from "./api/reportApi";
+
 import authReducer from "./slices/authSlice";
 import userReducer from "./slices/userSlice";
 import courseReducer from "./slices/courseSlice";
@@ -38,6 +42,9 @@ export const store = configureStore({
     [enrollmentApi.reducerPath]: enrollmentApi.reducer,
     [paymentApi.reducerPath]: paymentApi.reducer,
     [certificateApi.reducerPath]: certificateApi.reducer,
+    [discussionApi.reducerPath]: discussionApi.reducer,
+    [notificationApi.reducerPath]: notificationApi.reducer,
+    [reportApi.reducerPath]: reportApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat([
@@ -50,6 +57,9 @@ export const store = configureStore({
       enrollmentApi.middleware,
       paymentApi.middleware,
       certificateApi.middleware,
+      discussionApi.middleware,
+      notificationApi.middleware,
+      reportApi.middleware,
     ]),
 });
 
