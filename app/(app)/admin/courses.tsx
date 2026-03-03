@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
-import { useGetAdminCoursesQuery } from "../../../store/api/courseApi";
+import { useGetAdminCoursesQuery, useDeleteCourseMutation } from "../../../store/api/courseApi";
 
 export default function AdminCoursesScreen() {
     const { t } = useTranslation();

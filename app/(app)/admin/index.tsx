@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../../hooks";
 import { AdminNavbar, Card } from "../../../components";
+import { COLORS } from "../../../constants/colors";
 import { useGetAdminStatsQuery } from "../../../store/api/courseApi";
 
 export default function AdminDashboardScreen() {

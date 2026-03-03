@@ -5,6 +5,11 @@ export interface Category {
     _id: string;
     name: string;
     description?: string;
+    image?: string;
+    courseCount?: number;
+    createdAt?: string;
+    updatedAt?: string;
+    __v?: number;
 }
 
 export const categoryApi = createApi({
@@ -24,7 +29,27 @@ export const categoryApi = createApi({
             }),
             invalidatesTags: ["Category"],
         }),
+        updateCategory: builder.mutation<Category, { id: string; data: Partial<Category> }>({
+            query: ({ id, data }) => ({
+                url: `/categories/${id}`,
+                method: "PUT",
+                body: data,
+            }),
+            invalidatesTags: ["Category"],
+        }),
+        deleteCategory: builder.mutation<{ message: string }, string>({
+            query: (id) => ({
+                url: `/categories/${id}`,
+                method: "DELETE",
+            }),
+            invalidatesTags: ["Category"],
+        }),
     }),
 });
 
-export const { useGetCategoriesQuery, useCreateCategoryMutation } = categoryApi;
+export const {
+    useGetCategoriesQuery,
+    useCreateCategoryMutation,
+    useUpdateCategoryMutation,
+    useDeleteCategoryMutation
+} = categoryApi;

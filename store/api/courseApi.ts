@@ -50,6 +50,13 @@ export const courseApi = createApi({
       }),
       invalidatesTags: (result, error, { id }) => ["Course", { type: "Course", id }],
     }),
+    deleteCourse: builder.mutation<{ message: string }, string>({
+      query: (id) => ({
+        url: `/courses/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Course"],
+    }),
   }),
 });
 
@@ -60,5 +67,6 @@ export const {
   useGetAdminCoursesQuery,
   useGetAdminStatsQuery,
   useCreateCourseMutation,
-  useUpdateCourseMutation
+  useUpdateCourseMutation,
+  useDeleteCourseMutation
 } = courseApi;

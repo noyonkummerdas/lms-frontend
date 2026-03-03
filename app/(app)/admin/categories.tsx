@@ -1,11 +1,12 @@
 import { useState, useMemo } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Alert, Modal, ActivityIndicator } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Alert, Modal, ActivityIndicator, Image } from "react-native";
+import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
-import { useGetCategoriesQuery, useCreateCategoryMutation } from "../../../store/api/categoryApi";
+import { useGetCategoriesQuery, useCreateCategoryMutation, useUpdateCategoryMutation, useDeleteCategoryMutation } from "../../../store/api/categoryApi";
 
 export default function CategoriesScreen() {
   const { t } = useTranslation();
@@ -13,9 +14,13 @@ export default function CategoriesScreen() {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [newCatDesc, setNewCatDesc] = useState("");
+  const [newCatImage, setNewCatImage] = useState("");
+  const [editingCategory, setEditingCategory] = useState<any>(null);
 
   const { data: categories, isLoading, refetch } = useGetCategoriesQuery();
   const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
+  const [deleteCategory] = useDeleteCategoryMutation();
+  const [updateCategory] = useUpdateCategoryMutation();
 
   const filteredCategories = useMemo(() => {
     if (!categories) return [];
@@ -31,18 +36,81 @@ export default function CategoriesScreen() {
     }
 
     try {
-      await createCategory({
-        name: newCatName,
-        description: newCatDesc
-      }).unwrap();
+      if (editingCategory) {
+        await updateCategory({
+          id: editingCategory._id,
+          data: { name: newCatName, description: newCatDesc, image: newCatImage }
+        }).unwrap();
+        Alert.alert(t('success'), t('categoryUpdated', { defaultValue: 'Category updated successfully' }));
+      } else {
+        await createCategory({
+          name: newCatName,
+          description: newCatDesc,
+          image: newCatImage
+        }).unwrap();
+        Alert.alert(t('success'), t('categoryCreated'));
+      }
 
       setIsModalVisible(false);
+      setEditingCategory(null);
       setNewCatName("");
       setNewCatDesc("");
-      Alert.alert(t('success'), t('categoryCreated'));
+      setNewCatImage("");
     } catch (error: any) {
-      Alert.alert(t('error'), error.data?.message || "Failed to create category");
+      Alert.alert(t('error'), error.data?.message || "Failed to process category");
     }
+  };
+
+  const handleEditCategory = (category: any) => {
+    setEditingCategory(category);
+    setNewCatName(category.name);
+    setNewCatDesc(category.description || "");
+    setNewCatImage(category.image || "");
+    setIsModalVisible(true);
+  };
+
+  const pickImage = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (status !== 'granted') {
+      Alert.alert(t('error'), 'Permission to access gallery is required');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.5,
+      base64: true,
+    });
+
+    if (!result.canceled) {
+      const base64 = `data:image/jpeg;base64,${result.assets[0].base64}`;
+      setNewCatImage(base64);
+    }
+  };
+
+  const handleDeleteCategory = (id: string, name: string) => {
+    Alert.alert(
+      t('confirmDelete', { defaultValue: 'Confirm Delete' }),
+      `${t('confirmDeleteCategoryMessage', { defaultValue: 'Are you sure you want to delete the category' })} "${name}"?`,
+      [
+        { text: t('cancel'), style: 'cancel' },
+        {
+          text: t('delete'),
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteCategory(id).unwrap();
+              Alert.alert(t('success'), t('categoryDeleted', { defaultValue: 'Category removed successfully' }));
+            } catch (error: any) {
+              Alert.alert(t('error'), error.data?.message || "Failed to delete category");
+            }
+          }
+        }
+      ]
+    );
   };
 
   const getRandomColor = (id: string) => {
@@ -58,9 +126,21 @@ export default function CategoriesScreen() {
           <Ionicons name="grid" size={28} color={getRandomColor(item._id)} />
         </View>
         <Text style={styles.catName}>{item.name}</Text>
+        {item.description ? <Text style={styles.catDesc} numberOfLines={1}>{item.description}</Text> : null}
         <Text style={styles.catCount}>{item.courseCount || 0} {t('courses')}</Text>
-        <TouchableOpacity style={styles.editBtn} activeOpacity={0.7} onPress={() => Alert.alert(t('edit'), `Managing ${item.name}`)}>
-          <Ionicons name="ellipsis-horizontal" size={16} color={COLORS.gray[400]} />
+
+        <View style={styles.metadataBox}>
+          <Text style={styles.metadataText}>_id: {item._id}</Text>
+          {item.createdAt && <Text style={styles.metadataText}>Created: {new Date(item.createdAt).toLocaleDateString()}</Text>}
+          {item.updatedAt && <Text style={styles.metadataText}>Updated: {new Date(item.updatedAt).toLocaleDateString()}</Text>}
+          {item.__v !== undefined && <Text style={styles.metadataText}>__v: {item.__v}</Text>}
+        </View>
+
+        <TouchableOpacity style={styles.deleteBtn} activeOpacity={0.7} onPress={() => handleDeleteCategory(item._id, item.name)}>
+          <Ionicons name="trash-outline" size={16} color={COLORS.danger} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.editBtn} activeOpacity={0.7} onPress={() => handleEditCategory(item)}>
+          <Ionicons name="create-outline" size={18} color={COLORS.secondary} />
         </TouchableOpacity>
       </Card>
     </TouchableOpacity>
@@ -115,7 +195,7 @@ export default function CategoriesScreen() {
       >
         <View style={styles.modalOverlay}>
           <Card style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{t('create')} {t('category')}</Text>
+            <Text style={styles.modalTitle}>{editingCategory ? t('edit') : t('create')} {t('category')}</Text>
 
             <View style={styles.inputGroup}>
               <Text style={styles.inputLabel}>{t('name')}</Text>
@@ -138,10 +218,46 @@ export default function CategoriesScreen() {
               />
             </View>
 
+            <View style={styles.inputGroup}>
+              <Text style={styles.inputLabel}>{t('image')}</Text>
+              <View style={styles.imagePickerContainer}>
+                {newCatImage ? (
+                  <View style={styles.previewWrapper}>
+                    <Image source={{ uri: newCatImage }} style={styles.imagePreview} />
+                    <TouchableOpacity
+                      style={styles.removeImageBtn}
+                      onPress={() => setNewCatImage("")}
+                    >
+                      <Ionicons name="close-circle" size={24} color={COLORS.danger} />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
+                    <Ionicons name="image-outline" size={32} color={COLORS.gray[400]} />
+                    <Text style={styles.imagePlaceholderText}>{t('uploadImage')}</Text>
+                  </TouchableOpacity>
+                )}
+
+                <TextInput
+                  style={[styles.modalInput, { marginTop: 12 }]}
+                  placeholder="https://example.com/image.png"
+                  value={newCatImage}
+                  onChangeText={setNewCatImage}
+                />
+                <Text style={styles.helperText}>OR enter Image URL</Text>
+              </View>
+            </View>
+
             <View style={styles.modalActions}>
               <TouchableOpacity
                 style={[styles.modalBtn, styles.cancelBtn]}
-                onPress={() => setIsModalVisible(false)}
+                onPress={() => {
+                  setIsModalVisible(false);
+                  setEditingCategory(null);
+                  setNewCatName("");
+                  setNewCatDesc("");
+                  setNewCatImage("");
+                }}
               >
                 <Text style={styles.cancelBtnText}>{t('cancel')}</Text>
               </TouchableOpacity>
@@ -216,9 +332,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 12
   },
-  catName: { fontSize: 15, fontWeight: "700", color: COLORS.primary, marginBottom: 4 },
+  catName: { fontSize: 15, fontWeight: "700", color: COLORS.primary, marginBottom: 2 },
+  catDesc: { fontSize: 11, color: COLORS.gray[400], marginBottom: 6, textAlign: 'center', paddingHorizontal: 4 },
   catCount: { fontSize: 12, color: COLORS.gray[500], fontWeight: "600" },
+  metadataBox: { marginTop: 8, alignItems: 'center' },
+  metadataText: { fontSize: 8, color: COLORS.gray[300], marginTop: 2 },
   editBtn: { position: "absolute", top: 12, right: 12 },
+  deleteBtn: { position: "absolute", bottom: 12, right: 12 },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -279,5 +399,54 @@ const styles = StyleSheet.create({
   submitBtnText: {
     color: COLORS.white,
     fontWeight: '700'
+  },
+  imagePickerContainer: {
+    backgroundColor: COLORS.gray[50],
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderStyle: 'dashed'
+  },
+  imagePlaceholder: {
+    height: 120,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.gray[200]
+  },
+  imagePlaceholderText: {
+    fontSize: 13,
+    color: COLORS.gray[500],
+    marginTop: 8,
+    fontWeight: '600'
+  },
+  previewWrapper: {
+    position: 'relative',
+    height: 120,
+    width: '100%',
+    alignItems: 'center'
+  },
+  imagePreview: {
+    height: 120,
+    width: 120,
+    borderRadius: 8,
+    backgroundColor: COLORS.gray[100]
+  },
+  removeImageBtn: {
+    position: 'absolute',
+    top: -10,
+    right: '32%',
+    backgroundColor: COLORS.white,
+    borderRadius: 12
+  },
+  helperText: {
+    fontSize: 10,
+    color: COLORS.gray[400],
+    textAlign: 'center',
+    marginTop: 4,
+    fontWeight: '600'
   }
 });
