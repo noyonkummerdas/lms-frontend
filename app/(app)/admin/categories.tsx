@@ -22,6 +22,9 @@ export default function CategoriesScreen() {
   const [deleteCategory] = useDeleteCategoryMutation();
   const [updateCategory] = useUpdateCategoryMutation();
 
+  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
+
   const filteredCategories = useMemo(() => {
     if (!categories) return [];
     return categories.filter(cat =>
@@ -53,6 +56,7 @@ export default function CategoriesScreen() {
 
       setIsModalVisible(false);
       setEditingCategory(null);
+      setSelectedCategory(null);
       setNewCatName("");
       setNewCatDesc("");
       setNewCatImage("");
@@ -67,6 +71,11 @@ export default function CategoriesScreen() {
     setNewCatDesc(category.description || "");
     setNewCatImage(category.image || "");
     setIsModalVisible(true);
+  };
+
+  const handleViewDetails = (category: any) => {
+    setSelectedCategory(category);
+    setIsDetailsVisible(true);
   };
 
   const pickImage = async () => {
@@ -120,21 +129,20 @@ export default function CategoriesScreen() {
   };
 
   const renderItem = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.gridItem} activeOpacity={0.8} onPress={() => Alert.alert("View Category", `Viewing courses in ${item.name}`)}>
+    <TouchableOpacity style={styles.gridItem} activeOpacity={0.8} onPress={() => handleViewDetails(item)}>
       <Card style={styles.catCard}>
-        <View style={[styles.iconBox, { backgroundColor: getRandomColor(item._id) + "15" }]}>
-          <Ionicons name="grid" size={28} color={getRandomColor(item._id)} />
+        <View style={styles.cardVisual}>
+          {item.image ? (
+            <Image source={{ uri: item.image }} style={styles.cardImage} />
+          ) : (
+            <View style={[styles.iconBox, { backgroundColor: getRandomColor(item._id) + "15" }]}>
+              <Ionicons name="grid" size={28} color={getRandomColor(item._id)} />
+            </View>
+          )}
         </View>
         <Text style={styles.catName}>{item.name}</Text>
         {item.description ? <Text style={styles.catDesc} numberOfLines={1}>{item.description}</Text> : null}
         <Text style={styles.catCount}>{item.courseCount || 0} {t('courses')}</Text>
-
-        <View style={styles.metadataBox}>
-          <Text style={styles.metadataText}>_id: {item._id}</Text>
-          {item.createdAt && <Text style={styles.metadataText}>Created: {new Date(item.createdAt).toLocaleDateString()}</Text>}
-          {item.updatedAt && <Text style={styles.metadataText}>Updated: {new Date(item.updatedAt).toLocaleDateString()}</Text>}
-          {item.__v !== undefined && <Text style={styles.metadataText}>__v: {item.__v}</Text>}
-        </View>
 
         <TouchableOpacity style={styles.deleteBtn} activeOpacity={0.7} onPress={() => handleDeleteCategory(item._id, item.name)}>
           <Ionicons name="trash-outline" size={16} color={COLORS.danger} />
@@ -160,11 +168,18 @@ export default function CategoriesScreen() {
             onChangeText={setSearchQuery}
           />
         </View>
-        <TouchableOpacity style={styles.addBtn} activeOpacity={0.7} onPress={() => setIsModalVisible(true)}>
+        <TouchableOpacity style={styles.addBtn} activeOpacity={0.7} onPress={() => {
+          setEditingCategory(null);
+          setNewCatName("");
+          setNewCatDesc("");
+          setNewCatImage("");
+          setIsModalVisible(true);
+        }}>
           <Ionicons name="add" size={20} color={COLORS.white} />
           <Text style={styles.addBtnText}>{t('create')}</Text>
         </TouchableOpacity>
       </View>
+
       {isLoading ? (
         <ActivityIndicator size="large" color={COLORS.secondary} style={{ marginTop: 40 }} />
       ) : (
@@ -185,6 +200,63 @@ export default function CategoriesScreen() {
           }
         />
       )}
+
+      {/* Details Modal */}
+      <Modal
+        visible={isDetailsVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setIsDetailsVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <Card style={styles.modalCard}>
+            <View style={styles.detailsHeader}>
+              <Text style={styles.modalTitle}>{t('view')} {t('category')}</Text>
+              <TouchableOpacity onPress={() => setIsDetailsVisible(false)}>
+                <Ionicons name="close" size={24} color={COLORS.gray[400]} />
+              </TouchableOpacity>
+            </View>
+
+            {selectedCategory && (
+              <View style={styles.detailsContent}>
+                <View style={styles.detailsImageSection}>
+                  {selectedCategory.image ? (
+                    <Image source={{ uri: selectedCategory.image }} style={styles.detailsLargeImage} />
+                  ) : (
+                    <View style={styles.detailsNoImage}>
+                      <Ionicons name="image-outline" size={48} color={COLORS.gray[300]} />
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>{t('name')}:</Text>
+                  <Text style={styles.detailValue}>{selectedCategory.name}</Text>
+                </View>
+
+                <View style={[styles.detailRow, { flexDirection: 'column', alignItems: 'flex-start' }]}>
+                  <Text style={styles.detailLabel}>{t('description')}:</Text>
+                  <Text style={styles.detailValueText}>{selectedCategory.description || "No description"}</Text>
+                </View>
+
+                <View style={styles.metadataList}>
+                  <Text style={styles.metadataRow}>_id: {selectedCategory._id}</Text>
+                  <Text style={styles.metadataRow}>__v: {selectedCategory.__v}</Text>
+                  <Text style={styles.metadataRow}>Created: {new Date(selectedCategory.createdAt).toLocaleString()}</Text>
+                  <Text style={styles.metadataRow}>Updated: {new Date(selectedCategory.updatedAt).toLocaleString()}</Text>
+                </View>
+              </View>
+            )}
+
+            <TouchableOpacity
+              style={[styles.modalBtn, styles.submitBtn, { marginLeft: 0, marginTop: 20 }]}
+              onPress={() => setIsDetailsVisible(false)}
+            >
+              <Text style={styles.submitBtnText}>OK</Text>
+            </TouchableOpacity>
+          </Card>
+        </View>
+      </Modal>
 
       {/* Creation Modal */}
       <Modal
@@ -448,5 +520,85 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 4,
     fontWeight: '600'
+  },
+  cardVisual: {
+    width: '100%',
+    height: 100,
+    backgroundColor: COLORS.gray[50],
+    borderRadius: 12,
+    marginBottom: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden'
+  },
+  cardImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover'
+  },
+  detailsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  detailsContent: {
+    marginTop: 10
+  },
+  detailsImageSection: {
+    width: '100%',
+    height: 180,
+    backgroundColor: COLORS.gray[50],
+    borderRadius: 16,
+    marginBottom: 20,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  detailsLargeImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain'
+  },
+  detailsNoImage: {
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.gray[50],
+    paddingBottom: 8
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: COLORS.gray[500],
+    width: 100
+  },
+  detailValue: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: COLORS.primary,
+    flex: 1
+  },
+  detailValueText: {
+    fontSize: 14,
+    color: COLORS.gray[700],
+    marginTop: 4,
+    lineHeight: 20
+  },
+  metadataList: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: COLORS.gray[50],
+    borderRadius: 12
+  },
+  metadataRow: {
+    fontSize: 10,
+    color: COLORS.gray[400],
+    fontFamily: 'monospace',
+    marginBottom: 2
   }
 });
