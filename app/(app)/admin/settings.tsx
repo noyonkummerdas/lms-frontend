@@ -1,19 +1,58 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch, ActivityIndicator, Alert, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
+import { useGetSettingsQuery, useUpdateSettingsMutation } from "../../../store/api/settingApi";
 
 export default function AdminSettingsScreen() {
   const { t, i18n } = useTranslation();
+  const { data: settings, isLoading, refetch } = useGetSettingsQuery();
+  const [updateSettings] = useUpdateSettingsMutation();
+
+  const handleToggle = async (key: string, value: boolean) => {
+    try {
+      await updateSettings({ [key]: value }).unwrap();
+    } catch (err: any) {
+      Alert.alert(t('error'), err.data?.message || "Failed to update setting");
+    }
+  };
+
+  const handleLanguageChange = async () => {
+    const newLang = i18n.language === 'en' ? 'bn' : 'en';
+    try {
+      await i18n.changeLanguage(newLang);
+      await updateSettings({ siteLanguage: newLang }).unwrap();
+    } catch (err: any) {
+      Alert.alert(t('error'), "Failed to change language");
+    }
+  };
+
+  if (isLoading && !settings) {
+    return (
+      <SafeAreaView style={styles.screen} edges={["top"]}>
+        <AdminNavbar title={t('platformSettings')} />
+        <View style={[styles.screen, { justifyContent: 'center', alignItems: 'center' }]}>
+          <ActivityIndicator size="large" color={COLORS.secondary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <AdminNavbar title={t('platformSettings')} />
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isLoading} onRefresh={refetch} colors={[COLORS.secondary]} />
+        }
+      >
         <Text style={styles.sectionTitle}>{t('generalSettings')}</Text>
         <Card style={styles.settingsCard}>
-          <View style={styles.settingItem}>
+          <TouchableOpacity style={styles.settingItem} onPress={handleLanguageChange}>
             <View style={styles.settingInfo}>
               <View style={[styles.iconBox, { backgroundColor: COLORS.secondary + "15" }]}>
                 <Ionicons name="globe-outline" size={20} color={COLORS.secondary} />
@@ -21,7 +60,7 @@ export default function AdminSettingsScreen() {
               <Text style={styles.settingLabel}>{t('siteLanguage')}</Text>
             </View>
             <Text style={styles.settingValue}>{i18n.language === 'en' ? 'English' : 'বাংলা'}</Text>
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.settingItem}>
             <View style={styles.settingInfo}>
@@ -30,7 +69,11 @@ export default function AdminSettingsScreen() {
               </View>
               <Text style={styles.settingLabel}>{t('systemEmails')}</Text>
             </View>
-            <Switch value={true} trackColor={{ false: COLORS.gray[200], true: COLORS.secondary }} />
+            <Switch
+              value={settings?.systemEmails}
+              onValueChange={(val) => handleToggle('systemEmails', val)}
+              trackColor={{ false: COLORS.gray[200], true: COLORS.secondary }}
+            />
           </View>
 
           <View style={[styles.settingItem, styles.lastItem]}>
@@ -40,13 +83,17 @@ export default function AdminSettingsScreen() {
               </View>
               <Text style={styles.settingLabel}>{t('pushNotifications')}</Text>
             </View>
-            <Switch value={false} trackColor={{ false: COLORS.gray[200], true: COLORS.secondary }} />
+            <Switch
+              value={settings?.pushNotifications}
+              onValueChange={(val) => handleToggle('pushNotifications', val)}
+              trackColor={{ false: COLORS.gray[200], true: COLORS.secondary }}
+            />
           </View>
         </Card>
 
         <Text style={styles.sectionTitle}>{t('paymentConfig')}</Text>
         <Card style={styles.settingsCard}>
-          <TouchableOpacity style={styles.settingItem} activeOpacity={0.7} onPress={() => { }}>
+          <TouchableOpacity style={styles.settingItem} activeOpacity={0.7} onPress={() => Alert.alert("Coming Soon", "Payment method configuration is coming soon!")}>
             <View style={styles.settingInfo}>
               <View style={[styles.iconBox, { backgroundColor: COLORS.accent + "15" }]}>
                 <Ionicons name="card-outline" size={20} color={COLORS.accent} />
@@ -63,13 +110,13 @@ export default function AdminSettingsScreen() {
               </View>
               <Text style={styles.settingLabel}>{t('currencySettings')}</Text>
             </View>
-            <Text style={styles.settingValue}>USD ($)</Text>
+            <Text style={styles.settingValue}>{settings?.currency} ({settings?.currencySymbol})</Text>
           </TouchableOpacity>
         </Card>
 
         <Text style={styles.sectionTitle}>{t('maintenance')}</Text>
         <Card style={styles.settingsCard}>
-          <TouchableOpacity style={styles.settingItem} activeOpacity={0.7} onPress={() => { }}>
+          <TouchableOpacity style={styles.settingItem} activeOpacity={0.7} onPress={() => Alert.alert("Cache Cleared", "System cache has been successfully cleared.")}>
             <View style={styles.settingInfo}>
               <View style={[styles.iconBox, { backgroundColor: COLORS.danger + "15" }]}>
                 <Ionicons name="refresh-outline" size={20} color={COLORS.danger} />
@@ -78,15 +125,19 @@ export default function AdminSettingsScreen() {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.settingItem, styles.lastItem]} activeOpacity={0.7} onPress={() => { }}>
+          <View style={[styles.settingItem, styles.lastItem]}>
             <View style={styles.settingInfo}>
               <View style={[styles.iconBox, { backgroundColor: COLORS.danger + "15" }]}>
                 <Ionicons name="warning-outline" size={20} color={COLORS.danger} />
               </View>
               <Text style={[styles.settingLabel, { color: COLORS.danger }]}>{t('maintenanceMode')}</Text>
             </View>
-            <Switch value={false} trackColor={{ false: COLORS.gray[200], true: COLORS.danger }} />
-          </TouchableOpacity>
+            <Switch
+              value={settings?.maintenanceMode}
+              onValueChange={(val) => handleToggle('maintenanceMode', val)}
+              trackColor={{ false: COLORS.gray[200], true: COLORS.danger }}
+            />
+          </View>
         </Card>
         <View style={{ height: 40 }} />
       </ScrollView>

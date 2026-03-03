@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../../hooks";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
-import { useGetAdminStatsQuery } from "../../../store/api/courseApi";
+import { useGetAdminStatsQuery } from "../../../store/api/reportApi";
 
 export default function AdminDashboardScreen() {
   const { t } = useTranslation();
@@ -17,9 +17,9 @@ export default function AdminDashboardScreen() {
   console.log("[ADMIN_STATS_DEBUG] Data:", JSON.stringify(statsData, null, 2));
 
   const stats = [
-    { label: t('totalUsers'), value: statsData?.totalUsers?.toString() || "0", icon: "people", color: "#6366f1", href: "/admin/users" },
+    { label: t('totalUsers'), value: statsData?.totalStudents?.toString() || "0", icon: "people", color: "#6366f1", href: "/admin/users" },
     { label: t('totalCourses'), value: statsData?.totalCourses?.toString() || "0", icon: "book", color: "#10b981", href: "/admin/courses" },
-    { label: t('revenue'), value: statsData ? `$${statsData.revenue}` : "$0", icon: "cash", color: "#8b5cf6", href: "/admin/payments" },
+    { label: t('revenue'), value: statsData ? `$${statsData.totalRevenue?.toLocaleString()}` : "$0", icon: "cash", color: "#8b5cf6", href: "/admin/payments" },
   ];
 
   return (

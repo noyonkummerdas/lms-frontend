@@ -1,35 +1,119 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { useState, useMemo } from "react";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { useDispatch } from "react-redux";
 import { useAuth } from "../../../hooks";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
+import { useGetAdminStatsQuery } from "../../../store/api/reportApi";
+import { useUpdateUserMutation } from "../../../store/api/userApi";
+import { logout } from "../../../store/slices/authSlice";
 
 export default function AdminProfileScreen() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  const { data: stats, isLoading: isStatsLoading, refetch: refetchStats } = useGetAdminStatsQuery();
+  const [updateUser, { isLoading: isUpdating }] = useUpdateUserMutation();
+
+  const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [isSecurityModalVisible, setSecurityModalVisible] = useState(false);
+
+  const [editData, setEditData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const handleLogout = () => {
+    Alert.alert(
+      t('logout'),
+      "Are you sure you want to log out?",
+      [
+        { text: t('cancel'), style: "cancel" },
+        {
+          text: t('logout'),
+          style: "destructive",
+          onPress: () => {
+            dispatch(logout());
+            router.replace("/auth/login");
+          }
+        }
+      ]
+    );
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!user?._id) return;
+    try {
+      await updateUser({ id: user._id, data: editData }).unwrap();
+      setEditModalVisible(false);
+      Alert.alert(t('success'), "Profile updated successfully!");
+    } catch (err: any) {
+      Alert.alert(t('error'), err.data?.message || "Failed to update profile");
+    }
+  };
+
+  const handleUpdatePassword = async () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      Alert.alert(t('error'), "Passwords do not match");
+      return;
+    }
+
+    if (!user?._id) return;
+
+    try {
+      await updateUser({
+        id: user._id,
+        data: { password: passwordData.newPassword } as any
+      }).unwrap();
+      setSecurityModalVisible(false);
+      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      Alert.alert(t('success'), "Password changed successfully!");
+    } catch (err: any) {
+      Alert.alert(t('error'), err.data?.message || "Failed to change password");
+    }
+  };
 
   const SETTINGS = [
-    { label: t('personalInformation'), icon: "person-outline", color: COLORS.secondary },
-    { label: t('notificationSettings'), icon: "notifications-outline", color: COLORS.success },
-    { label: t('securityPassword'), icon: "lock-closed-outline", color: COLORS.warning },
-    { label: t('privacyPolicy'), icon: "shield-checkmark-outline", color: COLORS.accent },
-    { label: t('helpCenter'), icon: "help-circle-outline", color: COLORS.gray[500] },
+    { label: t('personalInformation'), icon: "person-outline", color: COLORS.secondary, onPress: () => setEditModalVisible(true) },
+    { label: t('notificationSettings'), icon: "notifications-outline", color: COLORS.success, onPress: () => router.push("/admin/settings") },
+    { label: t('securityPassword'), icon: "lock-closed-outline", color: COLORS.warning, onPress: () => setSecurityModalVisible(true) },
+    { label: t('privacyPolicy'), icon: "shield-checkmark-outline", color: COLORS.accent, onPress: () => router.push("/admin/privacy") },
+    { label: t('helpCenter'), icon: "help-circle-outline", color: COLORS.gray[500], onPress: () => Alert.alert("Support", "Please email support@techsoul.com for enterprise help.") },
   ];
+
+  const formatRevenue = (val: number = 0) => {
+    if (val >= 1000) return `$${(val / 1000).toFixed(1)}k`;
+    return `$${val}`;
+  };
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <AdminNavbar title={t('profile')} />
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scroll}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isStatsLoading} onRefresh={refetchStats} colors={[COLORS.secondary]} />
+        }
+      >
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatarFill}>
               <Text style={styles.avatarText}>{user?.name?.charAt(0) || "A"}</Text>
             </View>
-            <TouchableOpacity style={styles.editAvatarBtn} activeOpacity={0.7} onPress={() => { }}>
+            <TouchableOpacity style={styles.editAvatarBtn} activeOpacity={0.7} onPress={() => Alert.alert("Photos", "Image upload integration coming soon!")}>
               <Ionicons name="camera" size={18} color={COLORS.white} />
             </TouchableOpacity>
           </View>
@@ -39,15 +123,15 @@ export default function AdminProfileScreen() {
 
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>1.2k</Text>
-            <Text style={styles.statLabel}>{t('totalUsers')}</Text>
+            <Text style={styles.statValue}>{stats?.totalStudents || "..."}</Text>
+            <Text style={styles.statLabel}>{t('enrolled')}</Text>
           </View>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>45</Text>
+            <Text style={styles.statValue}>{stats?.totalCourses || "..."}</Text>
             <Text style={styles.statLabel}>{t('totalCourses')}</Text>
           </View>
-          <View style={styles.statBox}>
-            <Text style={styles.statValue}>$12k</Text>
+          <View style={[styles.statBox, { borderRightWidth: 0 }]}>
+            <Text style={styles.statValue}>{formatRevenue(stats?.totalRevenue)}</Text>
             <Text style={styles.statLabel}>{t('revenue')}</Text>
           </View>
         </View>
@@ -59,6 +143,7 @@ export default function AdminProfileScreen() {
               key={index}
               style={[styles.settingItem, index === SETTINGS.length - 1 && styles.lastItem]}
               activeOpacity={0.7}
+              onPress={item.onPress}
             >
               <View style={[styles.settingIcon, { backgroundColor: item.color + "15" }]}>
                 <Ionicons name={item.icon as any} size={20} color={item.color} />
@@ -71,7 +156,7 @@ export default function AdminProfileScreen() {
 
         <TouchableOpacity
           style={styles.logoutBtn}
-          onPress={() => router.replace("/auth/login")}
+          onPress={handleLogout}
           activeOpacity={0.7}
         >
           <Ionicons name="log-out-outline" size={20} color={COLORS.danger} />
@@ -80,6 +165,85 @@ export default function AdminProfileScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Edit Profile Modal */}
+      <Modal visible={isEditModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <Card style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Edit Profile</Text>
+              <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+                <Ionicons name="close" size={24} color={COLORS.gray[500]} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Name</Text>
+              <TextInput
+                style={styles.input}
+                value={editData.name}
+                onChangeText={(text) => setEditData({ ...editData, name: text })}
+                placeholder="Enter name"
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                style={styles.input}
+                value={editData.email}
+                onChangeText={(text) => setEditData({ ...editData, email: text })}
+                placeholder="Enter email"
+                keyboardType="email-address"
+              />
+            </View>
+
+            <TouchableOpacity style={styles.saveBtn} onPress={handleUpdateProfile} disabled={isUpdating}>
+              {isUpdating ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.saveBtnText}>Save Changes</Text>}
+            </TouchableOpacity>
+          </Card>
+        </View>
+      </Modal>
+
+      {/* Security Modal */}
+      <Modal visible={isSecurityModalVisible} animationType="slide" transparent>
+        <View style={styles.modalOverlay}>
+          <Card style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Change Password</Text>
+              <TouchableOpacity onPress={() => setSecurityModalVisible(false)}>
+                <Ionicons name="close" size={24} color={COLORS.gray[500]} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>New Password</Text>
+              <TextInput
+                style={styles.input}
+                value={passwordData.newPassword}
+                onChangeText={(text) => setPasswordData({ ...passwordData, newPassword: text })}
+                placeholder="At least 6 characters"
+                secureTextEntry
+              />
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.inputLabel}>Confirm Password</Text>
+              <TextInput
+                style={styles.input}
+                value={passwordData.confirmPassword}
+                onChangeText={(text) => setPasswordData({ ...passwordData, confirmPassword: text })}
+                placeholder="Re-type new password"
+                secureTextEntry
+              />
+            </View>
+
+            <TouchableOpacity style={[styles.saveBtn, { backgroundColor: COLORS.warning }]} onPress={handleUpdatePassword} disabled={isUpdating}>
+              {isUpdating ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.saveBtnText}>Update Password</Text>}
+            </TouchableOpacity>
+          </Card>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -126,7 +290,7 @@ const styles = StyleSheet.create({
     borderTopColor: COLORS.gray[100],
     marginBottom: 24,
   },
-  statBox: { flex: 1, alignItems: "center" },
+  statBox: { flex: 1, alignItems: "center", borderRightWidth: 1, borderRightColor: COLORS.gray[100] },
   statValue: { fontSize: 18, fontWeight: "800", color: COLORS.primary },
   statLabel: { fontSize: 12, color: COLORS.gray[500], marginTop: 2 },
   sectionTitle: { fontSize: 16, fontWeight: "700", color: COLORS.primary, marginHorizontal: 16, marginBottom: 12 },
@@ -160,4 +324,15 @@ const styles = StyleSheet.create({
     borderColor: COLORS.danger + "30",
   },
   logoutText: { fontSize: 16, fontWeight: "700", color: COLORS.danger, marginLeft: 8 },
+
+  // Modal Styles
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", padding: 24 },
+  modalContent: { padding: 24, borderRadius: 24 },
+  modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 },
+  modalTitle: { fontSize: 20, fontWeight: "800", color: COLORS.primary },
+  inputContainer: { marginBottom: 20 },
+  inputLabel: { fontSize: 14, fontWeight: "700", color: COLORS.gray[500], marginBottom: 8 },
+  input: { backgroundColor: COLORS.gray[50], padding: 14, borderRadius: 12, fontSize: 15, color: COLORS.primary, borderWidth: 1, borderColor: COLORS.gray[100] },
+  saveBtn: { backgroundColor: COLORS.primary, padding: 16, borderRadius: 14, alignItems: "center", marginTop: 8 },
+  saveBtnText: { color: COLORS.white, fontSize: 16, fontWeight: "700" }
 });

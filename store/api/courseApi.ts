@@ -22,17 +22,9 @@ export const courseApi = createApi({
       query: () => "/courses/instructor",
       providesTags: ["Course"],
     }),
-    getInstructorStats: builder.query<{ totalStudents: number; totalCourses: number; earnings: number }, void>({
-      query: () => "/courses/instructor/stats",
-      providesTags: ["Course"],
-    }),
     getAdminCourses: builder.query<Course[], void>({
       query: () => "/courses/admin",
       providesTags: ["Course"],
-    }),
-    getAdminStats: builder.query<{ totalUsers: number; totalCourses: number; revenue: number }, void>({
-      query: () => "/courses/admin/stats",
-      providesTags: ["Course", "User"],
     }),
     createCourse: builder.mutation<Course, Partial<Course>>({
       query: (body) => ({
@@ -65,7 +57,6 @@ export const {
   useGetCourseQuery,
   useGetInstructorCoursesQuery,
   useGetAdminCoursesQuery,
-  useGetAdminStatsQuery,
   useCreateCourseMutation,
   useUpdateCourseMutation,
   useDeleteCourseMutation

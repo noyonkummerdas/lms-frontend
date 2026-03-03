@@ -1,43 +1,49 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
-
-const TRANSACTIONS = [
-  { id: "1", user: "John Doe", course: "React Native Basics", amount: "$49.99", date: "Mar 22, 2024", status: "Completed" },
-  { id: "2", user: "Jane Smith", course: "Advanced Python", amount: "$59.99", date: "Mar 21, 2024", status: "Completed" },
-  { id: "3", user: "Mike Ross", course: "Web Design", amount: "$39.99", date: "Mar 20, 2024", status: "Pending" },
-  { id: "4", user: "Harvey Specter", course: "Business Law", amount: "$99.99", date: "Mar 19, 2024", status: "Refunded" },
-];
+import { useGetAllTransactionsQuery } from "../../../store/api/paymentApi";
+import { useGetAdminStatsQuery } from "../../../store/api/reportApi";
 
 export default function PaymentsScreen() {
   const { t } = useTranslation();
-  const renderItem = ({ item }: { item: typeof TRANSACTIONS[0] }) => (
+  const { data: transactions, isLoading: isListLoading, refetch: refetchList } = useGetAllTransactionsQuery();
+  const { data: stats, isLoading: isStatsLoading, refetch: refetchStats } = useGetAdminStatsQuery();
+
+  const onRefresh = () => {
+    refetchList();
+    refetchStats();
+  };
+
+  const renderItem = ({ item }: { item: any }) => (
     <Card style={styles.txCard}>
       <View style={styles.txHeader}>
         <View style={styles.userInfo}>
           <View style={styles.userIcon}>
             <Ionicons name="person" size={16} color={COLORS.secondary} />
           </View>
-          <Text style={styles.userName}>{item.user}</Text>
+          <View>
+            <Text style={styles.userName}>{(item.user as any)?.name || "Unknown User"}</Text>
+            <Text style={styles.userEmail}>{(item.user as any)?.email}</Text>
+          </View>
         </View>
-        <Text style={styles.txAmount}>{item.amount}</Text>
+        <Text style={styles.txAmount}>${item.amount}</Text>
       </View>
 
-      <Text style={styles.courseName}>{item.course}</Text>
+      <Text style={styles.courseName}>{(item.course as any)?.title || "N/A"}</Text>
 
       <View style={styles.txFooter}>
-        <Text style={styles.txDate}>{item.date}</Text>
+        <Text style={styles.txDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
         <View style={[styles.statusBadge, {
-          backgroundColor: item.status === "Completed" ? COLORS.success + "15" :
-            item.status === "Pending" ? COLORS.warning + "15" : COLORS.danger + "15"
+          backgroundColor: item.paymentStatus === "completed" ? COLORS.success + "15" :
+            item.paymentStatus === "pending" ? COLORS.warning + "15" : COLORS.danger + "15"
         }]}>
           <Text style={[styles.statusText, {
-            color: item.status === "Completed" ? COLORS.success :
-              item.status === "Pending" ? COLORS.warning : COLORS.danger
-          }]}>{t(item.status.toLowerCase() + 'Status')}</Text>
+            color: item.paymentStatus === "completed" ? COLORS.success :
+              item.paymentStatus === "pending" ? COLORS.warning : COLORS.danger
+          }]}>{t(item.paymentStatus + 'Status')}</Text>
         </View>
       </View>
     </Card>
@@ -49,7 +55,9 @@ export default function PaymentsScreen() {
       <View style={styles.statsContainer}>
         <Card style={styles.mainStatCard}>
           <Text style={styles.statLabel}>{t('totalRevenue')}</Text>
-          <Text style={styles.statValue}>$12,450.00</Text>
+          <Text style={styles.statValue}>
+            {isStatsLoading ? "..." : `$${stats?.totalRevenue?.toLocaleString() || "0.00"}`}
+          </Text>
           <View style={styles.trendRow}>
             <Ionicons name="trending-up" size={16} color={COLORS.success} />
             <Text style={styles.trendText}>+12.5% from last month</Text>
@@ -64,13 +72,27 @@ export default function PaymentsScreen() {
         </TouchableOpacity>
       </View>
 
-      <FlatList
-        data={TRANSACTIONS}
-        renderItem={renderItem}
-        keyExtractor={(item: any) => item._id || item.id}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-      />
+      {isListLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={COLORS.secondary} />
+        </View>
+      ) : (
+        <FlatList
+          data={transactions}
+          renderItem={renderItem}
+          keyExtractor={(item: any) => item._id || item.id}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={isListLoading || isStatsLoading} onRefresh={onRefresh} colors={[COLORS.secondary]} />
+          }
+          ListEmptyComponent={() => (
+            <View style={{ padding: 40, alignItems: 'center' }}>
+              <Text style={{ color: COLORS.gray[400] }}>No transactions recorded.</Text>
+            </View>
+          )}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -92,15 +114,16 @@ const styles = StyleSheet.create({
   listTitle: { fontSize: 18, fontWeight: "800", color: COLORS.primary },
   seeAll: { fontSize: 14, color: COLORS.secondary, fontWeight: "700" },
   list: { paddingHorizontal: 16, paddingBottom: 24 },
-  txCard: { marginBottom: 16, padding: 16 },
+  txCard: { marginBottom: 16, padding: 16, borderRadius: 20 },
   txHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
   userInfo: { flexDirection: "row", alignItems: "center" },
-  userIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: COLORS.secondary + "15", alignItems: "center", justifyContent: "center", marginRight: 8 },
+  userIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: COLORS.secondary + "15", alignItems: "center", justifyContent: "center", marginRight: 12 },
   userName: { fontSize: 15, fontWeight: "700", color: COLORS.primary },
+  userEmail: { fontSize: 12, color: COLORS.gray[400] },
   txAmount: { fontSize: 16, fontWeight: "800", color: COLORS.primary },
-  courseName: { fontSize: 13, color: COLORS.gray[500], marginBottom: 16 },
+  courseName: { fontSize: 13, color: COLORS.gray[500], marginBottom: 16, fontStyle: 'italic' },
   txFooter: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 1, borderTopColor: COLORS.gray[100], paddingTop: 12 },
   txDate: { fontSize: 12, color: COLORS.gray[400], fontWeight: "600" },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  statusText: { fontSize: 11, fontWeight: "800" },
+  statusText: { fontSize: 11, fontWeight: "800", textTransform: 'capitalize' },
 });

@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../hooks";
 import { InstructorNavbar, Card } from "../../../components";
-import { useGetInstructorStatsQuery } from "../../../store/api/courseApi";
+import { useGetInstructorStatsQuery } from "../../../store/api/reportApi";
 
 export default function InstructorDashboardScreen() {
   const { t } = useTranslation();

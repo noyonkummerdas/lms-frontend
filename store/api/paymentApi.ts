@@ -19,10 +19,15 @@ export const paymentApi = createApi({
       query: () => "/payments/history",
       providesTags: ["Payment"],
     }),
+    getAllTransactions: builder.query<Transaction[], void>({
+      query: () => "/payments",
+      providesTags: ["Payment"],
+    }),
   }),
 });
 
 export const {
   useInitiateCheckoutMutation,
-  useGetPaymentHistoryQuery
+  useGetPaymentHistoryQuery,
+  useGetAllTransactionsQuery
 } = paymentApi;

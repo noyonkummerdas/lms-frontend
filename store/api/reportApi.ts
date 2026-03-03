@@ -13,9 +13,10 @@ export interface AdminStats {
 }
 
 export interface InstructorStats {
-    grossEarnings: number;
-    totalEnrollments: number;
-    coursePerformance: any[];
+    totalCourses: number;
+    totalStudents: number;
+    earnings: number;
+    recentEnrollments: number;
 }
 
 export const reportApi = createApi({
