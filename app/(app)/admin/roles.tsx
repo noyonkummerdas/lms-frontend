@@ -3,15 +3,18 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, TextInput, A
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import { useRouter } from "expo-router";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 import { useGetUsersQuery } from "../../../store/api/userApi";
 
 export default function RolesScreen() {
     const { t } = useTranslation();
+    const router = useRouter();
     const [searchQuery, setSearchQuery] = useState("");
 
     const { data: users, isLoading } = useGetUsersQuery();
+    console.log('user data ', users)
 
     const ROLES_DATA = useMemo(() => {
         const counts = {
@@ -46,30 +49,42 @@ export default function RolesScreen() {
         Alert.alert(t('edit'), `${t('edit')} ${t(role)}`);
     };
 
-    const renderItem = ({ item }: { item: typeof ROLES_DATA[0] }) => (
-        <Card style={styles.roleCard}>
-            <View style={styles.roleHeader}>
-                <View style={[styles.iconBox, { backgroundColor: item.color + "15" }]}>
-                    <Ionicons name="shield-checkmark" size={24} color={item.color} />
-                </View>
-                <View style={styles.roleInfo}>
-                    <Text style={styles.roleTitle}>{t(item.title)}</Text>
-                    <Text style={styles.userCount}>{item.users} {t('activeUsers')}</Text>
-                </View>
-                <TouchableOpacity
-                    style={styles.editBtn}
-                    activeOpacity={0.7}
-                    onPress={() => handleEdit(item.title)}
-                >
-                    <Ionicons name="settings-outline" size={20} color={COLORS.gray[400]} />
-                </TouchableOpacity>
-            </View>
+    const navigateToUsers = (role: string) => {
+        router.push({
+            pathname: "/admin/users",
+            params: { role }
+        } as any);
+    };
 
-            <View style={styles.permissionsRow}>
-                <Text style={styles.permLabel}>{t('primaryPermissions')}</Text>
-                <Text style={styles.permValue}>{item.permissions}</Text>
-            </View>
-        </Card>
+    const renderItem = ({ item }: { item: typeof ROLES_DATA[0] }) => (
+        <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => navigateToUsers(item.role)}
+        >
+            <Card style={styles.roleCard}>
+                <View style={styles.roleHeader}>
+                    <View style={[styles.iconBox, { backgroundColor: item.color + "15" }]}>
+                        <Ionicons name="shield-checkmark" size={24} color={item.color} />
+                    </View>
+                    <View style={styles.roleInfo}>
+                        <Text style={styles.roleTitle}>{t(item.title)}</Text>
+                        <Text style={styles.userCount}>{item.users} {t('activeUsers')}</Text>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.editBtn}
+                        activeOpacity={0.7}
+                        onPress={() => handleEdit(item.title)}
+                    >
+                        <Ionicons name="settings-outline" size={20} color={COLORS.gray[400]} />
+                    </TouchableOpacity>
+                </View>
+
+                <View style={styles.permissionsRow}>
+                    <Text style={styles.permLabel}>{t('primaryPermissions')}</Text>
+                    <Text style={styles.permValue}>{item.permissions}</Text>
+                </View>
+            </Card>
+        </TouchableOpacity>
     );
 
     return (
@@ -86,10 +101,6 @@ export default function RolesScreen() {
                         onChangeText={setSearchQuery}
                     />
                 </View>
-                <TouchableOpacity style={styles.addBtn} activeOpacity={0.7} onPress={() => Alert.alert(t('create'), t('defineNewRole', { defaultValue: 'Define a new system role' }))}>
-                    <Ionicons name="add" size={20} color={COLORS.white} />
-                    <Text style={styles.addBtnText}>{t('create')}</Text>
-                </TouchableOpacity>
             </View>
 
             {isLoading ? (
@@ -141,15 +152,6 @@ const styles = StyleSheet.create({
     },
     searchInput: { flex: 1, marginLeft: 8, fontSize: 14, color: COLORS.primary },
     subtitle: { fontSize: 13, color: COLORS.gray[500], fontWeight: "600" },
-    addBtn: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: COLORS.secondary,
-        paddingHorizontal: 12,
-        paddingVertical: 10,
-        borderRadius: 10
-    },
-    addBtnText: { color: COLORS.white, fontWeight: "700", marginLeft: 4, fontSize: 13 },
     list: { padding: 16 },
     roleCard: { marginBottom: 16, padding: 16 },
     roleHeader: { flexDirection: "row", alignItems: "center", marginBottom: 16 },

@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, TextInput, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import { useLocalSearchParams } from "expo-router";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 import { useGetUsersQuery, useDeleteUserMutation, useUpdateUserMutation } from "../../../store/api/userApi";
@@ -10,7 +11,15 @@ import { User } from "../../../types/User";
 
 export default function UsersScreen() {
   const { t } = useTranslation();
-  const [searchQuery, setSearchQuery] = useState("");
+  const params = useLocalSearchParams();
+  const [searchQuery, setSearchQuery] = useState((params.role as string) || "");
+
+  useEffect(() => {
+    if (params.role) {
+      setSearchQuery(params.role as string);
+    }
+  }, [params.role]);
+
   const { data: usersData, isLoading, refetch } = useGetUsersQuery();
   const [updateUser] = useUpdateUserMutation();
   const [deleteUser] = useDeleteUserMutation();
