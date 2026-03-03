@@ -11,7 +11,7 @@ const { width } = Dimensions.get("window");
 export default function ReportsScreen() {
   const { t } = useTranslation();
   const [activeRange, setActiveRange] = useState("Month");
-  const timeRanges = ["Day", "Week", "Month", "Year"];
+  const timeRanges = ["day", "week", "month", "year"];
 
   const kpis = [
     { label: t('revenueLabel'), value: "$42,850", trend: "+12.5%", icon: "cash-outline", color: COLORS.success },
@@ -42,7 +42,7 @@ export default function ReportsScreen() {
               style={[styles.filterTab, activeRange === range && styles.filterTabActive]}
               onPress={() => setActiveRange(range)}
             >
-              <Text style={[styles.filterTabText, activeRange === range && styles.filterTabTextActive]}>{t(range.toLowerCase())}</Text>
+              <Text style={[styles.filterTabText, activeRange === range && styles.filterTabTextActive]}>{t(range)}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -112,13 +112,13 @@ export default function ReportsScreen() {
               <View style={styles.donutOuter}>
                 <View style={styles.donutInner}>
                   <Text style={styles.donutCenterValue}>82%</Text>
-                  <Text style={styles.donutCenterLabel}>Health</Text>
+                  <Text style={styles.donutCenterLabel}>{t('health')}</Text>
                 </View>
               </View>
             </View>
             <View style={styles.distributionLabels}>
-              <View style={styles.distLabel}><View style={[styles.distDot, { backgroundColor: COLORS.secondary }]} /><Text style={styles.distText}>Dev</Text></View>
-              <View style={styles.distLabel}><View style={[styles.distDot, { backgroundColor: COLORS.success }]} /><Text style={styles.distText}>Design</Text></View>
+              <View style={styles.distLabel}><View style={[styles.distDot, { backgroundColor: COLORS.secondary }]} /><Text style={styles.distText}>{t('development')}</Text></View>
+              <View style={styles.distLabel}><View style={[styles.distDot, { backgroundColor: COLORS.success }]} /><Text style={styles.distText}>{t('design')}</Text></View>
             </View>
           </Card>
 
@@ -147,7 +147,7 @@ export default function ReportsScreen() {
               <View style={styles.instructorAvatar}><Text style={styles.avatarText}>{item.avatar}</Text></View>
               <View style={styles.instructorInfo}>
                 <Text style={styles.instructorName}>{item.name}</Text>
-                <Text style={styles.instructorMeta}>{item.students} students supervised</Text>
+                <Text style={styles.instructorMeta}>{t('studentsSupervised', { count: item.students, defaultValue: '{{count}} students supervised' })}</Text>
               </View>
               <Text style={styles.earningsText}>{item.sales}</Text>
             </View>

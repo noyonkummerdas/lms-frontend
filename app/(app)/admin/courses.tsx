@@ -12,10 +12,33 @@ export default function AdminCoursesScreen() {
     const [searchQuery, setSearchQuery] = useState("");
     const [activeFilter, setActiveFilter] = useState("All");
     const { data: coursesData, isLoading, refetch } = useGetAdminCoursesQuery();
+    const [deleteCourse] = useDeleteCourseMutation();
 
     console.log("[ADMIN_COURSES_DEBUG] Fetched Courses:", JSON.stringify(coursesData, null, 2));
 
     const FILTERS = ["All", "published", "pending", "draft"];
+
+    const handleDeleteCourse = (id: string, title: string) => {
+        Alert.alert(
+            t('confirmDelete', { defaultValue: 'Confirm Delete' }),
+            `${t('confirmDeleteCourseMessage', { defaultValue: 'Are you sure you want to delete the course' })} "${title}"?`,
+            [
+                { text: t('cancel'), style: 'cancel' },
+                {
+                    text: t('delete'),
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            await deleteCourse(id).unwrap();
+                            Alert.alert(t('success'), t('courseDeleted', { defaultValue: 'Course deleted successfully' }));
+                        } catch (err: any) {
+                            Alert.alert(t('error'), err.data?.message || t('deleteFailed', { defaultValue: 'Failed to delete course' }));
+                        }
+                    }
+                }
+            ]
+        );
+    };
 
     const filteredCourses = useMemo(() => {
         if (!coursesData) return [];
@@ -55,9 +78,16 @@ export default function AdminCoursesScreen() {
                     <Ionicons name="pricetag-outline" size={14} color={COLORS.gray[400]} />
                     <Text style={styles.statText}>{item.price}</Text>
                 </View>
-                <TouchableOpacity style={styles.manageBtn} activeOpacity={0.7}>
+                <TouchableOpacity style={styles.manageBtn} activeOpacity={0.7} onPress={() => Alert.alert(t('edit'), `Managing ${item.title}`)}>
                     <Text style={styles.manageBtnText}>{t('action', { defaultValue: 'Manage' })}</Text>
                     <Ionicons name="chevron-forward" size={14} color={COLORS.secondary} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.manageBtn, { marginLeft: 12 }]}
+                    activeOpacity={0.7}
+                    onPress={() => handleDeleteCourse(item._id, item.title)}
+                >
+                    <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
                 </TouchableOpacity>
             </View>
         </Card>

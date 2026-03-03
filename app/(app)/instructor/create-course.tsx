@@ -1,13 +1,15 @@
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 import { InstructorNavbar, Card, Button, Input } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 
 export default function CreateCourseScreen() {
+  const { t } = useTranslation();
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
-      <InstructorNavbar title="Create Course" />
+      <InstructorNavbar title={t('createNewCourse')} />
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.stepsRow}>
           <View style={[styles.stepDot, styles.stepActive]}><Text style={styles.stepNum}>1</Text></View>
@@ -17,38 +19,38 @@ export default function CreateCourseScreen() {
           <View style={styles.stepDot}><Text style={styles.stepNumInactive}>3</Text></View>
         </View>
 
-        <Text style={styles.sectionTitle}>Course Basics</Text>
+        <Text style={styles.sectionTitle}>{t('courseBasics')}</Text>
         <Card style={styles.formCard}>
           <View style={styles.field}>
-            <Text style={styles.label}>Course Title</Text>
-            <Input placeholder="e.g. Master React Native in 30 Days" value="" onChangeText={() => { }} />
+            <Text style={styles.label}>{t('courseTitle')}</Text>
+            <Input placeholder={t('titlePlaceholder')} value="" onChangeText={() => { }} />
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Category</Text>
+            <Text style={styles.label}>{t('category')}</Text>
             <TouchableOpacity style={styles.selectBox} activeOpacity={0.7} onPress={() => { }}>
-              <Text style={styles.selectText}>Select Category</Text>
+              <Text style={styles.selectText}>{t('selectCategory')}</Text>
               <Ionicons name="chevron-down" size={20} color={COLORS.gray[400]} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.row}>
             <View style={[styles.field, { flex: 1, marginRight: 8 }]}>
-              <Text style={styles.label}>Price ($)</Text>
+              <Text style={styles.label}>{t('price')} ($)</Text>
               <Input placeholder="0.00" keyboardType="numeric" value="" onChangeText={() => { }} />
             </View>
             <View style={[styles.field, { flex: 1, marginLeft: 8 }]}>
-              <Text style={styles.label}>Level</Text>
+              <Text style={styles.label}>{t('level')}</Text>
               <TouchableOpacity style={styles.selectBox} activeOpacity={0.7} onPress={() => { }}>
-                <Text style={styles.selectText}>Beginner</Text>
+                <Text style={styles.selectText}>{t('beginner')}</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.field}>
-            <Text style={styles.label}>Description</Text>
+            <Text style={styles.label}>{t('description')}</Text>
             <TextInput
-              placeholder="What will students learn?"
+              placeholder={t('descPlaceholder')}
               style={styles.textArea}
               multiline
               numberOfLines={4}
@@ -57,15 +59,15 @@ export default function CreateCourseScreen() {
           </View>
         </Card>
 
-        <Text style={styles.sectionTitle}>Thumbnail Image</Text>
+        <Text style={styles.sectionTitle}>{t('thumbnailImage')}</Text>
         <TouchableOpacity style={styles.uploadBox} activeOpacity={0.7} onPress={() => { }}>
           <Ionicons name="cloud-upload-outline" size={40} color={COLORS.secondary} />
-          <Text style={styles.uploadTitle}>Upload Course Thumbnail</Text>
-          <Text style={styles.uploadLimit}>Max size: 5MB (PNG, JPG)</Text>
+          <Text style={styles.uploadTitle}>{t('uploadThumbnail')}</Text>
+          <Text style={styles.uploadLimit}>{t('maxSize')}</Text>
         </TouchableOpacity>
 
         <Button
-          label="Save & Continue"
+          label={t('saveContinue')}
           variant="primary"
           size="lg"
           style={styles.submitBtn}

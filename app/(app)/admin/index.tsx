@@ -53,23 +53,9 @@ export default function AdminDashboardScreen() {
         </View>
 
         <Text className="text-[18px] font-black text-primary mb-4 mt-2">{t('overviewAnalytics')}</Text>
-        <Card className="p-4 mb-6 rounded-3xl">
-          <View className="flex-row items-center mb-5">
-            <Ionicons name="analytics" size={20} color="#6366f1" />
-            <Text className="text-[16px] font-bold text-primary ml-2">{t('platformGrowth')}</Text>
-          </View>
-          <View className="flex-row items-end justify-between h-[100px] px-2.5">
-            {[30, 45, 35, 60, 50, 80, 70, 90].map((h, i) => (
-              <View
-                key={i}
-                className="w-[8%] rounded-t-full"
-                style={{
-                  height: h,
-                  backgroundColor: `#6366f1${i === 7 ? '' : '40'}`
-                }}
-              />
-            ))}
-          </View>
+        <Card className="p-10 mb-6 rounded-3xl items-center justify-center">
+          <Ionicons name="analytics" size={48} color={COLORS.gray[200]} />
+          <Text className="text-[14px] text-slate-400 mt-4">{t('noDataAvailable', { defaultValue: 'No analytics data available yet' })}</Text>
         </Card>
 
         <Text className="text-[18px] font-black text-primary mb-4 mt-2">{t('systemStatus')}</Text>

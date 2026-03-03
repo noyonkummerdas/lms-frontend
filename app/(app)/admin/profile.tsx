@@ -2,25 +2,27 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../hooks";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 
 export default function AdminProfileScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
 
   const SETTINGS = [
-    { label: "Personal Information", icon: "person-outline", color: COLORS.secondary },
-    { label: "Notification Settings", icon: "notifications-outline", color: COLORS.success },
-    { label: "Security & Password", icon: "lock-closed-outline", color: COLORS.warning },
-    { label: "Privacy Policy", icon: "shield-checkmark-outline", color: COLORS.accent },
-    { label: "Help Center", icon: "help-circle-outline", color: COLORS.gray[500] },
+    { label: t('personalInformation'), icon: "person-outline", color: COLORS.secondary },
+    { label: t('notificationSettings'), icon: "notifications-outline", color: COLORS.success },
+    { label: t('securityPassword'), icon: "lock-closed-outline", color: COLORS.warning },
+    { label: t('privacyPolicy'), icon: "shield-checkmark-outline", color: COLORS.accent },
+    { label: t('helpCenter'), icon: "help-circle-outline", color: COLORS.gray[500] },
   ];
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
-      <AdminNavbar title="Profile" />
+      <AdminNavbar title={t('profile')} />
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
@@ -31,26 +33,26 @@ export default function AdminProfileScreen() {
               <Ionicons name="camera" size={18} color={COLORS.white} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.userName}>{user?.name || "Admin User"}</Text>
-          <Text style={styles.userRole}>ADMINISTRATOR</Text>
+          <Text style={styles.userName}>{user?.name || t('admin')}</Text>
+          <Text style={styles.userRole}>{t('administrator').toUpperCase()}</Text>
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>1.2k</Text>
-            <Text style={styles.statLabel}>Users</Text>
+            <Text style={styles.statLabel}>{t('totalUsers')}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>45</Text>
-            <Text style={styles.statLabel}>Courses</Text>
+            <Text style={styles.statLabel}>{t('totalCourses')}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>$12k</Text>
-            <Text style={styles.statLabel}>Revenue</Text>
+            <Text style={styles.statLabel}>{t('revenue')}</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Account Settings</Text>
+        <Text style={styles.sectionTitle}>{t('accountSettings')}</Text>
         <Card style={styles.settingsCard}>
           {SETTINGS.map((item, index) => (
             <TouchableOpacity
@@ -73,7 +75,7 @@ export default function AdminProfileScreen() {
           activeOpacity={0.7}
         >
           <Ionicons name="log-out-outline" size={20} color={COLORS.danger} />
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>{t('logout')}</Text>
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />

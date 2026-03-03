@@ -2,25 +2,27 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-nati
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../hooks";
 import { InstructorNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
 
 export default function InstructorProfileScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const router = useRouter();
 
   const SETTINGS = [
-    { label: "Teaching Preferences", icon: "book-outline", color: COLORS.secondary },
-    { label: "Notification Settings", icon: "notifications-outline", color: COLORS.success },
-    { label: "Payment Details", icon: "card-outline", color: COLORS.warning },
-    { label: "Security & Password", icon: "lock-closed-outline", color: COLORS.accent },
-    { label: "Support", icon: "help-circle-outline", color: COLORS.gray[500] },
+    { label: t('teachingPreferences'), icon: "book-outline", color: COLORS.secondary },
+    { label: t('notificationSettings'), icon: "notifications-outline", color: COLORS.success },
+    { label: t('paymentDetails'), icon: "card-outline", color: COLORS.warning },
+    { label: t('securityPassword'), icon: "lock-closed-outline", color: COLORS.accent },
+    { label: t('support'), icon: "help-circle-outline", color: COLORS.gray[500] },
   ];
 
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
-      <InstructorNavbar title="Profile" />
+      <InstructorNavbar title={t('profile')} />
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
@@ -31,26 +33,26 @@ export default function InstructorProfileScreen() {
               <Ionicons name="camera" size={18} color={COLORS.white} />
             </TouchableOpacity>
           </View>
-          <Text style={styles.userName}>{user?.name || "Instructor Name"}</Text>
-          <Text style={styles.userRole}>CERTIFIED INSTRUCTOR</Text>
+          <Text style={styles.userName}>{user?.name || t('instructor')}</Text>
+          <Text style={styles.userRole}>{t('certifiedInstructor').toUpperCase()}</Text>
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>452</Text>
-            <Text style={styles.statLabel}>Students</Text>
+            <Text style={styles.statLabel}>{t('students')}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>12</Text>
-            <Text style={styles.statLabel}>Courses</Text>
+            <Text style={styles.statLabel}>{t('courses')}</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statValue}>4.9</Text>
-            <Text style={styles.statLabel}>Rating</Text>
+            <Text style={styles.statLabel}>{t('rating')}</Text>
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Account Settings</Text>
+        <Text style={styles.sectionTitle}>{t('accountSettings')}</Text>
         <Card style={styles.settingsCard}>
           {SETTINGS.map((item, index) => (
             <TouchableOpacity
@@ -73,7 +75,7 @@ export default function InstructorProfileScreen() {
           activeOpacity={0.7}
         >
           <Ionicons name="log-out-outline" size={20} color={COLORS.danger} />
-          <Text style={styles.logoutText}>Logout</Text>
+          <Text style={styles.logoutText}>{t('logout')}</Text>
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />

@@ -68,7 +68,7 @@ export default function RolesScreen() {
                         onChangeText={setSearchQuery}
                     />
                 </View>
-                <TouchableOpacity style={styles.addBtn} activeOpacity={0.7} onPress={() => Alert.alert(t('create'), "Define a new system role")}>
+                <TouchableOpacity style={styles.addBtn} activeOpacity={0.7} onPress={() => Alert.alert(t('create'), t('defineNewRole', { defaultValue: 'Define a new system role' }))}>
                     <Ionicons name="add" size={20} color={COLORS.white} />
                     <Text style={styles.addBtnText}>{t('create')}</Text>
                 </TouchableOpacity>

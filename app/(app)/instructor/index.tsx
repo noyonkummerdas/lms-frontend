@@ -18,13 +18,13 @@ export default function InstructorDashboardScreen() {
   const stats = [
     { label: t('active'), value: statsData?.totalStudents?.toString() || "0", icon: "people", color: "#10b981" },
     { label: t('totalEarnings'), value: `$${statsData?.earnings || 0}`, icon: "wallet", color: "#6366f1" },
-    { label: t('pendingPayout'), value: withdrawalStatus === "idle" ? "$850" : "$0", icon: "time", color: "#F39C12" },
+    { label: t('pendingPayout'), value: `$0`, icon: "time", color: "#F39C12" },
   ];
 
   const handleWithdrawal = () => {
     Alert.alert(
       "Confirm Withdrawal",
-      "Do you want to withdraw your current balance of $850.00?",
+      "Do you want to withdraw your current balance of $0.00?",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -96,7 +96,7 @@ export default function InstructorDashboardScreen() {
           <Card className="p-5 flex-row justify-between items-center bg-white">
             <View className="flex-1">
               <Text className="text-[13px] text-slate-500 mb-1">{t('availableWithdrawal')}</Text>
-              <Text className="text-2xl font-black text-primary">{withdrawalStatus === "idle" ? "$850.00" : "$0.00"}</Text>
+              <Text className="text-2xl font-black text-primary">$0.00</Text>
             </View>
             <TouchableOpacity
               className={`flex-row items-center px-4 py-3 rounded-xl ${withdrawalStatus === "idle" ? 'bg-secondary' : 'bg-success/20'}`}

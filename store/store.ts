@@ -11,6 +11,7 @@ import { certificateApi } from "./api/certificateApi";
 import { discussionApi } from "./api/discussionApi";
 import { notificationApi } from "./api/notificationApi";
 import { reportApi } from "./api/reportApi";
+import { categoryApi } from "./api/categoryApi";
 
 import authReducer from "./slices/authSlice";
 import userReducer from "./slices/userSlice";
@@ -45,6 +46,7 @@ export const store = configureStore({
     [discussionApi.reducerPath]: discussionApi.reducer,
     [notificationApi.reducerPath]: notificationApi.reducer,
     [reportApi.reducerPath]: reportApi.reducer,
+    [categoryApi.reducerPath]: categoryApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat([
@@ -60,6 +62,7 @@ export const store = configureStore({
       discussionApi.middleware,
       notificationApi.middleware,
       reportApi.middleware,
+      categoryApi.middleware,
     ]),
 });
 

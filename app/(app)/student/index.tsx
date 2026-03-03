@@ -58,14 +58,7 @@ export default function StudentHomeScreen() {
           </View>
         </View>
 
-        {/* Announcement System */}
-        <Card className="bg-primary p-4 mb-6 rounded-2xl">
-          <View className="flex-row items-center mb-2">
-            <Ionicons name="megaphone" size={20} color="#6366f1" />
-            <Text className="text-secondary font-extrabold ml-2 text-[13px] uppercase">New Announcement</Text>
-          </View>
-          <Text className="text-white text-[14px] leading-5 opacity-90">Phase 2 of the React Native Lab starts this weekend. Make sure to complete your prerequisites!</Text>
-        </Card>
+
 
         <View className="flex-row justify-between mb-6">
           <Card className="flex-1 mx-1 p-4 items-center">
@@ -78,31 +71,7 @@ export default function StudentHomeScreen() {
           </Card>
         </View>
 
-        {/* Gamification: Badges Section */}
-        <View className="mb-6">
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-[18px] font-bold text-primary">{t('achievements')}</Text>
-            <TouchableOpacity><Text className="text-secondary font-semibold text-[14px]">{t('seeAll')}</Text></TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="ml-[-16px] pl-4">
-            {[
-              { id: 1, name: t('earlyBird'), icon: "sunny", color: "#FFD93D" },
-              { id: 2, name: t('fastLearner'), icon: "rocket", color: "#6C5CE7" },
-              { id: 3, name: t('quizMaster'), icon: "ribbon", color: "#00B894" },
-              { id: 4, name: t('streak'), icon: "flame", color: "#FF7675" },
-            ].map((badge) => (
-              <View key={badge.id} className="items-center mr-5">
-                <View
-                  className="w-14 h-14 rounded-full items-center justify-center mb-2"
-                  style={{ backgroundColor: badge.color + "15" }}
-                >
-                  <Ionicons name={badge.icon as any} size={24} color={badge.color} />
-                </View>
-                <Text className="text-[11px] font-bold text-slate-600">{badge.name}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+
 
         <Text className="text-[18px] font-bold text-primary mb-3">{t('continueLearning')}</Text>
         {featured.map((c) => (
@@ -140,31 +109,7 @@ export default function StudentHomeScreen() {
           <Text className="text-white font-bold text-[16px]">{t('exploreAll')}</Text>
         </TouchableOpacity>
 
-        {/* Course Bundles */}
-        <View className="mt-6 mb-5">
-          <View className="flex-row justify-between items-center mb-3">
-            <Text className="text-[18px] font-bold text-primary">{t('courseBundles')}</Text>
-            <TouchableOpacity><Text className="text-secondary font-semibold text-[14px]">{t('seeAll')}</Text></TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="ml-[-16px] pl-4">
-            {[1, 2].map((b) => (
-              <TouchableOpacity key={b} activeOpacity={0.9}>
-                <Card className="w-[260px] mr-4 p-5 bg-white">
-                  <View className="self-start bg-success px-2 py-1 rounded-lg mb-3">
-                    <Text className="text-white text-[10px] font-extrabold">20% OFF</Text>
-                  </View>
-                  <Text className="text-[17px] font-extrabold text-primary mb-1">{b === 1 ? "Fullstack Mastery Bundle" : "Mobile Design Kit"}</Text>
-                  <Text className="text-[13px] text-slate-500 mb-4">3 Courses • $120.00</Text>
-                  <View className="flex-row">
-                    <View className="w-8 h-8 rounded-lg border-2 border-white bg-emerald-100" />
-                    <View className="w-8 h-8 rounded-lg border-2 border-white bg-rose-100 ml-[-12px]" />
-                    <View className="w-8 h-8 rounded-lg border-2 border-white bg-indigo-100 ml-[-12px]" />
-                  </View>
-                </Card>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+
         <View className="h-10" />
       </ScrollView>
     </SafeAreaView>
