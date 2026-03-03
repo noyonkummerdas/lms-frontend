@@ -17,7 +17,7 @@ export default function MyCoursesScreen() {
   const [activeFilter, setActiveFilter] = useState("All");
 
   const filteredCourses = useMemo(() => {
-    if (!enrolledCourses) return [];
+    if (!enrolledCourses || !Array.isArray(enrolledCourses)) return [];
     if (activeFilter === "In Progress") {
       return enrolledCourses.filter(c => (c as any).progress > 0 && (c as any).progress < 100);
     } else if (activeFilter === "Completed") {

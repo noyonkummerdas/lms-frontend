@@ -242,8 +242,8 @@ export default function CategoriesScreen() {
                 <View style={styles.metadataList}>
                   <Text style={styles.metadataRow}>_id: {selectedCategory._id}</Text>
                   <Text style={styles.metadataRow}>__v: {selectedCategory.__v}</Text>
-                  <Text style={styles.metadataRow}>Created: {new Date(selectedCategory.createdAt).toLocaleString()}</Text>
-                  <Text style={styles.metadataRow}>Updated: {new Date(selectedCategory.updatedAt).toLocaleString()}</Text>
+                  <Text style={styles.metadataRow}>Created: {selectedCategory.createdAt ? new Date(selectedCategory.createdAt).toLocaleString() : 'N/A'}</Text>
+                  <Text style={styles.metadataRow}>Updated: {selectedCategory.updatedAt ? new Date(selectedCategory.updatedAt).toLocaleString() : 'N/A'}</Text>
                 </View>
               </View>
             )}

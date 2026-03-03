@@ -1,28 +1,46 @@
 import { useState, useMemo } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, TextInput } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, TextInput, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { AdminNavbar, Card } from "../../../components";
 import { COLORS } from "../../../constants/colors";
-
-const ROLES_DATA = [
-    { id: "1", title: "administrator", users: 5, permissions: "Full Access", color: COLORS.danger },
-    { id: "2", title: "instructor", users: 24, permissions: "Course Management, Analytics", color: COLORS.secondary },
-    { id: "3", title: "student", users: 1250, permissions: "Course Access, Community", color: COLORS.success },
-    { id: "4", title: "editor", users: 8, permissions: "Content Editing, Categories", color: COLORS.warning },
-];
+import { useGetUsersQuery } from "../../../store/api/userApi";
 
 export default function RolesScreen() {
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState("");
 
+    const { data: users, isLoading } = useGetUsersQuery();
+
+    const ROLES_DATA = useMemo(() => {
+        const counts = {
+            admin: 0,
+            instructor: 0,
+            student: 0
+        };
+
+        if (users && Array.isArray(users)) {
+            users.forEach((user: any) => {
+                if (counts[user.role as keyof typeof counts] !== undefined) {
+                    counts[user.role as keyof typeof counts]++;
+                }
+            });
+        }
+
+        return [
+            { id: "1", role: "admin", title: "administrator", users: counts.admin, permissions: "Full Access", color: COLORS.danger },
+            { id: "2", role: "instructor", title: "instructor", users: counts.instructor, permissions: "Course Management, Analytics", color: COLORS.secondary },
+            { id: "3", role: "student", title: "student", users: counts.student, permissions: "Course Access, Community", color: COLORS.success },
+        ];
+    }, [users]);
+
     const filteredRoles = useMemo(() => {
         return ROLES_DATA.filter(role =>
-            role.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            t(role.title).toLowerCase().includes(searchQuery.toLowerCase()) ||
             role.permissions.toLowerCase().includes(searchQuery.toLowerCase())
         );
-    }, [searchQuery]);
+    }, [searchQuery, ROLES_DATA, t]);
 
     const handleEdit = (role: string) => {
         Alert.alert(t('edit'), `${t('edit')} ${t(role)}`);
@@ -73,19 +91,26 @@ export default function RolesScreen() {
                     <Text style={styles.addBtnText}>{t('create')}</Text>
                 </TouchableOpacity>
             </View>
-            <FlatList
-                data={filteredRoles}
-                renderItem={renderItem}
-                keyExtractor={(item: any) => item._id || item.id}
-                contentContainerStyle={styles.list}
-                showsVerticalScrollIndicator={false}
-                ListEmptyComponent={
-                    <View style={{ alignItems: 'center', marginTop: 40 }}>
-                        <Ionicons name="shield-outline" size={48} color={COLORS.gray[300]} />
-                        <Text style={{ color: COLORS.gray[500], marginTop: 12, fontSize: 16 }}>{t('noResults')}</Text>
-                    </View>
-                }
-            />
+
+            {isLoading ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={COLORS.secondary} />
+                </View>
+            ) : (
+                <FlatList
+                    data={filteredRoles}
+                    renderItem={renderItem}
+                    keyExtractor={(item: any) => item.id}
+                    contentContainerStyle={styles.list}
+                    showsVerticalScrollIndicator={false}
+                    ListEmptyComponent={
+                        <View style={{ alignItems: 'center', marginTop: 40 }}>
+                            <Ionicons name="shield-outline" size={48} color={COLORS.gray[300]} />
+                            <Text style={{ color: COLORS.gray[500], marginTop: 12, fontSize: 16 }}>{t('noResults')}</Text>
+                        </View>
+                    }
+                />
+            )}
         </SafeAreaView>
     );
 }
