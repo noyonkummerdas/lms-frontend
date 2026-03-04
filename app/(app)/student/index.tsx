@@ -1,7 +1,6 @@
-import { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { useRouter, Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../../hooks";
@@ -23,9 +22,10 @@ export default function StudentHomeScreen() {
   const activeCourses = enrolledCourses?.filter(c => (c as any).progress > 0 && (c as any).progress < 100) || [];
   const completedCourses = enrolledCourses?.filter(c => (c as any).progress === 100) || [];
 
-  // For "Continue Learning" section
-  const featured = enrolledCourses?.slice(0, 2).map((c, idx) => ({
-    id: c.id,
+  // For "Continue Learning" section - prioritize active courses
+  const coursesToShow = activeCourses.length > 0 ? activeCourses : enrolledCourses || [];
+  const featured = coursesToShow.slice(0, 2).map((c, idx) => ({
+    id: (c as any).courseId || (c as any)._id || c.id,
     title: c.title,
     icon: idx === 0 ? "logo-react" : "code-slash",
     progress: (c as any).progress || 0,
@@ -75,29 +75,35 @@ export default function StudentHomeScreen() {
 
         <Text className="text-[18px] font-bold text-primary mb-3">{t('continueLearning')}</Text>
         {featured.map((c) => (
-          <TouchableOpacity key={c.id} onPress={() => router.push(`/courses/${c.id}`)} activeOpacity={0.8}>
-            <Card className="mb-4 flex-row items-center p-3">
-              <View
-                className="w-16 h-16 rounded-2xl items-center justify-center mr-3"
-                style={{ backgroundColor: c.color + "15" }}
-              >
-                <Ionicons name={c.icon as any} size={32} color={c.color} />
-              </View>
-              <View className="flex-1">
-                <Text className="text-[16px] font-semibold text-primary mb-2">{c.title}</Text>
-                <View className="flex-row items-center">
-                  <View className="flex-1 h-1.5 bg-slate-200 rounded-full mr-2 overflow-hidden">
-                    <View
-                      className="h-full bg-secondary rounded-full"
-                      style={{ width: `${c.progress}%` }}
-                    />
-                  </View>
-                  <Text className="text-[12px] font-semibold text-slate-600">{c.progress}%</Text>
+          <Link
+            key={c.id}
+            href={`/courses/${c.id}/learn?title=${encodeURIComponent(c.title)}`}
+            asChild
+          >
+            <TouchableOpacity activeOpacity={0.8}>
+              <Card className="mb-4 flex-row items-center p-3">
+                <View
+                  className="w-16 h-16 rounded-2xl items-center justify-center mr-3"
+                  style={{ backgroundColor: c.color + "15" }}
+                >
+                  <Ionicons name={c.icon as any} size={32} color={c.color} />
                 </View>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
-            </Card>
-          </TouchableOpacity>
+                <View className="flex-1">
+                  <Text className="text-[16px] font-semibold text-primary mb-2">{c.title}</Text>
+                  <View className="flex-row items-center">
+                    <View className="flex-1 h-1.5 bg-slate-200 rounded-full mr-2 overflow-hidden">
+                      <View
+                        className="h-full bg-secondary rounded-full"
+                        style={{ width: `${c.progress}%` }}
+                      />
+                    </View>
+                    <Text className="text-[12px] font-semibold text-slate-600">{c.progress}%</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+              </Card>
+            </TouchableOpacity>
+          </Link>
         ))}
 
         <TouchableOpacity

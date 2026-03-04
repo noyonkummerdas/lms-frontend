@@ -8,6 +8,7 @@ import { Navbar, Card } from "../../../components";
 import { useSidebar } from "../../../contexts/SidebarContext";
 import { useGetCoursesQuery } from "../../../store/api/courseApi";
 import { useGetCategoriesQuery } from "../../../store/api/categoryApi";
+import { Course } from "../../../types/Course";
 
 export default function ExploreScreen() {
   const { t } = useTranslation();
@@ -38,7 +39,7 @@ export default function ExploreScreen() {
     }
   };
 
-  const filteredCourses = courses || [];
+  const filteredCourses = courses?.courses || [];
 
   return (
     <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
@@ -112,16 +113,17 @@ export default function ExploreScreen() {
             </TouchableOpacity>
           </View>
         ) : (
-          filteredCourses.map((c) => (
+          filteredCourses.map((c: Course) => (
             <TouchableOpacity
-              key={c.id}
+              key={c._id || c.id}
               onPress={() => router.push({
-                pathname: `/courses/${c.id}`,
+                pathname: `/courses/${c._id || c.id}`,
                 params: {
-                  price: c.price?.toString(),
-                  instructor: typeof c.instructor === 'string' ? c.instructor : (c.instructor as any)?.name,
+                  id: (c._id || c.id || "").toString(),
+                  price: c.price?.toString() || "0",
+                  instructor: typeof c.instructor === 'string' ? c.instructor : (c.instructor as any)?.name || "Unknown",
                   title: c.title,
-                  image: (c as any).image,
+                  image: (c as any).thumbnail || (c as any).image,
                   color: (c as any).color
                 }
               } as any)}
@@ -129,8 +131,8 @@ export default function ExploreScreen() {
             >
               <Card className="mx-4 mb-4 flex-row items-center p-3.5 rounded-[20px]">
                 <View className="w-[78px] h-[78px] rounded-[18px] bg-slate-100 overflow-hidden mr-3.5">
-                  {(c as any).image ? (
-                    <Image source={{ uri: (c as any).image }} className="w-full h-full" resizeMode="cover" />
+                  {(c as any).thumbnail || (c as any).image ? (
+                    <Image source={{ uri: (c as any).thumbnail || (c as any).image }} className="w-full h-full" resizeMode="cover" />
                   ) : (
                     <View className="w-full h-full items-center justify-center bg-secondary/10">
                       <Ionicons name="book-outline" size={32} color="#6366f1" />
@@ -139,7 +141,7 @@ export default function ExploreScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="text-[16px] font-extrabold text-primary" numberOfLines={1}>{c.title}</Text>
-                  <Text className="text-[13px] text-slate-400 mt-0.5 font-semibold">{t('by')} {typeof c.instructor === 'string' ? c.instructor : (c.instructor as any)?.name}</Text>
+                  <Text className="text-[13px] text-slate-400 mt-0.5 font-semibold">{t('by')} {typeof c.instructor === 'string' ? c.instructor : (c.instructor as any)?.name || "Unknown"}</Text>
                   <View className="flex-row justify-between items-center mt-2.5">
                     <View className="flex-row items-center">
                       <Ionicons name="star" size={14} color="#f59e0b" />
@@ -150,12 +152,12 @@ export default function ExploreScreen() {
                 </View>
                 <TouchableOpacity
                   className="p-2 ml-1"
-                  onPress={() => toggleWishlist(c.id)}
+                  onPress={() => toggleWishlist(c._id || c.id || "")}
                 >
                   <Ionicons
-                    name={wishlist.includes(c.id) ? "heart" : "heart-outline"}
+                    name={wishlist.includes(c._id || c.id || "") ? "heart" : "heart-outline"}
                     size={24}
-                    color={wishlist.includes(c.id) ? "#ef4444" : "#cbd5e1"}
+                    color={wishlist.includes(c._id || c.id || "") ? "#ef4444" : "#cbd5e1"}
                   />
                 </TouchableOpacity>
               </Card>

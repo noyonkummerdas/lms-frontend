@@ -31,7 +31,7 @@ export default function Navbar({
           <Ionicons name="menu" size={24} color="white" />
         </TouchableOpacity>
       )}
-      <Text className="color-white text-[18px] font-extrabold flex-1 text-center">{title}</Text>
+      <Text className="text-white text-[18px] font-extrabold flex-1 text-center">{title}</Text>
       <View className="items-end justify-center">
         <LanguageSwitcher />
       </View>

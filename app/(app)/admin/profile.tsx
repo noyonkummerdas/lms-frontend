@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Modal, TextInput, Alert, ActivityIndicator, RefreshControl, KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -168,81 +168,91 @@ export default function AdminProfileScreen() {
 
       {/* Edit Profile Modal */}
       <Modal visible={isEditModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <Card style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Edit Profile</Text>
-              <TouchableOpacity onPress={() => setEditModalVisible(false)}>
-                <Ionicons name="close" size={24} color={COLORS.gray[500]} />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.modalOverlay}>
+            <Card style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Edit Profile</Text>
+                <TouchableOpacity onPress={() => setEditModalVisible(false)}>
+                  <Ionicons name="close" size={24} color={COLORS.gray[500]} />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Name</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editData.name}
+                  onChangeText={(text) => setEditData({ ...editData, name: text })}
+                  placeholder="Enter name"
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  value={editData.email}
+                  onChangeText={(text) => setEditData({ ...editData, email: text })}
+                  placeholder="Enter email"
+                  keyboardType="email-address"
+                />
+              </View>
+
+              <TouchableOpacity style={styles.saveBtn} onPress={handleUpdateProfile} disabled={isUpdating}>
+                {isUpdating ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.saveBtnText}>Save Changes</Text>}
               </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Name</Text>
-              <TextInput
-                style={styles.input}
-                value={editData.name}
-                onChangeText={(text) => setEditData({ ...editData, name: text })}
-                placeholder="Enter name"
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={editData.email}
-                onChangeText={(text) => setEditData({ ...editData, email: text })}
-                placeholder="Enter email"
-                keyboardType="email-address"
-              />
-            </View>
-
-            <TouchableOpacity style={styles.saveBtn} onPress={handleUpdateProfile} disabled={isUpdating}>
-              {isUpdating ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.saveBtnText}>Save Changes</Text>}
-            </TouchableOpacity>
-          </Card>
-        </View>
+            </Card>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       {/* Security Modal */}
       <Modal visible={isSecurityModalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <Card style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Change Password</Text>
-              <TouchableOpacity onPress={() => setSecurityModalVisible(false)}>
-                <Ionicons name="close" size={24} color={COLORS.gray[500]} />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.modalOverlay}>
+            <Card style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Change Password</Text>
+                <TouchableOpacity onPress={() => setSecurityModalVisible(false)}>
+                  <Ionicons name="close" size={24} color={COLORS.gray[500]} />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>New Password</Text>
+                <TextInput
+                  style={styles.input}
+                  value={passwordData.newPassword}
+                  onChangeText={(text) => setPasswordData({ ...passwordData, newPassword: text })}
+                  placeholder="At least 6 characters"
+                  secureTextEntry
+                />
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Confirm Password</Text>
+                <TextInput
+                  style={styles.input}
+                  value={passwordData.confirmPassword}
+                  onChangeText={(text) => setPasswordData({ ...passwordData, confirmPassword: text })}
+                  placeholder="Re-type new password"
+                  secureTextEntry
+                />
+              </View>
+
+              <TouchableOpacity style={[styles.saveBtn, { backgroundColor: COLORS.warning }]} onPress={handleUpdatePassword} disabled={isUpdating}>
+                {isUpdating ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.saveBtnText}>Update Password</Text>}
               </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>New Password</Text>
-              <TextInput
-                style={styles.input}
-                value={passwordData.newPassword}
-                onChangeText={(text) => setPasswordData({ ...passwordData, newPassword: text })}
-                placeholder="At least 6 characters"
-                secureTextEntry
-              />
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Confirm Password</Text>
-              <TextInput
-                style={styles.input}
-                value={passwordData.confirmPassword}
-                onChangeText={(text) => setPasswordData({ ...passwordData, confirmPassword: text })}
-                placeholder="Re-type new password"
-                secureTextEntry
-              />
-            </View>
-
-            <TouchableOpacity style={[styles.saveBtn, { backgroundColor: COLORS.warning }]} onPress={handleUpdatePassword} disabled={isUpdating}>
-              {isUpdating ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.saveBtnText}>Update Password</Text>}
-            </TouchableOpacity>
-          </Card>
-        </View>
+            </Card>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

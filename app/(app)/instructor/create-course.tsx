@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator, Modal } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Alert, ActivityIndicator, Modal, KeyboardAvoidingView, Platform } from "react-native";
 import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -158,294 +158,304 @@ export default function CreateCourseScreen() {
   return (
     <SafeAreaView style={styles.screen} edges={["top"]}>
       <InstructorNavbar title={t('createNewCourse')} />
-      <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
-        {/* Step Indicator */}
-        <View style={styles.stepsRow}>
-          {[1, 2, 3].map((step, idx) => (
-            <View key={step} style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={[styles.stepDot, currentStep >= step && styles.stepActive]}>
-                <Text style={currentStep >= step ? styles.stepNum : styles.stepNumInactive}>{step}</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
+          {/* Step Indicator */}
+          <View style={styles.stepsRow}>
+            {[1, 2, 3].map((step, idx) => (
+              <View key={step} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={[styles.stepDot, currentStep >= step && styles.stepActive]}>
+                  <Text style={currentStep >= step ? styles.stepNum : styles.stepNumInactive}>{step}</Text>
+                </View>
+                {idx < 2 && <View style={[styles.stepLine, currentStep > step && { backgroundColor: COLORS.secondary }]} />}
               </View>
-              {idx < 2 && <View style={[styles.stepLine, currentStep > step && { backgroundColor: COLORS.secondary }]} />}
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
 
-        {/* STEP 1: BASICS */}
-        {currentStep === 1 && (
-          <>
-            <Text style={styles.sectionTitle}>{t('courseBasics')}</Text>
-            <Card style={styles.formCard}>
-              <View style={styles.field}>
-                <Text style={styles.label}>{t('courseTitle')}</Text>
-                <Input
-                  placeholder={t('titlePlaceholder')}
-                  value={formData.title}
-                  onChangeText={(text) => handleInputChange('title', text)}
-                />
-              </View>
-
-              <View style={styles.field}>
-                <Text style={styles.label}>{t('category')}</Text>
-                <Dropdown
-                  options={categoryOptions}
-                  value={formData.category}
-                  onSelect={(val) => handleInputChange('category', val)}
-                  placeholder={t('selectCategory')}
-                  visible={activeDropdown === 'category'}
-                  onOpen={() => setActiveDropdown('category')}
-                  onClose={() => setActiveDropdown(null)}
-                  style={styles.selectBox}
-                />
-              </View>
-
-              <View style={styles.row}>
-                <View style={[styles.field, { flex: 1, marginRight: 8 }]}>
-                  <Text style={styles.label}>{t('price')} ($)</Text>
+          {/* STEP 1: BASICS */}
+          {currentStep === 1 && (
+            <>
+              <Text style={styles.sectionTitle}>{t('courseBasics')}</Text>
+              <Card style={styles.formCard}>
+                <View style={styles.field}>
+                  <Text style={styles.label}>{t('courseTitle')}</Text>
                   <Input
-                    placeholder="0.00"
-                    keyboardType="numeric"
-                    value={formData.price}
-                    onChangeText={(text) => handleInputChange('price', text)}
+                    placeholder={t('titlePlaceholder')}
+                    value={formData.title}
+                    onChangeText={(text) => handleInputChange('title', text)}
                   />
                 </View>
-                <View style={[styles.field, { flex: 1, marginLeft: 8 }]}>
-                  <Text style={styles.label}>{t('level')}</Text>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>{t('category')}</Text>
                   <Dropdown
-                    options={levelOptions}
-                    value={formData.level}
-                    onSelect={(val) => handleInputChange('level', val)}
-                    placeholder={t('selectLevel')}
-                    visible={activeDropdown === 'level'}
-                    onOpen={() => setActiveDropdown('level')}
+                    options={categoryOptions}
+                    value={formData.category}
+                    onSelect={(val) => handleInputChange('category', val)}
+                    placeholder={t('selectCategory')}
+                    visible={activeDropdown === 'category'}
+                    onOpen={() => setActiveDropdown('category')}
                     onClose={() => setActiveDropdown(null)}
                     style={styles.selectBox}
                   />
                 </View>
+
+                <View style={styles.row}>
+                  <View style={[styles.field, { flex: 1, marginRight: 8 }]}>
+                    <Text style={styles.label}>{t('price')} ($)</Text>
+                    <Input
+                      placeholder="0.00"
+                      keyboardType="numeric"
+                      value={formData.price}
+                      onChangeText={(text) => handleInputChange('price', text)}
+                    />
+                  </View>
+                  <View style={[styles.field, { flex: 1, marginLeft: 8 }]}>
+                    <Text style={styles.label}>{t('level')}</Text>
+                    <Dropdown
+                      options={levelOptions}
+                      value={formData.level}
+                      onSelect={(val) => handleInputChange('level', val)}
+                      placeholder={t('selectLevel')}
+                      visible={activeDropdown === 'level'}
+                      onOpen={() => setActiveDropdown('level')}
+                      onClose={() => setActiveDropdown(null)}
+                      style={styles.selectBox}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.field}>
+                  <Text style={styles.label}>{t('description')}</Text>
+                  <TextInput
+                    placeholder={t('descPlaceholder')}
+                    style={styles.textArea}
+                    multiline
+                    numberOfLines={4}
+                    textAlignVertical="top"
+                    value={formData.description}
+                    onChangeText={(text) => handleInputChange('description', text)}
+                  />
+                </View>
+              </Card>
+            </>
+          )}
+
+          {/* STEP 2: SYLLABUS / CURRICULUM */}
+          {currentStep === 2 && (
+            <>
+              <Text style={styles.sectionTitle}>{t('courseCurriculum')}</Text>
+              {sections.map((section, sIdx) => (
+                <Card key={section.id} style={styles.curriculumCard}>
+                  <View style={[styles.field, { marginBottom: 15 }]}>
+                    <View style={styles.sectionHeaderRow}>
+                      <Text style={styles.label}>Section {sIdx + 1}</Text>
+                      <TouchableOpacity onPress={() => {
+                        const updated = sections.filter((_, i) => i !== sIdx);
+                        setSections(updated);
+                      }}>
+                        <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
+                      </TouchableOpacity>
+                    </View>
+                    <TextInput
+                      placeholder="e.g. Introduction to React"
+                      style={styles.sectionInput}
+                      value={section.title}
+                      onChangeText={(text) => updateSectionTitle(sIdx, text)}
+                    />
+                  </View>
+
+                  {section.lessons.map((lesson, lIdx) => (
+                    <View key={lesson.id} style={styles.lessonItemContainer}>
+                      <View style={styles.lessonItem}>
+                        <Ionicons name="reorder-two" size={20} color={COLORS.gray[300]} />
+                        <TextInput
+                          placeholder="Lesson title (e.g. Introduction)"
+                          style={styles.lessonInput}
+                          value={lesson.title}
+                          onChangeText={(text) => updateLesson(sIdx, lIdx, 'title', text)}
+                        />
+                        <TextInput
+                          placeholder="5:00"
+                          style={styles.durationInput}
+                          value={lesson.duration}
+                          onChangeText={(text) => updateLesson(sIdx, lIdx, 'duration', text)}
+                        />
+                        <TouchableOpacity onPress={() => {
+                          const updated = [...sections];
+                          updated[sIdx].lessons = updated[sIdx].lessons.filter((_, i) => i !== lIdx);
+                          setSections(updated);
+                        }}>
+                          <Ionicons name="close-circle-outline" size={20} color={COLORS.gray[300]} />
+                        </TouchableOpacity>
+                      </View>
+                      <View style={styles.videoLinkRow}>
+                        <Ionicons name="videocam" size={16} color={COLORS.secondary} />
+                        <TextInput
+                          placeholder="Video URL (Vimeo, YouTube, or MP4 Link)"
+                          style={styles.videoUrlInput}
+                          value={lesson.videoUrl}
+                          onChangeText={(text) => updateLesson(sIdx, lIdx, 'videoUrl', text)}
+                        />
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.addQuizBtn}
+                        onPress={() => setQuizModal({ sIdx, lIdx })}
+                      >
+                        <Ionicons name="help-circle-outline" size={16} color={COLORS.secondary} />
+                        <Text style={styles.addQuizText}>Setup 5 Questions Quiz</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+
+                  <TouchableOpacity style={styles.addLessonBtn} onPress={() => handleAddLesson(sIdx)}>
+                    <Ionicons name="add" size={18} color={COLORS.secondary} />
+                    <Text style={styles.addLessonText}>{t('addLesson')}</Text>
+                  </TouchableOpacity>
+                </Card>
+              ))}
+
+              <TouchableOpacity style={styles.addSectionContainer} onPress={handleAddSection}>
+                <Ionicons name="add-circle" size={24} color={COLORS.secondary} />
+                <Text style={styles.addSectionText}>{t('addNewSection')}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {/* STEP 3: MEDIA & PUBLISH */}
+          {currentStep === 3 && (
+            <>
+              <Text style={styles.sectionTitle}>{t('courseMedia')}</Text>
+              <TouchableOpacity style={styles.uploadBox} activeOpacity={0.7} onPress={() => { }}>
+                <Ionicons name="cloud-upload-outline" size={40} color={COLORS.secondary} />
+                <Text style={styles.uploadTitle}>{t('uploadThumbnail')}</Text>
+                <Text style={styles.uploadLimit}>{t('maxSize')}</Text>
+              </TouchableOpacity>
+
+              <View style={[styles.field, { paddingHorizontal: 4 }]}>
+                <Text style={styles.label}>{t('introVideoUrl')}</Text>
+                <Input
+                  placeholder="https://..."
+                  value={formData.introVideo}
+                  onChangeText={(text) => handleInputChange('introVideo', text)}
+                />
+                <Text style={styles.hintText}>{t('introVideoHint')}</Text>
               </View>
 
-              <View style={styles.field}>
-                <Text style={styles.label}>{t('description')}</Text>
+              <View style={[styles.field, { paddingHorizontal: 4 }]}>
+                <Text style={styles.label}>Final Course Assignment</Text>
                 <TextInput
-                  placeholder={t('descPlaceholder')}
+                  placeholder="Write the final assignment instructions here..."
                   style={styles.textArea}
                   multiline
                   numberOfLines={4}
                   textAlignVertical="top"
-                  value={formData.description}
-                  onChangeText={(text) => handleInputChange('description', text)}
+                  value={formData.finalAssignment}
+                  onChangeText={(text) => handleInputChange('finalAssignment', text)}
                 />
+                <Text style={styles.hintText}>Students must complete this to get the certificate.</Text>
               </View>
-            </Card>
-          </>
-        )}
 
-        {/* STEP 2: SYLLABUS / CURRICULUM */}
-        {currentStep === 2 && (
-          <>
-            <Text style={styles.sectionTitle}>{t('courseCurriculum')}</Text>
-            {sections.map((section, sIdx) => (
-              <Card key={section.id} style={styles.curriculumCard}>
-                <View style={[styles.field, { marginBottom: 15 }]}>
-                  <View style={styles.sectionHeaderRow}>
-                    <Text style={styles.label}>Section {sIdx + 1}</Text>
-                    <TouchableOpacity onPress={() => {
-                      const updated = sections.filter((_, i) => i !== sIdx);
-                      setSections(updated);
-                    }}>
-                      <Ionicons name="trash-outline" size={18} color={COLORS.danger} />
-                    </TouchableOpacity>
-                  </View>
-                  <TextInput
-                    placeholder="e.g. Introduction to React"
-                    style={styles.sectionInput}
-                    value={section.title}
-                    onChangeText={(text) => updateSectionTitle(sIdx, text)}
-                  />
+              <Card style={styles.reviewCard}>
+                <Text style={styles.reviewTitle}>{t('reviewCourse')}</Text>
+                <View style={styles.reviewItem}>
+                  <Text style={styles.reviewLabel}>{t('title')}:</Text>
+                  <Text style={styles.reviewValue}>{formData.title}</Text>
                 </View>
-
-                {section.lessons.map((lesson, lIdx) => (
-                  <View key={lesson.id} style={styles.lessonItemContainer}>
-                    <View style={styles.lessonItem}>
-                      <Ionicons name="reorder-two" size={20} color={COLORS.gray[300]} />
-                      <TextInput
-                        placeholder="Lesson title (e.g. Introduction)"
-                        style={styles.lessonInput}
-                        value={lesson.title}
-                        onChangeText={(text) => updateLesson(sIdx, lIdx, 'title', text)}
-                      />
-                      <TextInput
-                        placeholder="5:00"
-                        style={styles.durationInput}
-                        value={lesson.duration}
-                        onChangeText={(text) => updateLesson(sIdx, lIdx, 'duration', text)}
-                      />
-                      <TouchableOpacity onPress={() => {
-                        const updated = [...sections];
-                        updated[sIdx].lessons = updated[sIdx].lessons.filter((_, i) => i !== lIdx);
-                        setSections(updated);
-                      }}>
-                        <Ionicons name="close-circle-outline" size={20} color={COLORS.gray[300]} />
-                      </TouchableOpacity>
-                    </View>
-                    <View style={styles.videoLinkRow}>
-                      <Ionicons name="videocam" size={16} color={COLORS.secondary} />
-                      <TextInput
-                        placeholder="Video URL (Vimeo, YouTube, or MP4 Link)"
-                        style={styles.videoUrlInput}
-                        value={lesson.videoUrl}
-                        onChangeText={(text) => updateLesson(sIdx, lIdx, 'videoUrl', text)}
-                      />
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.addQuizBtn}
-                      onPress={() => setQuizModal({ sIdx, lIdx })}
-                    >
-                      <Ionicons name="help-circle-outline" size={16} color={COLORS.secondary} />
-                      <Text style={styles.addQuizText}>Setup 5 Questions Quiz</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-
-                <TouchableOpacity style={styles.addLessonBtn} onPress={() => handleAddLesson(sIdx)}>
-                  <Ionicons name="add" size={18} color={COLORS.secondary} />
-                  <Text style={styles.addLessonText}>{t('addLesson')}</Text>
-                </TouchableOpacity>
+                <View style={styles.reviewItem}>
+                  <Text style={styles.reviewLabel}>{t('price')}:</Text>
+                  <Text style={styles.reviewValue}>${formData.price || '0.00'}</Text>
+                </View>
+                <View style={styles.reviewItem}>
+                  <Text style={styles.reviewLabel}>{t('level')}:</Text>
+                  <Text style={styles.reviewValue} style={{ textTransform: 'capitalize' }}>{formData.level}</Text>
+                </View>
               </Card>
-            ))}
-
-            <TouchableOpacity style={styles.addSectionContainer} onPress={handleAddSection}>
-              <Ionicons name="add-circle" size={24} color={COLORS.secondary} />
-              <Text style={styles.addSectionText}>{t('addNewSection')}</Text>
-            </TouchableOpacity>
-          </>
-        )}
-
-        {/* STEP 3: MEDIA & PUBLISH */}
-        {currentStep === 3 && (
-          <>
-            <Text style={styles.sectionTitle}>{t('courseMedia')}</Text>
-            <TouchableOpacity style={styles.uploadBox} activeOpacity={0.7} onPress={() => { }}>
-              <Ionicons name="cloud-upload-outline" size={40} color={COLORS.secondary} />
-              <Text style={styles.uploadTitle}>{t('uploadThumbnail')}</Text>
-              <Text style={styles.uploadLimit}>{t('maxSize')}</Text>
-            </TouchableOpacity>
-
-            <View style={[styles.field, { paddingHorizontal: 4 }]}>
-              <Text style={styles.label}>{t('introVideoUrl')}</Text>
-              <Input
-                placeholder="https://..."
-                value={formData.introVideo}
-                onChangeText={(text) => handleInputChange('introVideo', text)}
-              />
-              <Text style={styles.hintText}>{t('introVideoHint')}</Text>
-            </View>
-
-            <View style={[styles.field, { paddingHorizontal: 4 }]}>
-              <Text style={styles.label}>Final Course Assignment</Text>
-              <TextInput
-                placeholder="Write the final assignment instructions here..."
-                style={styles.textArea}
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-                value={formData.finalAssignment}
-                onChangeText={(text) => handleInputChange('finalAssignment', text)}
-              />
-              <Text style={styles.hintText}>Students must complete this to get the certificate.</Text>
-            </View>
-
-            <Card style={styles.reviewCard}>
-              <Text style={styles.reviewTitle}>{t('reviewCourse')}</Text>
-              <View style={styles.reviewItem}>
-                <Text style={styles.reviewLabel}>{t('title')}:</Text>
-                <Text style={styles.reviewValue}>{formData.title}</Text>
-              </View>
-              <View style={styles.reviewItem}>
-                <Text style={styles.reviewLabel}>{t('price')}:</Text>
-                <Text style={styles.reviewValue}>${formData.price || '0.00'}</Text>
-              </View>
-              <View style={styles.reviewItem}>
-                <Text style={styles.reviewLabel}>{t('level')}:</Text>
-                <Text style={styles.reviewValue} style={{ textTransform: 'capitalize' }}>{formData.level}</Text>
-              </View>
-            </Card>
-          </>
-        )}
-
-        <View style={styles.buttonRow}>
-          {currentStep > 1 && (
-            <Button
-              label={t('previous')}
-              variant="secondary"
-              size="lg"
-              style={[styles.navBtn, { marginRight: 10, backgroundColor: COLORS.white, borderWeight: 1, borderColor: COLORS.border }]}
-              onPress={() => setCurrentStep(prev => prev - 1)}
-            />
+            </>
           )}
-          <Button
-            label={currentStep === 3 ? (isCreating ? t('creating') : t('publishCourse')) : t('saveContinue')}
-            variant="primary"
-            size="lg"
-            style={[styles.navBtn, { flex: 1 }]}
-            onPress={currentStep === 3 ? handleSubmit : handleNext}
-            disabled={isCreating}
-          />
-        </View>
-        <View style={{ height: 40 }} />
-      </ScrollView>
 
-      {/* QUIZ MODAL */}
-      <Modal visible={!!quizModal} animationType="slide" transparent={true}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Setup Lesson Quiz (5 Questions)</Text>
-              <TouchableOpacity onPress={() => setQuizModal(null)}>
-                <Ionicons name="close" size={24} color={COLORS.primary} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
-              {quizModal && sections[quizModal.sIdx].lessons[quizModal.lIdx].quiz.map((q: any, qIdx: number) => (
-                <View key={q.id} style={styles.quizQuestionCard}>
-                  <Text style={styles.questionNum}>Question {qIdx + 1}</Text>
-                  <TextInput
-                    placeholder="Enter question text..."
-                    style={styles.questionInput}
-                    value={q.question}
-                    onChangeText={(text) => updateQuiz(quizModal.sIdx, quizModal.lIdx, qIdx, 'question', text)}
-                  />
-                  <View style={styles.optionsGrid}>
-                    {q.options.map((opt: string, oIdx: number) => (
-                      <View key={oIdx} style={styles.optionItem}>
-                        <TouchableOpacity
-                          style={[styles.radio, q.correct === oIdx && styles.radioActive]}
-                          onPress={() => updateQuiz(quizModal.sIdx, quizModal.lIdx, qIdx, 'correct', oIdx)}
-                        />
-                        <TextInput
-                          placeholder={`Option ${oIdx + 1}`}
-                          style={styles.optionInput}
-                          value={opt}
-                          onChangeText={(text) => updateQuiz(quizModal.sIdx, quizModal.lIdx, qIdx, 'option', { idx: oIdx, text })}
-                        />
-                      </View>
-                    ))}
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-
+          <View style={styles.buttonRow}>
+            {currentStep > 1 && (
+              <Button
+                label={t('previous')}
+                variant="secondary"
+                size="lg"
+                style={[styles.navBtn, { marginRight: 10, backgroundColor: COLORS.white, borderWeight: 1, borderColor: COLORS.border }]}
+                onPress={() => setCurrentStep(prev => prev - 1)}
+              />
+            )}
             <Button
-              label="Save Quiz"
+              label={currentStep === 3 ? (isCreating ? t('creating') : t('publishCourse')) : t('saveContinue')}
               variant="primary"
-              onPress={() => setQuizModal(null)}
-              style={{ marginTop: 20 }}
+              size="lg"
+              style={[styles.navBtn, { flex: 1 }]}
+              onPress={currentStep === 3 ? handleSubmit : handleNext}
+              disabled={isCreating}
             />
           </View>
-        </View>
-      </Modal>
+          <View style={{ height: 40 }} />
+        </ScrollView>
+
+        {/* QUIZ MODAL */}
+        <Modal visible={!!quizModal} animationType="slide" transparent={true}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ flex: 1 }}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>Setup Lesson Quiz (5 Questions)</Text>
+                  <TouchableOpacity onPress={() => setQuizModal(null)}>
+                    <Ionicons name="close" size={24} color={COLORS.primary} />
+                  </TouchableOpacity>
+                </View>
+
+                <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+                  {quizModal && sections[quizModal.sIdx].lessons[quizModal.lIdx].quiz.map((q: any, qIdx: number) => (
+                    <View key={q.id} style={styles.quizQuestionCard}>
+                      <Text style={styles.questionNum}>Question {qIdx + 1}</Text>
+                      <TextInput
+                        placeholder="Enter question text..."
+                        style={styles.questionInput}
+                        value={q.question}
+                        onChangeText={(text) => updateQuiz(quizModal.sIdx, quizModal.lIdx, qIdx, 'question', text)}
+                      />
+                      <View style={styles.optionsGrid}>
+                        {q.options.map((opt: string, oIdx: number) => (
+                          <View key={oIdx} style={styles.optionItem}>
+                            <TouchableOpacity
+                              style={[styles.radio, q.correct === oIdx && styles.radioActive]}
+                              onPress={() => updateQuiz(quizModal.sIdx, quizModal.lIdx, qIdx, 'correct', oIdx)}
+                            />
+                            <TextInput
+                              placeholder={`Option ${oIdx + 1}`}
+                              style={styles.optionInput}
+                              value={opt}
+                              onChangeText={(text) => updateQuiz(quizModal.sIdx, quizModal.lIdx, qIdx, 'option', { idx: oIdx, text })}
+                            />
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  ))}
+                </ScrollView>
+
+                <Button
+                  label="Save Quiz"
+                  variant="primary"
+                  onPress={() => setQuizModal(null)}
+                  style={{ marginTop: 20 }}
+                />
+              </View>
+            </View>
+          </KeyboardAvoidingView>
+        </Modal>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

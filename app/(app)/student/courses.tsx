@@ -81,11 +81,11 @@ export default function MyCoursesScreen() {
         ) : (
           filteredCourses.map((c) => (
             <TouchableOpacity
-              key={c.id}
+              key={c._id || c.id}
               onPress={() => router.push({
-                pathname: "/courses/[id]/learn",
-                params: { id: c.id.toString(), title: c.title }
-              } as any)}
+                pathname: `/courses/${c._id || c.id}/learn` as any,
+                params: { title: c.title }
+              })}
               activeOpacity={0.8}
             >
               <Card className="mb-4 p-4 rounded-[20px]">
@@ -102,7 +102,9 @@ export default function MyCoursesScreen() {
                     <Text className="text-[12px] text-slate-400 mt-0.5 font-semibold">{(c as any).completedCount || 0} / {c.lessonsCount} Lessons</Text>
                   </View>
                   {(c as any).favorite && (
-                    <Ionicons name="heart" size={18} color="#ef4444" className="ml-2" />
+                    <View className="ml-2">
+                      <Ionicons name="heart" size={18} color="#ef4444" />
+                    </View>
                   )}
                 </View>
 
@@ -119,13 +121,13 @@ export default function MyCoursesScreen() {
                     className="flex-row items-center"
                     activeOpacity={0.7}
                     onPress={() => router.push({
-                      pathname: "/courses/[id]/learn",
-                      params: { id: c.id.toString(), title: c.title }
-                    } as any)}
+                      pathname: `/courses/${c._id || c.id}/learn` as any,
+                      params: { title: c.title }
+                    })}
                   >
                     <Text className="text-[14px] font-bold text-secondary mr-1">{(c as any).progress === 100 ? "Review" : "Continue"}</Text>
                     <Ionicons
-                      name={c.progress === 100 ? "refresh" : "arrow-forward"}
+                      name={(c as any).progress === 100 ? "refresh" : "arrow-forward"}
                       size={14}
                       color="#6366f1"
                     />

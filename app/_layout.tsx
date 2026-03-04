@@ -1,3 +1,4 @@
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useCallback, useState, useRef } from "react";
@@ -65,51 +66,53 @@ export default function RootLayout() {
   }
 
   return (
-    <Provider store={store}>
-      <StatusBar barStyle="dark-content" />
-      <View style={{ flex: 1, backgroundColor: "#ffffff" }} onLayout={onLayoutRootView}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: "#ffffff" },
-          }}
-        />
+    <SafeAreaProvider>
+      <Provider store={store}>
+        <StatusBar barStyle="dark-content" />
+        <View style={{ flex: 1, backgroundColor: "#ffffff" }} onLayout={onLayoutRootView}>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: "#ffffff" },
+            }}
+          />
 
-        {/* custom Splash Screen Overlay */}
-        {!animationFinished && (
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              StyleSheet.absoluteFill,
-              {
-                backgroundColor: "#ffffff",
-                opacity: fadeAnim,
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 999999,
-              }
-            ]}
-          >
-            <View style={{ alignItems: 'center' }}>
-              <Animated.Image
-                source={require("../assets/splash-icon.png")}
-                style={{
-                  width: width * 0.75,
-                  height: width * 0.5,
-                  resizeMode: "contain",
-                  transform: [{ scale: scaleAnim }],
-                }}
-              />
-              <Text style={{ marginTop: 24, fontSize: 24, fontStyle: 'italic', color: '#1e293b', fontWeight: '900', letterSpacing: 1 }}>
-                LMS PLATFORM
-              </Text>
-              <Text style={{ marginTop: 8, fontSize: 14, color: '#94a3b8', fontWeight: '600' }}>
-                Powered by Techsoul
-              </Text>
-            </View>
-          </Animated.View>
-        )}
-      </View>
-    </Provider>
+          {/* custom Splash Screen Overlay */}
+          {!animationFinished && (
+            <Animated.View
+              pointerEvents="none"
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  backgroundColor: "#ffffff",
+                  opacity: fadeAnim,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 999999,
+                }
+              ]}
+            >
+              <View style={{ alignItems: 'center' }}>
+                <Animated.Image
+                  source={require("../assets/splash-icon.png")}
+                  style={{
+                    width: width * 0.75,
+                    height: width * 0.5,
+                    resizeMode: "contain",
+                    transform: [{ scale: scaleAnim }],
+                  }}
+                />
+                <Text style={{ marginTop: 24, fontSize: 24, fontStyle: 'italic', color: '#1e293b', fontWeight: '900', letterSpacing: 1 }}>
+                  LMS PLATFORM
+                </Text>
+                <Text style={{ marginTop: 8, fontSize: 14, color: '#94a3b8', fontWeight: '600' }}>
+                  Powered by Techsoul
+                </Text>
+              </View>
+            </Animated.View>
+          )}
+        </View>
+      </Provider>
+    </SafeAreaProvider>
   );
 }

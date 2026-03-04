@@ -2,12 +2,19 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { Course } from "../../types/Course";
 import { baseQuery } from "./baseQuery";
 
+export interface PaginatedCourses {
+  courses: Course[];
+  page: number;
+  pages: number;
+  count: number;
+}
+
 export const courseApi = createApi({
   reducerPath: "courseApi",
   baseQuery,
   tagTypes: ["Course", "User"],
   endpoints: (builder) => ({
-    getCourses: builder.query<Course[], { keyword?: string; category?: string; pageNumber?: number } | void>({
+    getCourses: builder.query<PaginatedCourses, { keyword?: string; category?: string; pageNumber?: number } | void>({
       query: (params) => ({
         url: "/courses",
         params: params || {},

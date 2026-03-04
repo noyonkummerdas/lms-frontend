@@ -27,7 +27,7 @@ export default function VideoPlayer({ videoUrl, style, className }: VideoPlayerP
   }, []);
 
   return (
-    <View style={[styles.container, style]} className={className}>
+    <View style={[styles.container, style]}>
       {loading && (
         <View style={styles.loader}>
           <ActivityIndicator color={COLORS.secondary} size="large" />

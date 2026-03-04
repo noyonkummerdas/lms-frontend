@@ -60,7 +60,7 @@ export default function Button({
       ) : children ? (
         children
       ) : (
-        <Text className="color-white font-semibold text-center">{label}</Text>
+        <Text className="text-white font-semibold text-center">{label}</Text>
       )}
     </Pressable>
   );

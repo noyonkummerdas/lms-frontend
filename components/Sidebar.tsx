@@ -52,7 +52,9 @@ export default function Sidebar({
             >
               <View className="flex-row items-center">
                 {item.icon && (
-                  <Ionicons name={item.icon} size={20} color="#94a3b8" className="mr-3" />
+                  <View className="mr-3">
+                    <Ionicons name={item.icon} size={20} color="#94a3b8" />
+                  </View>
                 )}
                 <Text className="text-slate-200 text-[15px] font-semibold">{item.label}</Text>
               </View>

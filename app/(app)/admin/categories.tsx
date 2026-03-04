@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Alert, Modal, ActivityIndicator, Image } from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Alert, Modal, ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -265,89 +265,96 @@ export default function CategoriesScreen() {
         animationType="fade"
         onRequestClose={() => setIsModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <Card style={styles.modalCard}>
-            <Text style={styles.modalTitle}>{editingCategory ? t('edit') : t('create')} {t('category')}</Text>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{ flex: 1 }}
+        >
+          <View style={styles.modalOverlay}>
+            <Card style={styles.modalCard}>
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <Text style={styles.modalTitle}>{editingCategory ? t('edit') : t('create')} {t('category')}</Text>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('name')}</Text>
-              <TextInput
-                style={styles.modalInput}
-                placeholder={t('categoryName')}
-                value={newCatName}
-                onChangeText={setNewCatName}
-              />
-            </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>{t('name')}</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    placeholder={t('categoryName')}
+                    value={newCatName}
+                    onChangeText={setNewCatName}
+                  />
+                </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('description')}</Text>
-              <TextInput
-                style={[styles.modalInput, { height: 80, textAlignVertical: 'top' }]}
-                placeholder={t('categoryDescPlaceholder')}
-                multiline={true}
-                value={newCatDesc}
-                onChangeText={setNewCatDesc}
-              />
-            </View>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>{t('description')}</Text>
+                  <TextInput
+                    style={[styles.modalInput, { height: 80, textAlignVertical: 'top' }]}
+                    placeholder={t('categoryDescPlaceholder')}
+                    multiline={true}
+                    value={newCatDesc}
+                    onChangeText={setNewCatDesc}
+                  />
+                </View>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>{t('image')}</Text>
-              <View style={styles.imagePickerContainer}>
-                {newCatImage ? (
-                  <View style={styles.previewWrapper}>
-                    <Image source={{ uri: newCatImage }} style={styles.imagePreview} />
-                    <TouchableOpacity
-                      style={styles.removeImageBtn}
-                      onPress={() => setNewCatImage("")}
-                    >
-                      <Ionicons name="close-circle" size={24} color={COLORS.danger} />
-                    </TouchableOpacity>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>{t('image')}</Text>
+                  <View style={styles.imagePickerContainer}>
+                    {newCatImage ? (
+                      <View style={styles.previewWrapper}>
+                        <Image source={{ uri: newCatImage }} style={styles.imagePreview} />
+                        <TouchableOpacity
+                          style={styles.removeImageBtn}
+                          onPress={() => setNewCatImage("")}
+                        >
+                          <Ionicons name="close-circle" size={24} color={COLORS.danger} />
+                        </TouchableOpacity>
+                      </View>
+                    ) : (
+                      <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
+                        <Ionicons name="image-outline" size={32} color={COLORS.gray[400]} />
+                        <Text style={styles.imagePlaceholderText}>{t('uploadImage')}</Text>
+                      </TouchableOpacity>
+                    )}
+
+                    <TextInput
+                      style={[styles.modalInput, { marginTop: 12 }]}
+                      placeholder="https://example.com/image.png"
+                      value={newCatImage}
+                      onChangeText={setNewCatImage}
+                    />
+                    <Text style={styles.helperText}>OR enter Image URL</Text>
                   </View>
-                ) : (
-                  <TouchableOpacity style={styles.imagePlaceholder} onPress={pickImage}>
-                    <Ionicons name="image-outline" size={32} color={COLORS.gray[400]} />
-                    <Text style={styles.imagePlaceholderText}>{t('uploadImage')}</Text>
+                </View>
+
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={[styles.modalBtn, styles.cancelBtn]}
+                    onPress={() => {
+                      setIsModalVisible(false);
+                      setEditingCategory(null);
+                      setNewCatName("");
+                      setNewCatDesc("");
+                      setNewCatImage("");
+                    }}
+                  >
+                    <Text style={styles.cancelBtnText}>{t('cancel')}</Text>
                   </TouchableOpacity>
-                )}
 
-                <TextInput
-                  style={[styles.modalInput, { marginTop: 12 }]}
-                  placeholder="https://example.com/image.png"
-                  value={newCatImage}
-                  onChangeText={setNewCatImage}
-                />
-                <Text style={styles.helperText}>OR enter Image URL</Text>
-              </View>
-            </View>
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[styles.modalBtn, styles.cancelBtn]}
-                onPress={() => {
-                  setIsModalVisible(false);
-                  setEditingCategory(null);
-                  setNewCatName("");
-                  setNewCatDesc("");
-                  setNewCatImage("");
-                }}
-              >
-                <Text style={styles.cancelBtnText}>{t('cancel')}</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalBtn, styles.submitBtn]}
-                onPress={handleCreateCategory}
-                disabled={isCreating}
-              >
-                {isCreating ? (
-                  <ActivityIndicator size="small" color={COLORS.white} />
-                ) : (
-                  <Text style={styles.submitBtnText}>{t('confirm')}</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          </Card>
-        </View>
+                  <TouchableOpacity
+                    style={[styles.modalBtn, styles.submitBtn]}
+                    onPress={handleCreateCategory}
+                    disabled={isCreating}
+                  >
+                    {isCreating ? (
+                      <ActivityIndicator size="small" color={COLORS.white} />
+                    ) : (
+                      <Text style={styles.submitBtnText}>{t('confirm')}</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
+            </Card>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

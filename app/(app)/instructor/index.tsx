@@ -103,7 +103,7 @@ export default function InstructorDashboardScreen() {
               onPress={handleWithdrawal}
               disabled={withdrawalStatus !== "idle"}
             >
-              <Text className={`font-bold mr-2 text-[14px] ${withdrawalStatus === "idle" ? 'color-white' : 'color-success'}`}>
+              <Text className={`font-bold mr-2 text-[14px] ${withdrawalStatus === "idle" ? 'text-white' : 'text-success'}`}>
                 {withdrawalStatus === "idle" ? t('requestWithdrawal') : t('withdrawing')}
               </Text>
               <Ionicons

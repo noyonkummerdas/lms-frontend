@@ -45,10 +45,10 @@ export default function CoursePlayerScreen() {
     const { id, title } = useLocalSearchParams<{ id: string; title: string }>();
     const [modules, setModules] = useState(INITIAL_MODULES);
     const allLessons = useMemo(() => modules.flatMap(m => m.lessons), [modules]);
-    const [activeLesson, setActiveLesson] = useState(allLessons[2]);
+    const [activeLesson, setActiveLesson] = useState(allLessons.length > 0 ? allLessons[0] : null);
     const [showCompletion, setShowCompletion] = useState(false);
     const [activeTab, setActiveTab] = useState("Lessons");
-    const [videoProgress, setVideoProgress] = useState(45);
+    const [videoProgress, setVideoProgress] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -73,10 +73,11 @@ export default function CoursePlayerScreen() {
     const [isDownloaded, setIsDownloaded] = useState(false);
 
     const handleSaveNote = () => {
-        if (!noteText.trim()) return;
+        if (!noteText.trim() || !activeLesson) return;
+        const currentLesson = activeLesson;
         const newNote = {
             id: Date.now().toString(),
-            lesson: activeLesson.title,
+            lesson: currentLesson.title,
             text: noteText,
             time: "2:45"
         };
@@ -95,9 +96,11 @@ export default function CoursePlayerScreen() {
     };
 
     const handlePostDiscussion = () => {
-        if (!discussionText.trim()) return;
+        if (!discussionText.trim() || !activeLesson) return;
+        const currentLesson = activeLesson;
         const newPost = { user: "Me", question: discussionText, reply: null as any };
-        const updated = { ...discussions, [activeLesson.id]: [newPost, ...(discussions[activeLesson.id as keyof typeof discussions] || [])] };
+        const lessonId = currentLesson.id;
+        const updated = { ...discussions, [lessonId]: [newPost, ...(discussions[lessonId as keyof typeof discussions] || [])] };
         setDiscussions(updated as any);
         setDiscussionText("");
     };
@@ -143,8 +146,8 @@ export default function CoursePlayerScreen() {
         if (updatedAllLessons.every(l => l.completed)) {
             setShowCompletion(true);
         } else {
-            const currentIndex = allLessons.findIndex(l => l.id === activeLesson.id);
-            if (currentIndex < allLessons.length - 1) {
+            const currentIndex = allLessons.findIndex(l => l.id === activeLesson?.id);
+            if (currentIndex !== -1 && currentIndex < allLessons.length - 1) {
                 const nextLesson = allLessons[currentIndex + 1];
                 setActiveLesson(nextLesson);
                 setVideoProgress(nextLesson.completed ? 100 : 0);
@@ -156,10 +159,9 @@ export default function CoursePlayerScreen() {
         <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
             <Navbar title={title || "Now Learning"} showBack={true} onBackPress={() => router.back()} />
 
-            <View style={{ zIndex: 50 }}>
+            <View style={{ zIndex: 50, backgroundColor: 'black' }}>
                 <VideoPlayer
-                    videoUrl={(activeLesson as any).videoUrl}
-                    className={isFullscreen ? "absolute top-0 left-0 right-0 bottom-0 z-50 h-full" : "w-full aspect-video"}
+                    videoUrl={(activeLesson as any)?.videoUrl}
                 />
             </View>
 
@@ -168,23 +170,23 @@ export default function CoursePlayerScreen() {
                     <View className="p-5 border-b border-slate-100">
                         <View className="flex-row items-center justify-between">
                             <View className="flex-1">
-                                <Text className="text-[18px] font-extrabold text-primary">{activeLesson.title}</Text>
-                                <Text className="text-[13px] text-secondary mt-1 font-bold">{title || "Full Course Curriculum"}</Text>
+                                <Text className="text-[18px] font-extrabold text-primary">{activeLesson?.title || "Select a Lesson"}</Text>
+                                <Text className="text-[13px] text-secondary mt-1 font-bold">{title || "Course Curriculum"}</Text>
                             </View>
-                            {!activeLesson.completed ? (
+                            {activeLesson && !activeLesson.completed ? (
                                 <TouchableOpacity
                                     className={`flex-row items-center px-3 py-2 rounded-xl ${videoProgress < 65 ? 'bg-black' : videoProgress < 100 ? 'bg-rose-500' : 'bg-secondary'}`}
                                     onPress={handleCompleteLesson}
                                 >
                                     <Ionicons name="checkmark-circle" size={20} color="white" />
-                                    <Text className="text-white text-[12px] font-bold ml-1">Complete Lesson</Text>
+                                    <Text className="text-white text-[12px] font-bold ml-1">Complete</Text>
                                 </TouchableOpacity>
-                            ) : (
+                            ) : activeLesson?.completed ? (
                                 <View className="flex-row items-center bg-success/10 px-3 py-2 rounded-xl">
                                     <Ionicons name="checkmark-done-circle" size={24} color="#10b981" />
                                     <Text className="text-[13px] font-extrabold text-success ml-1.5">Finished</Text>
                                 </View>
-                            )}
+                            ) : null}
                         </View>
                     </View>
 
@@ -245,7 +247,7 @@ export default function CoursePlayerScreen() {
                                     {module.lessons.map((lesson) => (
                                         <TouchableOpacity
                                             key={lesson.id}
-                                            className={`flex-row items-center p-4 rounded-2xl mb-3 bg-white border ${activeLesson.id === lesson.id ? 'border-secondary bg-indigo-50/20' : 'border-slate-100'}`}
+                                            className={`flex-row items-center p-4 rounded-2xl mb-3 bg-white border ${activeLesson?.id === lesson.id ? 'border-secondary bg-indigo-50/20' : 'border-slate-100'}`}
                                             onPress={() => handleLessonPress(lesson)}
                                         >
                                             <View className={`w-7 h-7 rounded-full items-center justify-center mr-4 ${lesson.completed ? 'bg-success' : 'bg-slate-100'}`}>
@@ -256,12 +258,13 @@ export default function CoursePlayerScreen() {
                                                 )}
                                             </View>
                                             <View className="flex-1">
-                                                <Text className={`text-[15px] font-bold ${activeLesson.id === lesson.id ? 'text-secondary' : 'text-primary'}`}>
+                                                <Text className={`text-[15px] font-bold ${activeLesson?.id === lesson.id ? 'text-secondary' : 'text-primary'}`}>
                                                     {lesson.title}
                                                 </Text>
-                                                <Text className="text-[12px] text-slate-400 mt-1 font-medium">
-                                                    <Ionicons name="time-outline" size={12} color="#94a3b8" /> {lesson.duration}
-                                                </Text>
+                                                <View className="flex-row items-center mt-1">
+                                                    <Ionicons name="time-outline" size={12} color="#94a3b8" />
+                                                    <Text className="text-[12px] text-slate-400 font-medium ml-1">{lesson.duration}</Text>
+                                                </View>
                                             </View>
                                         </TouchableOpacity>
                                     ))}
@@ -291,7 +294,7 @@ export default function CoursePlayerScreen() {
                                 </TouchableOpacity>
                             </View>
 
-                            {(discussions[activeLesson.id as keyof typeof discussions] || []).map((q: any, i: number) => (
+                            {(activeLesson && discussions[activeLesson.id as keyof typeof discussions] || []).map((q: any, i: number) => (
                                 <Card key={i} className="p-4 mb-3">
                                     <View className="flex-row items-center mb-2.5">
                                         <View className="w-6 h-6 rounded-full bg-secondary/20 items-center justify-center">
@@ -345,7 +348,7 @@ export default function CoursePlayerScreen() {
                             <View>
                                 <Text className="text-[16px] font-extrabold text-primary mb-3">Recent Notes</Text>
                                 {pastNotes.length === 0 ? (
-                                    <Text className="color-slate-400 italic mt-2.5">No notes saved for this course yet.</Text>
+                                    <Text className="text-slate-400 italic mt-2.5">No notes saved for this course yet.</Text>
                                 ) : (
                                     pastNotes.map((note) => (
                                         <Card key={note.id} className="p-4 mb-3">
@@ -422,7 +425,7 @@ export default function CoursePlayerScreen() {
                         <View className="p-5">
                             <Text className="text-[16px] font-extrabold text-primary mb-3">About this lesson</Text>
                             <Text className="text-[14px] text-slate-600 leading-[22px]">
-                                In this lesson, we will cover the core concepts of {activeLesson.title}.
+                                In this lesson, we will cover the core concepts of {activeLesson?.title || "the selected topic"}.
                                 Make sure to follow along with the provided source code and join the Q&A if you have any doubts.
                             </Text>
                         </View>

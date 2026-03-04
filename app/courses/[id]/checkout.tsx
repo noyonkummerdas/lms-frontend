@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Navbar, Card, Button } from "../../../components";
+import { useEnrollInCourseMutation } from "../../../store/api/enrollmentApi";
 
 const PAYMENT_METHODS = [
     { id: "bkash", name: "bKash", icon: "https://i.ibb.co/S7n9zPj/bkash.png", fee: "0.00" },
@@ -37,9 +38,13 @@ export default function CheckoutScreen() {
         }
     };
 
-    const handlePayment = () => {
+    const [enroll] = useEnrollInCourseMutation();
+
+    const handlePayment = async () => {
         setIsProcessing(true);
-        setTimeout(() => {
+        try {
+            // Enroll user upon successful mock payment
+            await enroll({ courseId: id }).unwrap();
             setIsProcessing(false);
             Alert.alert(
                 "Payment Successful",
@@ -48,13 +53,16 @@ export default function CheckoutScreen() {
                     {
                         text: "Start Learning",
                         onPress: () => router.replace({
-                            pathname: "/courses/[id]/learn",
-                            params: { id, title }
-                        } as any)
+                            pathname: `/courses/${id}/learn` as any,
+                            params: { title }
+                        })
                     }
                 ]
             );
-        }, 2500);
+        } catch (err: any) {
+            setIsProcessing(false);
+            Alert.alert("Error", err.data?.message || "Payment or enrollment failed. Please try again.");
+        }
     };
 
     return (

@@ -48,8 +48,7 @@ export default function NotificationsScreen() {
         {(notifications || []).map((item) => (
           <TouchableOpacity
             key={(item as any)._id || item.id}
-            activeOpacity={0.7}
-            onPress={() => handleMarkRead(item.id)}
+            onPress={() => handleMarkRead((item as any)._id || item.id)}
           >
             <Card className={`flex-row p-4 mb-3 items-center ${!item.isRead ? 'bg-white border-secondary/30 border' : ''}`}>
               <View

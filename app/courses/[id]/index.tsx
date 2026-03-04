@@ -29,7 +29,7 @@ export default function CourseDetailScreen() {
                             text: "Enroll Now",
                             onPress: async () => {
                                 try {
-                                    await enroll({ courseId: course.id }).unwrap();
+                                    await enroll({ courseId: (course as any)._id || course.id }).unwrap();
                                     Alert.alert("Success", "You have successfully enrolled in this course!");
                                     router.replace("/(app)/student/courses");
                                 } catch (err: any) {
@@ -41,9 +41,9 @@ export default function CourseDetailScreen() {
                 );
             } else {
                 router.push({
-                    pathname: "/courses/[id]/checkout",
-                    params: { id: course.id, title: course.title, price: course.price.toString() }
-                } as any);
+                    pathname: `/courses/${(course as any)._id || course.id}/checkout` as any,
+                    params: { title: course.title, price: course.price.toString() }
+                });
             }
         } catch (err) {
             console.error("Enrollment error:", err);
@@ -97,7 +97,7 @@ export default function CourseDetailScreen() {
 
                     <View className="flex-row items-center bg-indigo-50/50 p-4 rounded-2xl mb-6 border border-indigo-100">
                         <Ionicons name="sparkles" size={20} color="#6366f1" />
-                        <Text className="ml-2 color-secondary font-bold text-[14px]">Available with PRO Subscription</Text>
+                        <Text className="ml-2 text-secondary font-bold text-[14px]">Available with PRO Subscription</Text>
                     </View>
 
                     <Text className="text-[18px] font-extrabold text-primary mb-4">Reviews & Ratings</Text>

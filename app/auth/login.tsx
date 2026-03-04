@@ -198,9 +198,10 @@ export default function LoginScreen() {
               <Text className="text-[14px] font-bold text-primary ml-2">{t('demoCredentials')}</Text>
             </View>
             <View className="space-y-1">
-              <Text className="text-[12px] text-slate-600">• {t('admin')}: <Text className="font-bold text-secondary">admin</Text>@example.com</Text>
-              <Text className="text-[12px] text-slate-600">• {t('instructor')}: <Text className="font-bold text-secondary">instructor</Text>@example.com</Text>
-              <Text className="text-[12px] text-slate-600">• {t('student')}: <Text className="font-bold text-secondary">student</Text>@example.com</Text>
+              <Text className="text-[12px] text-slate-600">• {t('admin')}: <Text className="font-bold text-secondary">admin@example.com</Text></Text>
+              <Text className="text-[12px] text-slate-600">• {t('instructor')}: <Text className="font-bold text-secondary">instructor@example.com</Text></Text>
+              <Text className="text-[12px] text-slate-600">• {t('student')}: <Text className="font-bold text-secondary">student@example.com</Text></Text>
+              <Text className="text-[12px] text-slate-600 mt-2 font-bold text-primary">Password: admin123</Text>
             </View>
           </View>
         </ScrollView>

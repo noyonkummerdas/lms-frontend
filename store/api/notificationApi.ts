@@ -16,10 +16,12 @@ export const notificationApi = createApi({
     endpoints: (builder) => ({
         getNotifications: builder.query<NotificationAlert[], void>({
             query: () => "/notifications",
+            transformResponse: (res: any) => res?.data?.notifications || [],
             providesTags: ["Notification"],
         }),
         getUnreadCount: builder.query<{ count: number }, void>({
             query: () => "/notifications/unread-count",
+            transformResponse: (res: any) => ({ count: res?.data?.unreadCount || 0 }),
             providesTags: ["Notification"],
         }),
         markAsRead: builder.mutation<void, string>({

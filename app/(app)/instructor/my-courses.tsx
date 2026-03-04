@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, RefreshControl, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -13,6 +13,16 @@ export default function MyCoursesScreen() {
   const { data: coursesData, isLoading, refetch } = useGetInstructorCoursesQuery();
 
   console.log("[MY_COURSES_DEBUG] Fetched Courses:", JSON.stringify(coursesData, null, 2));
+  const handleViewDetails = (course: any) => {
+    Alert.alert(
+      course.title,
+      `${t('description')}: ${course.description}\n\n` +
+      `${t('level')}: ${course.level}\n` +
+      `${t('price')}: $${course.price}\n` +
+      `${t('enrolled')}: ${course.enrolledCount || 0} ${t('students')}`,
+      [{ text: "OK" }]
+    );
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-light" edges={["top"]}>
@@ -33,7 +43,7 @@ export default function MyCoursesScreen() {
         </View>
 
         {coursesData?.map((course: any, index: number) => (
-          <Card key={course._id || course.id || index} className="flex-row p-3 mb-4 rounded-2xl">
+          <Card key={course._id || course.id || index} className="flex-row p-3 mb-4 rounded-2xl" onPress={() => handleViewDetails(course)}>
             <View
               className="w-20 h-20 rounded-xl items-center justify-center mr-4"
               style={{ backgroundColor: (course as any).color || COLORS.secondary + "20" }}
@@ -51,14 +61,12 @@ export default function MyCoursesScreen() {
               <View className="flex-row mt-2">
                 <View className="flex-row items-center mr-4">
                   <Ionicons name="people-outline" size={14} color="#94a3b8" />
-                  <Text className="text-[12px] text-slate-500 ml-1 font-medium">{t('studentsCount', { count: course.studentsCount })}</Text>
+                  <Text className="text-[12px] text-slate-500 ml-1 font-medium">{t('studentsCount', { count: course.enrolledCount || 0 })}</Text>
                 </View>
-                {course.rating > 0 && (
-                  <View className="flex-row items-center">
-                    <Ionicons name="star" size={14} color="#f59e0b" />
-                    <Text className="text-[12px] text-slate-600 ml-1 font-bold">{course.rating}</Text>
-                  </View>
-                )}
+                <View className="flex-row items-center">
+                  <Ionicons name="card-outline" size={14} color="#94a3b8" />
+                  <Text className="text-[12px] text-slate-600 ml-1 font-bold">${course.price || 0}</Text>
+                </View>
               </View>
 
               <View className="flex-row mt-4 pt-3 border-t border-slate-50">
