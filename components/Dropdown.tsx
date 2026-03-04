@@ -4,6 +4,7 @@ interface DropdownProps {
   options: { label: string; value: string }[];
   value?: string;
   onSelect: (value: string) => void;
+  onOpen?: () => void;
   placeholder?: string;
   visible?: boolean;
   onClose?: () => void;
@@ -15,6 +16,7 @@ export default function Dropdown({
   options,
   value,
   onSelect,
+  onOpen,
   placeholder = "Select an option",
   visible = false,
   onClose,
@@ -30,7 +32,7 @@ export default function Dropdown({
         style={style}
         className={`border border-slate-200 rounded-xl px-4 py-3 bg-white ${className}`}
         activeOpacity={0.7}
-        onPress={() => { }}
+        onPress={onOpen}
       >
         <Text className="text-primary font-semibold">{selectedLabel}</Text>
       </TouchableOpacity>

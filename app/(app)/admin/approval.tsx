@@ -93,14 +93,14 @@ export default function ApprovalScreen() {
           <TouchableOpacity
             className="w-10 h-10 rounded-full items-center justify-center ml-2.5 bg-success"
             activeOpacity={0.7}
-            onPress={() => handleApprove(item.id, item.title)}
+            onPress={() => handleApprove(item._id || item.id, item.title)}
           >
             <Ionicons name="checkmark-outline" size={20} color="white" />
           </TouchableOpacity>
           <TouchableOpacity
             className="w-10 h-10 rounded-full items-center justify-center ml-2.5 bg-rose-500"
             activeOpacity={0.7}
-            onPress={() => handleReject(item.id, item.title)}
+            onPress={() => handleReject(item._id || item.id, item.title)}
           >
             <Ionicons name="close-outline" size={20} color="white" />
           </TouchableOpacity>

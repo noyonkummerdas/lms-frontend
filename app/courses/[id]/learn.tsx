@@ -3,7 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, Modal, Alert, TextInput } fro
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { Navbar, Card, Button } from "../../../components";
+import { Navbar, Card, Button, VideoPlayer } from "../../../components";
 import * as ScreenOrientation from 'expo-screen-orientation';
 
 const INITIAL_MODULES = [
@@ -11,17 +11,17 @@ const INITIAL_MODULES = [
         id: "m1",
         title: "Module 1: Getting Started",
         lessons: [
-            { id: "1", title: "Introduction to the Course", duration: "05:20", completed: true },
-            { id: "2", title: "Setting up Environment", duration: "12:45", completed: true },
+            { id: "1", title: "Introduction to the Course", duration: "05:20", completed: true, videoUrl: "https://www.youtube.com/watch?v=Ke90Tje7VS0" },
+            { id: "2", title: "Setting up Environment", duration: "12:45", completed: true, videoUrl: "https://www.youtube.com/watch?v=9S6_0kioyF8" },
         ]
     },
     {
         id: "m2",
         title: "Module 2: Core Concepts",
         lessons: [
-            { id: "3", title: "Project Structure Explained", duration: "08:15", completed: false },
-            { id: "4", title: "Understanding Components", duration: "15:30", completed: false },
-            { id: "5", title: "State & Props Deep Dive", duration: "22:10", completed: false },
+            { id: "3", title: "Project Structure Explained", duration: "08:15", completed: false, videoUrl: "https://www.youtube.com/watch?v=SqcY0GlETPk" },
+            { id: "4", title: "Understanding Components", duration: "15:30", completed: false, videoUrl: "https://www.youtube.com/watch?v=l_vUUp-V2iM" },
+            { id: "5", title: "State & Props Deep Dive", duration: "22:10", completed: false, videoUrl: "https://www.youtube.com/watch?v=4pP5p4eYlT0" },
         ]
     },
     {
@@ -156,41 +156,11 @@ export default function CoursePlayerScreen() {
         <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
             <Navbar title={title || "Now Learning"} showBack={true} onBackPress={() => router.back()} />
 
-            <View className={`w-full aspect-video bg-primary ${isFullscreen ? 'absolute top-0 left-0 right-0 bottom-0 z-50 h-full' : ''}`}>
-                <View className="flex-1 items-center justify-center">
-                    <Ionicons
-                        name={isPlaying ? "pause-circle" : "play-circle"}
-                        size={isFullscreen ? 120 : 80}
-                        color="white"
-                        onPress={() => setIsPlaying(!isPlaying)}
-                    />
-                    <Text className={`text-white mt-3 text-[13px] font-semibold opacity-80 ${isFullscreen ? 'text-[18px]' : ''}`}>
-                        {videoProgress === 100 ? "✓ Lesson Finished" : isPlaying ? "Watching..." : "Tapped to Play"}
-                    </Text>
-                </View>
-
-                {/* Video Watermark */}
-                <View className={`absolute top-[15px] right-[15px] bg-white/10 p-1 rounded ${isFullscreen ? 'top-[30px] right-[40px] p-2' : ''}`}>
-                    <Text className={`text-white/30 text-[9px] font-bold ${isFullscreen ? 'text-[14px]' : ''}`}>user_7829 • techsoul.lms</Text>
-                </View>
-
-                <View className={`absolute bottom-0 left-0 right-0 h-[50px] bg-black/60 flex-row items-center px-4 ${isFullscreen ? 'h-20 px-10 pb-5' : ''}`}>
-                    <TouchableOpacity className="p-1" onPress={() => setIsPlaying(!isPlaying)}>
-                        <Ionicons name={isPlaying ? "pause" : "play"} size={isFullscreen ? 32 : 28} color="white" />
-                    </TouchableOpacity>
-
-                    <View className="flex-1 h-1 bg-white/30 rounded-sm mx-3">
-                        <View className="h-full bg-secondary rounded-sm" style={{ width: `${videoProgress}%` }} />
-                    </View>
-
-                    <Text className={`text-white text-[10px] font-bold ${isFullscreen ? 'text-[14px]' : ''}`}>
-                        {videoProgress === 100 ? activeLesson.duration : `${Math.floor((videoProgress / 100) * parseInt(activeLesson.duration.split(':')[0]))}:${(Math.floor((videoProgress / 100) * 60)).toString().padStart(2, '0')}`} / {activeLesson.duration}
-                    </Text>
-
-                    <TouchableOpacity className="p-1 ml-3" onPress={toggleFullscreen}>
-                        <Ionicons name={isFullscreen ? "contract" : "expand"} size={isFullscreen ? 28 : 24} color="white" />
-                    </TouchableOpacity>
-                </View>
+            <View style={{ zIndex: 50 }}>
+                <VideoPlayer
+                    videoUrl={(activeLesson as any).videoUrl}
+                    className={isFullscreen ? "absolute top-0 left-0 right-0 bottom-0 z-50 h-full" : "w-full aspect-video"}
+                />
             </View>
 
             {!isFullscreen && (

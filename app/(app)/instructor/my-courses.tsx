@@ -32,8 +32,8 @@ export default function MyCoursesScreen() {
           </TouchableOpacity>
         </View>
 
-        {coursesData?.map((course) => (
-          <Card key={course.id} className="flex-row p-3 mb-4 rounded-2xl">
+        {coursesData?.map((course: any, index: number) => (
+          <Card key={course._id || course.id || index} className="flex-row p-3 mb-4 rounded-2xl">
             <View
               className="w-20 h-20 rounded-xl items-center justify-center mr-4"
               style={{ backgroundColor: (course as any).color || COLORS.secondary + "20" }}
