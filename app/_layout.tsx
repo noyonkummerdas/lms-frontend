@@ -2,11 +2,16 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useCallback, useState, useRef } from "react";
-import { View, Animated, StyleSheet, Dimensions, Image, Text, StatusBar } from "react-native";
+import { View, Animated, StyleSheet, Dimensions, Image, Text, StatusBar, LogBox } from "react-native";
 import { Provider } from "react-redux";
 import { store } from "../store/store";
 import "../styles/global.css";
 import "../utils/i18n"; // Import i18n configuration
+
+// Ignore the explicit warning thrown by Expo Go regarding Push Notifications
+LogBox.ignoreLogs([
+  "expo-notifications: Android Push notifications",
+]);
 
 const { width } = Dimensions.get("window");
 

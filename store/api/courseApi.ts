@@ -56,6 +56,18 @@ export const courseApi = createApi({
       }),
       invalidatesTags: ["Course"],
     }),
+    getLiveSession: builder.query<any, string>({
+      query: (courseId) => `/courses/${courseId}/live-session`,
+      providesTags: (result, error, id) => [{ type: "Course", id: `LIVE_${id}` }],
+    }),
+    updateLiveSession: builder.mutation<any, { courseId: string; data: any }>({
+      query: ({ courseId, data }) => ({
+        url: `/courses/${courseId}/live-session`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { courseId }) => [{ type: "Course", id: `LIVE_${courseId}` }],
+    }),
   }),
 });
 
@@ -66,5 +78,7 @@ export const {
   useGetAdminCoursesQuery,
   useCreateCourseMutation,
   useUpdateCourseMutation,
-  useDeleteCourseMutation
+  useDeleteCourseMutation,
+  useGetLiveSessionQuery,
+  useUpdateLiveSessionMutation
 } = courseApi;

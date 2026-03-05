@@ -13,6 +13,10 @@ const languageDetector = {
     async: true,
     detect: async (callback: (lng: string) => void) => {
         try {
+            if (!AsyncStorage || typeof AsyncStorage.getItem !== 'function') {
+                console.warn('AsyncStorage not ready for detection');
+                return callback('en');
+            }
             const savedDataJSON = await AsyncStorage.getItem(STORE_LANGUAGE_KEY);
             const lng = savedDataJSON ? savedDataJSON : 'en';
             callback(lng);
@@ -24,7 +28,9 @@ const languageDetector = {
     init: () => { },
     cacheUserLanguage: async (lng: string) => {
         try {
-            await AsyncStorage.setItem(STORE_LANGUAGE_KEY, lng);
+            if (AsyncStorage && typeof AsyncStorage.setItem === 'function') {
+                await AsyncStorage.setItem(STORE_LANGUAGE_KEY, lng);
+            }
         } catch (error) {
             console.log('Error saving language', error);
         }

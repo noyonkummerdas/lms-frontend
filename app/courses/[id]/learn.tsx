@@ -1,10 +1,13 @@
 import { useState, useMemo, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Modal, Alert, TextInput } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal, Alert, TextInput, Linking } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { Navbar, Card, Button, VideoPlayer } from "../../../components";
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { useGetLiveSessionQuery } from "../../../store/api/courseApi";
+import { requestNotificationPermissions, scheduleClassReminders } from "../../../utils/notificationHelper";
+import * as Notifications from "expo-notifications";
 
 const INITIAL_MODULES = [
     {
@@ -51,6 +54,61 @@ export default function CoursePlayerScreen() {
     const [videoProgress, setVideoProgress] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+
+    // Dynamic Live Session from Backend
+    const { data: serverLiveSession } = useGetLiveSessionQuery(id as string, {
+        pollingInterval: 30000, // Check every 30s
+    });
+
+    const liveSession = useMemo(() => {
+        if (serverLiveSession) return serverLiveSession;
+        // Fallback demo schedule if no backend data
+        return {
+            active: true,
+            link: "https://meet.google.com/abc-defg-hij",
+            startTime: "18:00",
+            endTime: "19:30",
+            days: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], // Every day for testing
+            topic: "Daily Q&A Session"
+        };
+    }, [serverLiveSession]);
+
+    const liveStatus = useMemo(() => {
+        if (!liveSession?.active) return "NONE";
+
+        const now = new Date();
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const today = days[now.getDay()];
+
+        if (!liveSession.days.includes(today)) return "NONE";
+
+        const [startH, startM] = liveSession.startTime.split(":").map(Number);
+        const startTime = new Date();
+        startTime.setHours(startH, startM, 0);
+
+        const [endH, endM] = (liveSession.endTime || "23:59").split(":").map(Number);
+        const endTime = new Date();
+        endTime.setHours(endH, endM, 0);
+
+        const diffStart = (now.getTime() - startTime.getTime()) / 60000;
+        const diffEnd = (now.getTime() - endTime.getTime()) / 60000;
+
+        if (diffStart >= -15 && diffEnd <= 5) { // Show from 15m before until 5m after end
+            return diffStart < 0 ? "STAGING" : "LIVE";
+        }
+
+        return "SCHEDULED";
+    }, [liveSession]);
+
+    const handleJoinLive = async () => {
+        if (!liveSession?.link) return;
+        const supported = await Linking.canOpenURL(liveSession.link);
+        if (supported) {
+            await Linking.openURL(liveSession.link);
+        } else {
+            Alert.alert("Error", "Cannot open meeting link.");
+        }
+    };
 
     const toggleFullscreen = async () => {
         if (!isFullscreen) {
@@ -113,6 +171,18 @@ export default function CoursePlayerScreen() {
         [isAllLessonsCompleted, isQuizPassed, isAssignmentSubmitted]);
 
     useEffect(() => {
+        if (liveSession?.active && liveSession.startTime) {
+            const setupReminders = async () => {
+                const hasPerm = await requestNotificationPermissions();
+                if (hasPerm) {
+                    await scheduleClassReminders(title || "Your Course", liveSession.days, liveSession.startTime);
+                }
+            };
+            setupReminders();
+        }
+    }, [liveSession, title]);
+
+    useEffect(() => {
         let interval: any;
         if (isPlaying && videoProgress < 100) {
             interval = setInterval(() => {
@@ -167,6 +237,33 @@ export default function CoursePlayerScreen() {
 
             {!isFullscreen && (
                 <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+                    {liveStatus !== "NONE" && (
+                        <TouchableOpacity
+                            style={[styles.liveBanner, liveStatus === "STAGING" && { backgroundColor: '#0ea5e9', shadowColor: '#0ea5e9' }]}
+                            onPress={handleJoinLive}
+                            activeOpacity={0.9}
+                        >
+                            <View style={styles.liveBannerPulse}>
+                                <Ionicons name={liveStatus === "LIVE" ? "videocam" : "time-outline"} size={24} color="white" />
+                            </View>
+                            <View style={{ flex: 1, marginLeft: 12 }}>
+                                <Text style={styles.liveBannerTitle}>
+                                    {liveStatus === "LIVE" ? "Live Class is Active!" : "Class Starting Soon!"}
+                                </Text>
+                                <Text style={styles.liveBannerSubtitle}>
+                                    {liveStatus === "LIVE"
+                                        ? `Topic: ${liveSession?.topic || 'Curriculum Discussion'}`
+                                        : `Starts at ${liveSession?.startTime} today`}
+                                </Text>
+                            </View>
+                            <View style={styles.liveBannerButton}>
+                                <Text style={[styles.liveBannerButtonText, liveStatus === "STAGING" && { color: '#0ea5e9' }]}>
+                                    {liveStatus === "LIVE" ? "Join Now" : "Ready"}
+                                </Text>
+                            </View>
+                        </TouchableOpacity>
+                    )}
+
                     <View className="p-5 border-b border-slate-100">
                         <View className="flex-row items-center justify-between">
                             <View className="flex-1">
@@ -190,27 +287,33 @@ export default function CoursePlayerScreen() {
                         </View>
                     </View>
 
-                    <View className="bg-slate-50 py-3">
+                    <View style={styles.tabBarWrapper}>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
                             {["Lessons", "Overview", "Q&A", "Notes", "Assessments"].map(tab => (
                                 <TouchableOpacity
                                     key={tab}
-                                    className={`px-4 py-2 mr-2 rounded-full flex-row items-center ${activeTab === tab ? 'bg-white shadow-sm' : ''}`}
+                                    style={[
+                                        styles.tabItem,
+                                        activeTab === tab && styles.tabItemActive
+                                    ]}
                                     onPress={() => setActiveTab(tab)}
                                 >
-                                    <Text className={`text-[13px] font-semibold ${activeTab === tab ? 'text-secondary' : 'text-slate-500'}`}>{tab}</Text>
+                                    <Text style={[
+                                        styles.tabItemText,
+                                        activeTab === tab && styles.tabItemTextActive
+                                    ]}>{tab}</Text>
                                 </TouchableOpacity>
                             ))}
                             <TouchableOpacity
-                                className="px-4 py-2 mr-2 rounded-full flex-row items-center bg-rose-50"
-                                onPress={() => Alert.alert("Join Live Class", "The Zoom session will start at 8:00 PM. Link: zoom.us/j/12345678")}
+                                style={[styles.tabItem, { backgroundColor: '#fff1f2' }]}
+                                onPress={handleJoinLive}
                             >
-                                <View className="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5" />
-                                <Text className="text-[13px] font-semibold text-rose-500">Live</Text>
+                                <View style={styles.liveIndicator} />
+                                <Text style={[styles.tabItemText, { color: '#f43f5e' }]}>Live Session</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                className={`px-4 py-2 mr-2 rounded-full flex-row items-center ${isDownloaded ? 'bg-success/10' : 'bg-primary/10'}`}
+                                style={[styles.tabItem, isDownloaded ? { backgroundColor: '#f0fdf4' } : { backgroundColor: '#f0f9ff' }]}
                                 onPress={handleDownload}
                                 disabled={isDownloading || isDownloaded}
                             >
@@ -219,7 +322,7 @@ export default function CoursePlayerScreen() {
                                     size={16}
                                     color={isDownloaded ? "#10b981" : "#0f172a"}
                                 />
-                                <Text className={`text-[13px] font-semibold ml-1 ${isDownloaded ? 'text-success' : 'text-primary'}`}>
+                                <Text style={[styles.tabItemText, { marginLeft: 4 }, isDownloaded && { color: '#10b981' }]}>
                                     {isDownloaded ? "Saved" : isDownloading ? "Download..." : "Download"}
                                 </Text>
                             </TouchableOpacity>
@@ -474,3 +577,83 @@ export default function CoursePlayerScreen() {
         </SafeAreaView>
     );
 }
+
+const styles = {
+    tabBarWrapper: {
+        backgroundColor: '#f8fafc',
+        paddingVertical: 12,
+    },
+    tabItem: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        marginRight: 8,
+        borderRadius: 99,
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
+    },
+    tabItemActive: {
+        backgroundColor: 'white',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    tabItemText: {
+        fontSize: 13,
+        fontWeight: '600' as const,
+        color: '#64748b',
+    },
+    tabItemTextActive: {
+        color: '#6366f1',
+    },
+    liveIndicator: {
+        width: 6,
+        height: 6,
+        borderRadius: 3,
+        backgroundColor: '#f43f5e',
+        marginRight: 6,
+    },
+    liveBanner: {
+        backgroundColor: '#6366f1',
+        margin: 16,
+        borderRadius: 16,
+        padding: 16,
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
+        shadowColor: "#6366f1",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 8,
+    },
+    liveBannerPulse: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    liveBannerTitle: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '800' as const,
+    },
+    liveBannerSubtitle: {
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: 12,
+        marginTop: 2,
+    },
+    liveBannerButton: {
+        backgroundColor: 'white',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 12,
+    },
+    liveBannerButtonText: {
+        color: '#6366f1',
+        fontWeight: '800' as const,
+        fontSize: 12,
+    }
+};

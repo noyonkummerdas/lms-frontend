@@ -192,7 +192,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          <View className="mt-10 bg-slate-100 p-4 rounded-2xl border border-slate-200">
+          {/* <View className="mt-10 bg-slate-100 p-4 rounded-2xl border border-slate-200">
             <View className="flex-row items-center mb-2">
               <Ionicons name="information-circle" size={18} color="#6366f1" />
               <Text className="text-[14px] font-bold text-primary ml-2">{t('demoCredentials')}</Text>
@@ -203,7 +203,7 @@ export default function LoginScreen() {
               <Text className="text-[12px] text-slate-600">• {t('student')}: <Text className="font-bold text-secondary">student@example.com</Text></Text>
               <Text className="text-[12px] text-slate-600 mt-2 font-bold text-primary">Password: admin123</Text>
             </View>
-          </View>
+          </View> */}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

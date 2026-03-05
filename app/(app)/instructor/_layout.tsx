@@ -11,6 +11,7 @@ import { COLORS } from "../../../constants/colors";
 
 const INSTRUCTOR_MENU = [
   { label: "Dashboard", href: "/instructor", icon: "grid-outline" as keyof typeof Ionicons.glyphMap },
+  { label: "Live Management", href: "/instructor/live-management", icon: "videocam-outline" as keyof typeof Ionicons.glyphMap },
   { label: "My Courses", href: "/instructor/my-courses", icon: "book-outline" as keyof typeof Ionicons.glyphMap },
   { label: "Create Course", href: "/instructor/create-course", icon: "add-circle-outline" as keyof typeof Ionicons.glyphMap },
   { label: "Students", href: "/instructor/students", icon: "people-outline" as keyof typeof Ionicons.glyphMap },
