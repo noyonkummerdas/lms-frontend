@@ -11,6 +11,8 @@ import "../utils/i18n"; // Import i18n configuration
 // Ignore the explicit warning thrown by Expo Go regarding Push Notifications
 LogBox.ignoreLogs([
   "expo-notifications: Android Push notifications",
+  "Use a development build instead of Expo Go",
+  "Unable to activate keep awake",
 ]);
 
 const { width } = Dimensions.get("window");

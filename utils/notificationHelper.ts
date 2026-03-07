@@ -1,24 +1,44 @@
-import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import Constants from 'expo-constants';
-import { Platform } from 'react-native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { Platform, LogBox } from 'react-native';
+
+// Safely require expo-notifications only if not in Expo Go for side-effects
+// OR handle it gracefully. SDK 53+ removed push from Expo Go.
+let Notifications: any;
+try {
+    Notifications = require('expo-notifications');
+} catch (e) {
+    console.warn("expo-notifications module not found");
+}
+
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
 // Configure how notifications are handled when the app is in the foreground
-Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-        shouldShowBanner: true,
-        shouldShowList: true
-    }),
-});
+if (Notifications) {
+    Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+            shouldShowAlert: true,
+            shouldPlaySound: true,
+            shouldSetBadge: true,
+            shouldShowBanner: true,
+            shouldShowList: true
+        }),
+    });
+}
 
 /**
  * 100% Solve: Get Push Token & Register for Notifications
  * This is the standard "Golden Path" for Expo notifications.
  */
 export async function registerForPushNotificationsAsync() {
+    if (!Notifications) return;
+
+    // Push notifications are NOT supported in Expo Go SDK 53+
+    if (isExpoGo) {
+        console.warn("[NotificationHelper] Push Notifications are not supported in Expo Go. Use a development build.");
+        return null;
+    }
+
     let token;
 
     if (Platform.OS === 'android') {
@@ -38,17 +58,16 @@ export async function registerForPushNotificationsAsync() {
             finalStatus = status;
         }
         if (finalStatus !== 'granted') {
-            alert('Failed to get push token for push notification!');
+            console.warn('Failed to get permissions for push notifications');
             return;
         }
 
         try {
-            // "100% Solve" require project ID for SDK 50+
             const projectId = Constants.expoConfig?.extra?.eas?.projectId || Constants.expoConfig?.slug;
             token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
             console.log("[NotificationHelper] Push Token:", token);
         } catch (e) {
-            console.warn("Failed to get Expo Push Token. If in Expo Go, push notifications are limited.", e);
+            console.warn("Failed to get Expo Push Token.", e);
         }
     } else {
         console.log('Must use physical device for Push Notifications');
@@ -58,6 +77,7 @@ export async function registerForPushNotificationsAsync() {
 }
 
 export async function requestNotificationPermissions() {
+    if (!Notifications) return false;
     try {
         if (!Device.isDevice) {
             console.warn("Using Emulator - Local notifications will work, but Push might not.");
@@ -77,11 +97,10 @@ export async function requestNotificationPermissions() {
 
 /**
  * Schedule a local notification 15 minutes before a specific time of day
- * @param courseTitle Course name
- * @param days Array of days ["Sun", "Mon"...]
- * @param timeStr "HH:MM" 24h format
  */
 export async function scheduleClassReminders(courseTitle: string, days: string[], timeStr: string) {
+    if (!Notifications) return;
+
     const [hour, minute] = timeStr.split(':').map(Number);
 
     // Calculate Target Time (15 mins before)
@@ -112,7 +131,7 @@ export async function scheduleClassReminders(courseTitle: string, days: string[]
                     hour: targetHour,
                     minute: targetMinute,
                     repeats: true,
-                } as Notifications.NotificationTriggerInput,
+                } as any,
             });
         } catch (e) {
             console.error(`Failed to schedule for day index ${day}`, e);

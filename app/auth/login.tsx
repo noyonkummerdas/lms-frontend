@@ -34,7 +34,10 @@ export default function LoginScreen() {
   }, [fadeAnim]);
 
   const handleLogin = async () => {
-    const validationErrors = validateForm({ email, password });
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+
+    const validationErrors = validateForm({ email: trimmedEmail, password: trimmedPassword });
 
     if (validationErrors.length > 0) {
       const errorMap = validationErrors.reduce(
@@ -46,7 +49,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const result = await login({ email, password }).unwrap();
+      const result = await login({ email: trimmedEmail, password: trimmedPassword }).unwrap();
       console.log("[LOGIN_SUCCESS] User logged in:", JSON.stringify(result.user, null, 2));
       console.log("[LOGIN_SUCCESS] Token received:", result.token);
 

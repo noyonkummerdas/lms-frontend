@@ -8,6 +8,8 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { useGetLiveSessionQuery } from "../../../store/api/courseApi";
 import { requestNotificationPermissions, scheduleClassReminders } from "../../../utils/notificationHelper";
 import * as Notifications from "expo-notifications";
+import Constants, { ExecutionEnvironment } from "expo-constants";
+import { Platform } from "react-native";
 
 const INITIAL_MODULES = [
     {
@@ -173,6 +175,9 @@ export default function CoursePlayerScreen() {
     useEffect(() => {
         if (liveSession?.active && liveSession.startTime) {
             const setupReminders = async () => {
+                const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+                if (isExpoGo) return; // Skip in Expo Go to avoid SDK 54+ errors
+
                 const hasPerm = await requestNotificationPermissions();
                 if (hasPerm) {
                     await scheduleClassReminders(title || "Your Course", liveSession.days, liveSession.startTime);

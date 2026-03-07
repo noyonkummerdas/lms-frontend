@@ -8,6 +8,7 @@ import { InstructorNavbar, Card, Button } from "../../../components";
 import { useUpdateLiveSessionMutation, useGetInstructorCoursesQuery } from "../../../store/api/courseApi";
 import { requestNotificationPermissions, scheduleClassReminders } from "../../../utils/notificationHelper";
 import * as Notifications from "expo-notifications";
+import Constants, { ExecutionEnvironment } from "expo-constants";
 
 export default function LiveManagementScreen() {
     const { t } = useTranslation();
@@ -57,11 +58,15 @@ export default function LiveManagementScreen() {
 
             // Scheduling Reminder for Teacher (Automated Reminder)
             const hasPermission = await requestNotificationPermissions();
-            if (hasPermission) {
-                const targetCourse = courses?.find(c => (c.id || c._id) === selectedCourse);
+            const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+            if (hasPermission && !isExpoGo) {
+                const targetCourse = courses?.find((c: any) => (c.id || c._id) === selectedCourse);
                 await Notifications.cancelAllScheduledNotificationsAsync(); // Cancel old ones to simplify update
                 await scheduleClassReminders(targetCourse?.title || "My Class", selectedDays, startTime);
                 Alert.alert("Success", "Schedule updated! You will get a reminder 15 mins before each class.");
+            } else if (isExpoGo) {
+                Alert.alert("Success", "Schedule updated! (Note: Reminders won't show in Expo Go, use a Dev Build for Push)");
             } else {
                 Alert.alert("Success", "Schedule updated! (But reminders are disabled without permission)");
             }
